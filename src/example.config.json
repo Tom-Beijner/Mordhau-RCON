@@ -1,0 +1,74 @@
+{
+    "ingamePrefix": "/",
+    "bot": {
+        "token": "",
+        "publicKey": "",
+        "id": ""
+    },
+    "servers": [
+        {
+            "name": "Cool Server",
+            "rcon": {
+                "host": "123.123.123.123",
+                "port": 1234,
+                "password": "password",
+                "killstreaks": {
+                    "enabled": true,
+                    "countBotKills": false
+                },
+                "automod": true,
+                "punishments": {
+                    "shouldSave": true,
+                    "types": {
+                        "kicks": false,
+                        "bans": true,
+                        "unbans": true,
+                        "mutes": true,
+                        "unmutes": false
+                    }
+                }
+            }
+        }
+    ],
+    "killstreakMessages": {
+        "1": "{name} got first blood!",
+        "5": "KILLING SPREE! {name} has a killstreak of {kills}!",
+        "10": "RAMPAGE! {name} has a killstreak of {kills}!",
+        "15": "DOMINATING! {name} has a killstreak of {kills}!",
+        "20": "UNSTOPPABLE! {name} has a killstreak of {kills}!",
+        "25": "GODLIKE! {name} has a killstreak of {kills}!",
+        "30": "WICKED SICK! {name} has a killstreak of {kills}!"
+    },
+    "discord": {
+        "guildId": "",
+        "webhookEndpoints": {
+            "chat": "",
+            "punishments": "",
+            "activity": "",
+            "wanted": "",
+            "permanent": "",
+            "automod": "",
+            "killstreak": "",
+            "adminCalls": ""
+        },
+        "roles": {
+            "mods": [""],
+            "admins": [""],
+            "headAdmin": [""],
+            "owner": [""]
+        }
+    },
+    "mordhau": {
+        "accountId": "",
+        "titleId": "12D56"
+    },
+    "steam": {
+        "key": ""
+    },
+    "database": {
+        "host": "",
+        "database": "",
+        "username": "",
+        "password": ""
+    }
+}

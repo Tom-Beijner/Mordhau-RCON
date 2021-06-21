@@ -1,0 +1,12 @@
+{
+    "apps": [
+        {
+            "name": "Mordhau-Logger",
+            "script": "node",
+            "args": "./dist/index.js",
+            "env": {
+                "NODE_ENV": "production"
+            }
+        }
+    ]
+}
