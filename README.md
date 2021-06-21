@@ -49,7 +49,7 @@ You can only have a maximum of 25 servers (not that you will have that many) as 
 ## Installation
 
 1. Clone the repository
-2. Clone `example.config.json` file (located in `src` directory) to `config.json` and edit the values
+2. Clone `example.config.json` file (located in `src` as well as in `src/migration` directory) to `config.json` and edit the values
 3. Install the required dependencies: `npm install` or `yarn install`
 4. Build the bot: `npm run build` or `yarn build`
 5. Start the bot `npm run start` or `yarn start`
