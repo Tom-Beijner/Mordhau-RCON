@@ -49,14 +49,14 @@ You can only have a maximum of 25 servers (not that you will have that many) as 
 ## Installation
 
 1. Clone the repository
-2. Clone `example.config.json` file (located in `src` as well as in `src/migration` directory) to `config.json` and edit the values
+2. Clone `example.config.json` file (located in `src` as well as in `src/migration` directories) to `config.json` and edit the values
 3. Install the required dependencies: `npm install` or `yarn install`
 4. Build the bot: `npm run build` or `yarn build`
 5. Start the bot `npm run start` or `yarn start`
 
 ## Migration
 
-To migrate from the [Mordhau Ban Logger](https://github.com/academy-gaming/mordhaubanlogger) copy-paste the save folder to `dist/migration` (maybe change the files' name to the new desired server name, note: all "\_" becomes spaces (" ")) and run `npm run migrate` or `yarn migrate`
+To migrate from the [Mordhau Ban Logger](https://github.com/academy-gaming/mordhaubanlogger) copy-paste the save folder to `dist/migration` (maybe change the files' name to the new desired server name, note: all underscores ("\_") becomes spaces (" ")) and run `npm run migrate` or `yarn migrate`
 
 ## Ingame Commands
 
