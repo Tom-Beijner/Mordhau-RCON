@@ -7,6 +7,7 @@ import {
     SlashCreator,
 } from "slash-create";
 import config from "../../../config.json";
+import { ComponentConfirmation } from "../../../services/Discord";
 import { LookupPlayer } from "../../../services/PlayFab";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
@@ -97,31 +98,45 @@ export default class AddAdmin extends SlashCommand {
                 );
             }
 
-            server.rcon.admins.add(player.id);
-
-            const result = await server.rcon.addAdmin(player.id);
-
-            logger.info(
-                "Command",
-                `${ctx.member.displayName}#${ctx.member.user.discriminator} gave ${player.name} admin privileges (Server: ${server.name})`
-            );
-
-            await ctx.send(
+            ComponentConfirmation(
+                ctx,
                 {
                     embeds: [
                         {
-                            description: [
-                                `Player: ${player.name} (${outputPlayerIDs(
-                                    player.ids,
-                                    true
-                                )})`,
-                                `Result: ${result}`,
-                                `Server: ${server.name}`,
-                            ].join("\n"),
+                            description: `Are you sure you want to add ${
+                                player.name
+                            } (${outputPlayerIDs(
+                                player.ids,
+                                true
+                            )}) as an admin?`,
                         },
                     ],
                 },
-                { ephemeral: true }
+                async (btnCtx) => {
+                    server.rcon.admins.add(player.id);
+
+                    const result = await server.rcon.addAdmin(player.id);
+
+                    logger.info(
+                        "Command",
+                        `${ctx.member.displayName}#${ctx.member.user.discriminator} gave ${player.name} admin privileges (Server: ${server.name})`
+                    );
+
+                    await btnCtx.editParent({
+                        embeds: [
+                            {
+                                description: [
+                                    `Player: ${player.name} (${outputPlayerIDs(
+                                        player.ids,
+                                        true
+                                    )})`,
+                                    `Result: ${result}`,
+                                    `Server: ${server.name}`,
+                                ].join("\n"),
+                            },
+                        ],
+                    });
+                }
             );
         } catch (error) {
             await ctx.send({

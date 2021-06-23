@@ -7,6 +7,7 @@ import {
     SlashCreator,
 } from "slash-create";
 import config from "../../../config.json";
+import { ComponentConfirmation } from "../../../services/Discord";
 import { LookupPlayer } from "../../../services/PlayFab";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
@@ -97,31 +98,42 @@ export default class RemoveAdmin extends SlashCommand {
                 );
             }
 
-            server.rcon.admins.delete(player.id);
-
-            const result = await server.rcon.removeAdmin(player.id);
-
-            logger.info(
-                "Command",
-                `${ctx.member.displayName}#${ctx.member.user.discriminator} removed ${player.name}'s admin privileges (Server: ${server.name})`
-            );
-
-            await ctx.send(
+            ComponentConfirmation(
+                ctx,
                 {
                     embeds: [
                         {
-                            description: [
-                                `Player: ${player.name} (${outputPlayerIDs(
-                                    player.ids,
-                                    true
-                                )})`,
-                                `Result: ${result}`,
-                                `Server: ${server.name}`,
-                            ].join("\n"),
+                            description: `Are you sure you want to remove ${
+                                player.name
+                            } (${outputPlayerIDs(player.ids, true)}) admin?`,
                         },
                     ],
                 },
-                { ephemeral: true }
+                async (btnCtx) => {
+                    server.rcon.admins.delete(player.id);
+
+                    const result = await server.rcon.removeAdmin(player.id);
+
+                    logger.info(
+                        "Command",
+                        `${ctx.member.displayName}#${ctx.member.user.discriminator} removed ${player.name}'s admin privileges (Server: ${server.name})`
+                    );
+
+                    await btnCtx.editParent({
+                        embeds: [
+                            {
+                                description: [
+                                    `Player: ${player.name} (${outputPlayerIDs(
+                                        player.ids,
+                                        true
+                                    )})`,
+                                    `Result: ${result}`,
+                                    `Server: ${server.name}`,
+                                ].join("\n"),
+                            },
+                        ],
+                    });
+                }
             );
         } catch (error) {
             await ctx.send({
