@@ -6,6 +6,7 @@ import {
     SlashCreator,
 } from "slash-create";
 import config from "../../../config.json";
+import { ComponentConfirmation } from "../../../services/Discord";
 import { LookupPlayer } from "../../../services/PlayFab";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
@@ -67,65 +68,92 @@ export default class GlobalMute extends SlashCommand {
         }
 
         try {
-            const failedServers: { name: string; reason: string }[] = [];
-            const servers = [...this.bot.servers.values()];
+            ComponentConfirmation(
+                ctx,
+                {
+                    embeds: [
+                        {
+                            description: [
+                                `Are you sure you want to globally mute ${
+                                    player.name
+                                } (${outputPlayerIDs(player.ids, true)})?\n`,
+                                `Duration: ${duration}`,
+                            ].join("\n"),
+                        },
+                    ],
+                },
+                async (btnCtx) => {
+                    const failedServers: { name: string; reason: string }[] =
+                        [];
+                    const servers = [...this.bot.servers.values()];
 
-            for (let i = 0; i < servers.length; i++) {
-                const server = servers[i];
-                let error = "";
+                    for (let i = 0; i < servers.length; i++) {
+                        const server = servers[i];
+                        let error = "";
 
-                if (!server.rcon.connected || !server.rcon.authenticated) {
-                    error = `Not ${
-                        !server.rcon.connected ? "connected" : "authenticated"
-                    } to RCON`;
+                        if (
+                            !server.rcon.connected ||
+                            !server.rcon.authenticated
+                        ) {
+                            error = `Not ${
+                                !server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                            } to RCON`;
+                        }
+
+                        error = await server.rcon.muteUser(
+                            server.name,
+                            {
+                                ids: { playFabID: ctx.member.id },
+                                id: ctx.member.id,
+                                name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                            },
+                            player,
+                            duration
+                        );
+
+                        if (error) {
+                            failedServers.push({
+                                name: server.name,
+                                reason: error,
+                            });
+                        }
+                    }
+
+                    logger.info(
+                        "Command",
+                        `${ctx.member.displayName}#${ctx.member.user.discriminator} globally muted ${player.name} (${player.id}) (Duration: ${duration})`
+                    );
+
+                    await btnCtx.editParent({
+                        embeds: [
+                            {
+                                description: [
+                                    `Globally muted ${
+                                        player.name
+                                    } (${outputPlayerIDs(player.ids, true)})\n`,
+                                    `Duration: ${duration}`,
+                                ].join("\n"),
+                                ...(failedServers.length && {
+                                    fields: [
+                                        {
+                                            name: "Failed servers",
+                                            value: failedServers
+                                                .map(
+                                                    (server) =>
+                                                        `${server.name} (${server.reason})`
+                                                )
+                                                .join("\n"),
+                                        },
+                                    ],
+                                }),
+                            },
+                        ],
+                        components: [],
+                    });
                 }
-
-                error = await server.rcon.muteUser(
-                    server.name,
-                    {
-                        ids: { playFabID: ctx.member.id },
-                        id: ctx.member.id,
-                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                    },
-                    player,
-                    duration
-                );
-
-                if (error) {
-                    failedServers.push({ name: server.name, reason: error });
-                }
-            }
-
-            logger.info(
-                "Command",
-                `${ctx.member.displayName}#${ctx.member.user.discriminator} globally muted ${player.name} (${player.id}) (Duration: ${duration})`
             );
-
-            await ctx.send({
-                embeds: [
-                    {
-                        description: [
-                            `Globally muted player ${
-                                player.name
-                            } (${outputPlayerIDs(player.ids, true)})\n`,
-                            `Duration: ${duration}`,
-                        ].join("\n"),
-                        ...(failedServers.length && {
-                            fields: [
-                                {
-                                    name: "Failed servers",
-                                    value: failedServers
-                                        .map(
-                                            (server) =>
-                                                `${server.name} (${server.reason})`
-                                        )
-                                        .join("\n"),
-                                },
-                            ],
-                        }),
-                    },
-                ],
-            });
         } catch (error) {
             await ctx.send({
                 content: `An error occured while performing the command (${

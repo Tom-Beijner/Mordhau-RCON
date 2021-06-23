@@ -6,6 +6,7 @@ import {
     SlashCreator,
 } from "slash-create";
 import config from "../../../config.json";
+import { ComponentConfirmation } from "../../../services/Discord";
 import { LookupPlayer } from "../../../services/PlayFab";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
@@ -55,59 +56,81 @@ export default class GlobalUnban extends SlashCommand {
         }
 
         try {
-            const failedServers: { name: string; reason: string }[] = [];
-            const servers = [...this.bot.servers.values()];
+            ComponentConfirmation(
+                ctx,
+                {
+                    embeds: [
+                        {
+                            description: `Are you sure you want to globally unban ${player.name} (${player.id})?`,
+                        },
+                    ],
+                },
+                async (btnCtx) => {
+                    const failedServers: { name: string; reason: string }[] =
+                        [];
+                    const servers = [...this.bot.servers.values()];
 
-            for (let i = 0; i < servers.length; i++) {
-                const server = servers[i];
-                let error = "";
+                    for (let i = 0; i < servers.length; i++) {
+                        const server = servers[i];
+                        let error = "";
 
-                if (!server.rcon.connected || !server.rcon.authenticated) {
-                    error = `Not ${
-                        !server.rcon.connected ? "connected" : "authenticated"
-                    } to RCON`;
+                        if (
+                            !server.rcon.connected ||
+                            !server.rcon.authenticated
+                        ) {
+                            error = `Not ${
+                                !server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                            } to RCON`;
+                        }
+
+                        error = await server.rcon.unbanUser(
+                            server.name,
+                            {
+                                ids: { playFabID: ctx.member.id },
+                                id: ctx.member.id,
+                                name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                            },
+                            player
+                        );
+
+                        if (error) {
+                            failedServers.push({
+                                name: server.name,
+                                reason: error,
+                            });
+                        }
+                    }
+
+                    logger.info(
+                        "Command",
+                        `${ctx.member.displayName}#${ctx.member.user.discriminator} globally unbanned ${player.name} (${player.id})`
+                    );
+
+                    await btnCtx.editParent({
+                        embeds: [
+                            {
+                                description: `Globally unbanned ${player.name} (${player.id})\n\n`,
+                                ...(failedServers.length && {
+                                    fields: [
+                                        {
+                                            name: "Failed servers",
+                                            value: failedServers
+                                                .map(
+                                                    (server) =>
+                                                        `${server.name} (${server.reason})`
+                                                )
+                                                .join("\n"),
+                                        },
+                                    ],
+                                }),
+                            },
+                        ],
+                        components: [],
+                    });
                 }
-
-                error = await server.rcon.unbanUser(
-                    server.name,
-                    {
-                        ids: { playFabID: ctx.member.id },
-                        id: ctx.member.id,
-                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                    },
-                    player
-                );
-
-                if (error) {
-                    failedServers.push({ name: server.name, reason: error });
-                }
-            }
-
-            logger.info(
-                "Command",
-                `${ctx.member.displayName}#${ctx.member.user.discriminator} globally unbanned ${player.name} (${player.id})`
             );
-
-            await ctx.send({
-                embeds: [
-                    {
-                        description: `Globally unbanned player ${player.name} (${player.id})`,
-                        ...(failedServers.length && {
-                            fields: [
-                                {
-                                    name: "Failed servers",
-                                    value: failedServers
-                                        .map(
-                                            (server) =>
-                                                `${server.name} (${server.reason})`
-                                        )
-                                        .join("\n"),
-                                },
-                            ],
-                        }),
-                    },
-                ],
-            });
         } catch (error) {
             await ctx.send(
                 `An error occured while performing the command (${
