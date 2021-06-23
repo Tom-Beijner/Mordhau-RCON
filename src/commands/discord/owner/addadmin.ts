@@ -1,3 +1,4 @@
+import flatMap from "array.prototype.flatmap";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
@@ -13,9 +14,9 @@ import logger from "../../../utils/logger";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 
 export default class AddAdmin extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "addadmin",
+            name: commandName,
             description: "Add an admin",
             options: [
                 {
@@ -37,13 +38,17 @@ export default class AddAdmin extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: [
-                    ...config.discord.roles.owner.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                ],
+                [config.discord.guildId]: flatMap(
+                    config.discord.roles.filter((role) =>
+                        role.commands.includes(commandName)
+                    ),
+                    (role) =>
+                        role.Ids.map((id) => ({
+                            type: ApplicationCommandPermissionType.ROLE,
+                            id,
+                            permission: true,
+                        }))
+                ),
             },
         });
     }
@@ -63,7 +68,11 @@ export default class AddAdmin extends SlashCommand {
             )) as Message;
         }
         if (!server.rcon.connected || !server.rcon.authenticated) {
-            return (await ctx.send(`Not connected to RCON`)) as Message;
+            return (await ctx.send(
+                `Not ${
+                    !server.rcon.connected ? "connected" : "authenticated"
+                } to RCON`
+            )) as Message;
         }
 
         const ingamePlayer = await server.rcon.getIngamePlayer(options.player);
@@ -74,7 +83,7 @@ export default class AddAdmin extends SlashCommand {
             ...(await LookupPlayer(ingamePlayer?.id || options.player)),
         };
 
-        if (!player.id) {
+        if (!player?.id) {
             return await ctx.send(`Invalid player provided`);
         }
 

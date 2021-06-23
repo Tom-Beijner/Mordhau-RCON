@@ -1,3 +1,4 @@
+import flatMap from "array.prototype.flatmap";
 import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
@@ -11,9 +12,9 @@ import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 
 export default class Banned extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "banned",
+            name: commandName,
             description: "Check if a player is banned and the duration",
             options: [
                 {
@@ -25,28 +26,17 @@ export default class Banned extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: [
-                    ...config.discord.roles.mods.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.admins.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.headAdmin.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.owner.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                ],
+                [config.discord.guildId]: flatMap(
+                    config.discord.roles.filter((role) =>
+                        role.commands.includes(commandName)
+                    ),
+                    (role) =>
+                        role.Ids.map((id) => ({
+                            type: ApplicationCommandPermissionType.ROLE,
+                            id,
+                            permission: true,
+                        }))
+                ),
             },
         });
     }
@@ -59,6 +49,10 @@ export default class Banned extends SlashCommand {
 
             const player =
                 this.bot.cachedPlayers.get(id) || (await LookupPlayer(id));
+
+            if (!player?.id) {
+                return await ctx.send(`Invalid player provided`);
+            }
 
             // if (!servers.length) {
             //     return { content: "Player not banned" };

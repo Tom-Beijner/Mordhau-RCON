@@ -51,16 +51,68 @@
             "killstreak": "",
             "adminCalls": ""
         },
-        "roles": {
-            "mods": [""],
-            "admins": [""],
-            "headAdmin": [""],
-            "owner": [""]
-        }
+        "roles": [
+            {
+                "name": "Mods",
+                "Ids": ["855740773260984360"],
+                "commands": [
+                    "ban",
+                    "banned",
+                    "history",
+                    "kick",
+                    "mute",
+                    "rename",
+                    "say",
+                    "unban",
+                    "unmute"
+                ]
+            },
+            {
+                "name": "Admins",
+                "Ids": ["855740723889700864"],
+                "commands": [
+                    "ban",
+                    "banned",
+                    "globalban",
+                    "globalmute",
+                    "globalunban",
+                    "globalunmute",
+                    "history",
+                    "kick",
+                    "mute",
+                    "rename",
+                    "say",
+                    "unban",
+                    "unmute"
+                ]
+            },
+            {
+                "name": "Owner",
+                "Ids": ["855740601081659412"],
+                "commands": [
+                    "ban",
+                    "banned",
+                    "globalban",
+                    "globalmute",
+                    "globalunban",
+                    "globalunmute",
+                    "history",
+                    "kick",
+                    "mute",
+                    "rename",
+                    "say",
+                    "unban",
+                    "unmute",
+                    "addadmin",
+                    "removeadmin",
+                    "rcon"
+                ],
+                "receiveMentions": true
+            }
+        ]
     },
     "mordhau": {
-        "accountId": "",
-        "titleId": "12D56"
+        "accountId": ""
     },
     "steam": {
         "key": ""

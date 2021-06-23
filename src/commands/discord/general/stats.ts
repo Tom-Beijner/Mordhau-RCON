@@ -5,9 +5,9 @@ import Watchdog from "../../../structures/Watchdog";
 import { readable } from "../../../utils/Readable";
 
 export default class Stats extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "stats",
+            name: commandName,
             description: "Show statistics about the bot",
         });
     }

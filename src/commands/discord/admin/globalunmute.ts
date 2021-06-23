@@ -1,8 +1,8 @@
+import flatMap from "array.prototype.flatmap";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
     CommandOptionType,
-    Message,
     SlashCreator,
 } from "slash-create";
 import config from "../../../config.json";
@@ -13,9 +13,9 @@ import logger from "../../../utils/logger";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 
 export default class GlobalUnmute extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "globalunmute",
+            name: commandName,
             description: "Globally unmute a player",
             options: [
                 {
@@ -27,28 +27,17 @@ export default class GlobalUnmute extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: [
-                    ...config.discord.roles.admins.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.headAdmin.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.owner.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.owner.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                ],
+                [config.discord.guildId]: flatMap(
+                    config.discord.roles.filter((role) =>
+                        role.commands.includes(commandName)
+                    ),
+                    (role) =>
+                        role.Ids.map((id) => ({
+                            type: ApplicationCommandPermissionType.ROLE,
+                            id,
+                            permission: true,
+                        }))
+                ),
             },
         });
     }
@@ -65,18 +54,25 @@ export default class GlobalUnmute extends SlashCommand {
             this.bot.cachedPlayers.get(ingamePlayer?.id || options.player) ||
             (await LookupPlayer(ingamePlayer?.id || options.player));
 
-        if (!player.id) {
+        if (!player?.id) {
             return await ctx.send(`Invalid player provided`);
         }
 
         try {
             const failedServers: { name: string; reason: string }[] = [];
+            const servers = [...this.bot.servers.values()];
 
-            this.bot.servers.forEach(async (server) => {
+            for (let i = 0; i < servers.length; i++) {
+                const server = servers[i];
+                let error = "";
+
                 if (!server.rcon.connected || !server.rcon.authenticated) {
-                    return (await ctx.send(`Not connected to RCON`)) as Message;
+                    error = `Not ${
+                        !server.rcon.connected ? "connected" : "authenticated"
+                    } to RCON`;
                 }
-                const error = await server.rcon.unmuteUser(
+
+                error = await server.rcon.unmuteUser(
                     server.name,
                     {
                         ids: { playFabID: ctx.member.id },
@@ -89,7 +85,7 @@ export default class GlobalUnmute extends SlashCommand {
                 if (error) {
                     failedServers.push({ name: server.name, reason: error });
                 }
-            });
+            }
 
             logger.info(
                 "Command",

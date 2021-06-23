@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { mordhau } from "../config.json";
+import { titleId } from "../services/PlayFab";
 
 async function getPlayerData(id: string, requestData: any) {
     try {
@@ -13,7 +13,7 @@ async function getPlayerData(id: string, requestData: any) {
         };
 
         const res = await fetch(
-            `https://${mordhau.titleId}.playfabapi.com/Client/GetPlayerCombinedInfo`,
+            `https://${titleId}.playfabapi.com/Client/GetPlayerCombinedInfo`,
             {
                 method: "POST",
                 headers: {
@@ -41,7 +41,7 @@ async function getPlayFabIdsFromSteamIds(
         };
 
         const res = await fetch(
-            `https://${mordhau.titleId}.playfabapi.com/Client/GetPlayFabIdsFromSteamIds`,
+            `https://${titleId}.playfabapi.com/Client/GetPlayFabIdsFromSteamIds`,
             {
                 method: "POST",
                 headers: {
@@ -68,13 +68,13 @@ async function getPlayFabIdFromSteamId(id: string): Promise<string | null> {
 
 async function loginWithCustomID() {
     const body = {
-        TitleId: mordhau.titleId,
+        TitleId: titleId,
         CustomId: "SteamPlayFabConverter",
         CreateAccount: false,
     };
 
     const res = await fetch(
-        `https://${mordhau.titleId}.playfabapi.com/Client/LoginWithCustomID`,
+        `https://${titleId}.playfabapi.com/Client/LoginWithCustomID`,
         {
             method: "POST",
             headers: { "Content-Type": "application/json" },

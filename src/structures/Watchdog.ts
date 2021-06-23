@@ -435,9 +435,12 @@ export default class Watchdog {
                     const props = require(`${res(root)}/${fileStats.name}`);
                     if (props) {
                         const Command = props.default;
-
                         this.slashCreator.registerCommand(
-                            new Command(this.slashCreator, this)
+                            new Command(
+                                this.slashCreator,
+                                this,
+                                fileStats.name.slice(0, -3).toLowerCase()
+                            )
                         );
 
                         // bar.increment(1, {

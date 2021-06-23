@@ -1,3 +1,4 @@
+import flatMap from "array.prototype.flatmap/implementation";
 import { compareArrayVals } from "crud-object-diff";
 import { addMinutes, addSeconds, formatDistanceToNow } from "date-fns";
 import deepClean from "deep-cleaner";
@@ -353,8 +354,9 @@ export default class Rcon {
 
             sendWebhookMessage(
                 config.discord.webhookEndpoints.activity,
-                `${config.discord.roles.owner.map((id) =>
-                    mentionRole(id)
+                `${flatMap(
+                    config.discord.roles.filter((role) => role.receiveMentions),
+                    (role) => role.Ids.map((id) => mentionRole(id))
                 )} Following players was given admin privileges on \`${
                     this.options.name
                 }\` without permission, but it was removed: ${affectedPlayers
@@ -396,8 +398,9 @@ export default class Rcon {
 
             sendWebhookMessage(
                 config.discord.webhookEndpoints.activity,
-                `${config.discord.roles.owner.map((id) =>
-                    mentionRole(id)
+                `${flatMap(
+                    config.discord.roles.filter((role) => role.receiveMentions),
+                    (role) => role.Ids.map((id) => mentionRole(id))
                 )} Following admins had their privileges removed on \`${
                     this.options.name
                 }\` without permission, they've been given it back: ${affectedAdmins

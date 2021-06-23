@@ -3,9 +3,9 @@ import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 
 export default class Ping extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "ping",
+            name: commandName,
             description: "Show the bot's ping",
         });
     }

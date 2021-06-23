@@ -1,11 +1,12 @@
+import flatMap from "array.prototype.flatmap";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
     CommandOptionType,
-    Message,
     SlashCreator,
 } from "slash-create";
 import config from "../../../config.json";
+import { ComponentConfirmation } from "../../../services/Discord";
 import { LookupPlayer } from "../../../services/PlayFab";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
@@ -13,9 +14,9 @@ import logger from "../../../utils/logger";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 
 export default class GlobalBan extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "globalban",
+            name: commandName,
             description: "Globally ban a player",
             options: [
                 {
@@ -38,28 +39,17 @@ export default class GlobalBan extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: [
-                    ...config.discord.roles.admins.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.headAdmin.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.owner.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.owner.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                ],
+                [config.discord.guildId]: flatMap(
+                    config.discord.roles.filter((role) =>
+                        role.commands.includes(commandName)
+                    ),
+                    (role) =>
+                        role.Ids.map((id) => ({
+                            type: ApplicationCommandPermissionType.ROLE,
+                            id,
+                            permission: true,
+                        }))
+                ),
             },
         });
     }
@@ -80,66 +70,139 @@ export default class GlobalBan extends SlashCommand {
         const duration = options.duration;
         const reason = options.reason;
 
-        if (!player.id) {
+        if (!player?.id) {
             return await ctx.send(`Invalid player provided`);
         }
 
         try {
-            const failedServers: { name: string; reason: string }[] = [];
+            // await ctx.defer();
 
-            this.bot.servers.forEach(async (server) => {
-                if (!server.rcon.connected || !server.rcon.authenticated) {
-                    return (await ctx.send(`Not connected to RCON`)) as Message;
+            // await ctx.send({
+            //     embeds: [
+            //         {
+            //             description: [
+            //                 `Are you sure you want to globally ban ${
+            //                     player.name
+            //                 } (${outputPlayerIDs(player.ids, true)})?\n`,
+            //                 `Duration: ${duration}`,
+            //                 `Reason: ${reason}`,
+            //             ].join("\n"),
+            //         },
+            //     ],
+            //     components: [
+            //         {
+            //             type: ComponentType.ACTION_ROW,
+            //             components: [
+            //                 {
+            //                     type: ComponentType.BUTTON,
+            //                     style: ButtonStyle.SUCCESS,
+            //                     custom_id: "confirm",
+            //                     label: "Confirm",
+            //                     // emoji: {
+            //                     //     name: "✅",
+            //                     // },
+            //                 },
+            //                 {
+            //                     type: ComponentType.BUTTON,
+            //                     style: ButtonStyle.DESTRUCTIVE,
+            //                     custom_id: "cancel",
+            //                     label: "Cancel",
+            //                     // emoji: { name: "❌" },
+            //                 },
+            //             ],
+            //         },
+            //     ],
+            // });
+
+            ComponentConfirmation(
+                ctx,
+                {
+                    embeds: [
+                        {
+                            description: [
+                                `Are you sure you want to globally ban ${
+                                    player.name
+                                } (${outputPlayerIDs(player.ids, true)})?\n`,
+                                `Duration: ${duration}`,
+                                `Reason: ${reason}`,
+                            ].join("\n"),
+                        },
+                    ],
+                },
+                async (btnCtx) => {
+                    const failedServers: { name: string; reason: string }[] =
+                        [];
+                    const servers = [...this.bot.servers.values()];
+
+                    for (let i = 0; i < servers.length; i++) {
+                        const server = servers[i];
+                        let error = "";
+
+                        if (
+                            !server.rcon.connected ||
+                            !server.rcon.authenticated
+                        ) {
+                            error = `Not ${
+                                !server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                            } to RCON`;
+                        }
+
+                        error = await server.rcon.banUser(
+                            server.name,
+                            {
+                                ids: { playFabID: ctx.member.id },
+                                id: ctx.member.id,
+                                name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                            },
+                            player,
+                            duration,
+                            reason
+                        );
+
+                        if (error) {
+                            failedServers.push({
+                                name: server.name,
+                                reason: error,
+                            });
+                        }
+                    }
+
+                    logger.info(
+                        "Command",
+                        `${ctx.member.displayName}#${ctx.member.user.discriminator} globally banned ${player.name} (${player.id}) (Duration: ${duration}, Reason: ${reason})`
+                    );
+
+                    await btnCtx.editParent({
+                        embeds: [
+                            {
+                                description: [
+                                    `Globally banned ${
+                                        player.name
+                                    } (${outputPlayerIDs(player.ids, true)})\n`,
+                                    `Duration: ${duration}`,
+                                    `Reason: ${reason || "None given"}`,
+                                ].join("\n"),
+                                ...(failedServers.length && {
+                                    fields: [
+                                        {
+                                            name: "Failed servers",
+                                            value: failedServers
+                                                .map(
+                                                    (server) =>
+                                                        `${server.name} (${server.reason})`
+                                                )
+                                                .join("\n"),
+                                        },
+                                    ],
+                                }),
+                            },
+                        ],
+                        components: [],
+                    });
                 }
-
-                const error = await server.rcon.banUser(
-                    server.name,
-                    {
-                        ids: { playFabID: ctx.member.id },
-                        id: ctx.member.id,
-                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                    },
-                    player,
-                    duration,
-                    reason
-                );
-
-                if (error) {
-                    failedServers.push({ name: server.name, reason: error });
-                }
-            });
-
-            logger.info(
-                "Command",
-                `${ctx.member.displayName}#${ctx.member.user.discriminator} globally banned ${player.name} (${player.id}) (Duration: ${duration}, Reason: ${reason})`
             );
-
-            await ctx.send({
-                embeds: [
-                    {
-                        description: [
-                            `Globally banned player ${
-                                player.name
-                            } (${outputPlayerIDs(player.ids, true)})\n`,
-                            `Duration: ${duration}`,
-                            `Reason: ${reason}`,
-                        ].join("\n"),
-                        ...(failedServers.length && {
-                            fields: [
-                                {
-                                    name: "Failed servers",
-                                    value: failedServers
-                                        .map(
-                                            (server) =>
-                                                `${server.name} (${server.reason})`
-                                        )
-                                        .join("\n"),
-                                },
-                            ],
-                        }),
-                    },
-                ],
-            });
         } catch (error) {
             await ctx.send({
                 content: `An error occured while performing the command (${

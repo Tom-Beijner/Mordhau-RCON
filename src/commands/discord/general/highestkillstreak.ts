@@ -3,9 +3,9 @@ import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 
 export default class HighestKillstreak extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "highestkillstreak",
+            name: commandName,
             description: "Get the current highest killstreak",
         });
     }

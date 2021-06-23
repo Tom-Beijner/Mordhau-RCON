@@ -5,9 +5,9 @@ import Watchdog from "../../../structures/Watchdog";
 import { hastebin } from "../../../utils";
 
 export default class Killstreaks extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "killstreaks",
+            name: commandName,
             description: "Get all players killstreaks",
         });
     }

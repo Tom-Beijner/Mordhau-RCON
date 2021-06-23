@@ -1,3 +1,4 @@
+import flatMap from "array.prototype.flatmap";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
@@ -13,9 +14,9 @@ import logger from "../../../utils/logger";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 
 export default class Kick extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "kick",
+            name: commandName,
             description: "Kick a player",
             options: [
                 {
@@ -42,28 +43,17 @@ export default class Kick extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: [
-                    ...config.discord.roles.mods.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.admins.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.headAdmin.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.owner.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                ],
+                [config.discord.guildId]: flatMap(
+                    config.discord.roles.filter((role) =>
+                        role.commands.includes(commandName)
+                    ),
+                    (role) =>
+                        role.Ids.map((id) => ({
+                            type: ApplicationCommandPermissionType.ROLE,
+                            id,
+                            permission: true,
+                        }))
+                ),
             },
         });
     }
@@ -84,7 +74,11 @@ export default class Kick extends SlashCommand {
             )) as Message;
         }
         if (!server.rcon.connected || !server.rcon.authenticated) {
-            return (await ctx.send(`Not connected to RCON`)) as Message;
+            return (await ctx.send(
+                `Not ${
+                    !server.rcon.connected ? "connected" : "authenticated"
+                } to RCON`
+            )) as Message;
         }
 
         const ingamePlayer = await server.rcon.getIngamePlayer(options.player);
@@ -96,7 +90,7 @@ export default class Kick extends SlashCommand {
         };
         const reason = options.reason;
 
-        if (!player.id) {
+        if (!player?.id) {
             return await ctx.send(`Invalid player provided`);
         }
 

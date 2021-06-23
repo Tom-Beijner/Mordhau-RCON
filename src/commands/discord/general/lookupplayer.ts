@@ -4,15 +4,15 @@ import {
     Message,
     SlashCreator,
 } from "slash-create";
-import { LookupPlayer } from "../../../services/PlayFab";
+import { LookupPlayer as GetPlayer } from "../../../services/PlayFab";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 
-export default class Player extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+export default class LookupPlayer extends SlashCommand {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "lookupplayer",
+            name: commandName,
             description: "Get player's stats using ID",
             options: [
                 {
@@ -31,7 +31,7 @@ export default class Player extends SlashCommand {
         const ingamePlayer = await this.bot.rcon.getIngamePlayer(
             ctx.options.player as string
         );
-        const player = await LookupPlayer(ingamePlayer?.id || id);
+        const player = await GetPlayer(ingamePlayer?.id || id);
 
         const playerData = await this.bot.mordhau.getPlayerData(
             player.ids.playFabID,

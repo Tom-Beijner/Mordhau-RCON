@@ -1,3 +1,4 @@
+import flatMap from "array.prototype.flatmap";
 import { addMinutes, formatDistanceToNow } from "date-fns";
 import fetch from "node-fetch";
 import pluralize from "pluralize";
@@ -15,9 +16,9 @@ import { hastebin } from "../../../utils";
 import { parsePlayerID } from "../../../utils/PlayerID";
 
 export default class History extends SlashCommand {
-    constructor(creator: SlashCreator, bot: Watchdog) {
+    constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
-            name: "history",
+            name: commandName,
             description: "Get player's punishment history",
             options: [
                 {
@@ -29,28 +30,17 @@ export default class History extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: [
-                    ...config.discord.roles.mods.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.admins.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.headAdmin.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                    ...config.discord.roles.owner.map((role) => ({
-                        type: ApplicationCommandPermissionType.ROLE,
-                        id: role,
-                        permission: true,
-                    })),
-                ],
+                [config.discord.guildId]: flatMap(
+                    config.discord.roles.filter((role) =>
+                        role.commands.includes(commandName)
+                    ),
+                    (role) =>
+                        role.Ids.map((id) => ({
+                            type: ApplicationCommandPermissionType.ROLE,
+                            id,
+                            permission: true,
+                        }))
+                ),
             },
         });
     }

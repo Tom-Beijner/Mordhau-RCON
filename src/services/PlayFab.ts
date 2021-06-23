@@ -12,11 +12,13 @@ const GetPlayFabIDsFromSteamIDs = promisify(
 const GetPlayerCombinedInfo = promisify(PlayFabClient.GetPlayerCombinedInfo);
 const GetObjects = promisify(PlayFabData.GetObjects);
 
-PlayFab.settings.titleId = config.mordhau.titleId;
+export const titleId = "12D56";
+
+PlayFab.settings.titleId = titleId;
 
 export async function CreateAccount() {
     const body = {
-        TitleId: config.mordhau.titleId,
+        TitleId: PlayFab.settings.titleId,
         CustomId: config.mordhau.accountId,
         CreateAccount: true,
     };
