@@ -54,7 +54,7 @@
         "roles": [
             {
                 "name": "Mods",
-                "Ids": ["855740773260984360"],
+                "Ids": [""],
                 "commands": [
                     "ban",
                     "banned",
@@ -69,7 +69,7 @@
             },
             {
                 "name": "Admins",
-                "Ids": ["855740723889700864"],
+                "Ids": [""],
                 "commands": [
                     "ban",
                     "banned",
@@ -88,7 +88,7 @@
             },
             {
                 "name": "Owner",
-                "Ids": ["855740601081659412"],
+                "Ids": [""],
                 "commands": [
                     "ban",
                     "banned",
