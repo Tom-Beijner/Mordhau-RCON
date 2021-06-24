@@ -14,8 +14,8 @@
     "main": "index.js",
     "license": "MIT",
     "scripts": {
-        "start": "NODE_ENV=production node dist",
-        "start:dev": "set NODE_ENV=development && set LOG_LEVEL=debug && nodemon dist",
+        "start": "cross-env NODE_ENV=production node dist",
+        "start:dev": "cross-env NODE_ENV=development LOG_LEVEL=debug nodemon dist",
         "prepublishOnly": "yarn build",
         "build": "tsc --skipLibCheck",
         "build:watch": "tsc --skipLibCheck --watch --preserveWatchOutput",
@@ -25,6 +25,7 @@
     "dependencies": {
         "array.prototype.flatmap": "^1.2.4",
         "cli-progress": "^3.8.2",
+        "cross-env": "^7.0.3",
         "crud-object-diff": "^2.3.5",
         "dashdash": "^2.0.0",
         "date-fns": "^2.16.1",
