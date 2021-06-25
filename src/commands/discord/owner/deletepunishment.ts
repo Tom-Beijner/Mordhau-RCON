@@ -12,6 +12,7 @@ import { ComponentConfirmation } from "../../../services/Discord";
 import { LookupPlayer } from "../../../services/PlayFab";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
+import logger from "../../../utils/logger";
 import { outputPlayerIDs, parsePlayerID } from "../../../utils/PlayerID";
 
 export default class DeletePunishment extends SlashCommand {
@@ -108,6 +109,43 @@ export default class DeletePunishment extends SlashCommand {
                 this.bot.cachedPlayers.get(punishedPlayerID) ||
                 (await LookupPlayer(punishedPlayerID));
 
+            const message = [
+                `\`\`\`Type: ${type}`,
+                type.includes("GLOBAL") ? undefined : `Server: ${server}`,
+                `Platform: ${parsePlayerID(punishedPlayerID).platform}`,
+                options.type === "admin"
+                    ? `Player: ${punishedPlayer.name} (${outputPlayerIDs(
+                          punishedPlayer.ids
+                      )})`
+                    : undefined,
+                `Date: ${new Date(date).toDateString()} (${formatDistanceToNow(
+                    date,
+                    { addSuffix: true }
+                )})`,
+                `Offense: ${reason || "None given"}`,
+                ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(type)
+                    ? `Duration: ${
+                          !duration
+                              ? "PERMANENT"
+                              : pluralize("minute", duration, true)
+                      } ${
+                          duration
+                              ? `(Un${
+                                    type === "BAN" ? "banned" : "muted"
+                                } ${formatDistanceToNow(
+                                    addMinutes(date, duration),
+                                    {
+                                        addSuffix: true,
+                                    }
+                                )})`
+                              : ""
+                      }`
+                    : undefined,
+                `Admin: ${admin}\`\`\``,
+            ]
+                .filter((line) => typeof line !== "undefined")
+                .join("\n");
+
             ComponentConfirmation(
                 ctx,
                 {
@@ -125,68 +163,7 @@ export default class DeletePunishment extends SlashCommand {
                                         options.type === "player"
                                             ? `Punishment Received (ID: ${options.punishmentID})`
                                             : `Punishment Given (ID: ${options.punishmentID})`,
-                                    value: [
-                                        `\`\`\`Type: ${type}`,
-                                        type.includes("GLOBAL")
-                                            ? undefined
-                                            : `Server: ${server}`,
-                                        `Platform: ${
-                                            parsePlayerID(punishedPlayerID)
-                                                .platform
-                                        }`,
-                                        options.type === "admin"
-                                            ? `Player: ${
-                                                  punishedPlayer.name
-                                              } (${outputPlayerIDs(
-                                                  punishedPlayer.ids
-                                              )})`
-                                            : undefined,
-                                        `Date: ${new Date(
-                                            date
-                                        ).toDateString()} (${formatDistanceToNow(
-                                            date,
-                                            { addSuffix: true }
-                                        )})`,
-                                        `Offense: ${reason || "None given"}`,
-                                        [
-                                            "BAN",
-                                            "MUTE",
-                                            "GLOBAL BAN",
-                                            "GLOBAL MUTE",
-                                        ].includes(type)
-                                            ? `Duration: ${
-                                                  !duration
-                                                      ? "PERMANENT"
-                                                      : pluralize(
-                                                            "minute",
-                                                            duration,
-                                                            true
-                                                        )
-                                              } ${
-                                                  duration
-                                                      ? `(Un${
-                                                            type === "BAN"
-                                                                ? "banned"
-                                                                : "muted"
-                                                        } ${formatDistanceToNow(
-                                                            addMinutes(
-                                                                date,
-                                                                duration
-                                                            ),
-                                                            {
-                                                                addSuffix: true,
-                                                            }
-                                                        )})`
-                                                      : ""
-                                              }`
-                                            : undefined,
-                                        `Admin: ${admin}\`\`\``,
-                                    ]
-                                        .filter(
-                                            (line) =>
-                                                typeof line !== "undefined"
-                                        )
-                                        .join("\n"),
+                                    value: message,
                                 },
                             ],
                             color: 15158332,
@@ -196,7 +173,39 @@ export default class DeletePunishment extends SlashCommand {
                 async (btnCtx) => {
                     if (ctx.user.id !== btnCtx.user.id) return;
 
-                    console.log("pressed");
+                    await this.bot.database.deletePlayerPunishment(
+                        [options.player],
+                        options.punishmentID,
+                        options.type === "admin"
+                    );
+
+                    logger.info(
+                        "Command",
+                        `${ctx.member.displayName}#${
+                            ctx.member.user.discriminator
+                        } deleted ${options.type} punishment of ${
+                            player.name
+                        } (${outputPlayerIDs(player.ids, true)})`
+                    );
+
+                    await btnCtx.editParent({
+                        embeds: [
+                            {
+                                description: `Swlwrws \`${
+                                    options.type
+                                }\` punishment of ${
+                                    player.name
+                                } (${outputPlayerIDs(player.ids, true)})`,
+                                fields: [
+                                    {
+                                        name: `Deleted Data (ID: ${options.punishmentID})`,
+                                        value: message,
+                                    },
+                                ],
+                            },
+                        ],
+                        components: [],
+                    });
                 }
             );
         } catch (error) {

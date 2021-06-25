@@ -174,6 +174,41 @@ export default class Database {
         };
     }
 
+    async deletePlayerPunishment(
+        platformIDs: string[],
+        punishmentID: number,
+        searchForAdmin?: boolean
+    ): Promise<{
+        ids: {
+            playFabID?: string;
+            steamID?: string;
+        };
+        previousNames: string;
+        history: ILog[];
+    }> {
+        platformIDs = platformIDs.filter((p) => typeof p === "string");
+        const searchIDs: string[] = [...platformIDs];
+
+        return await this.Logs.deleteOne(
+            {
+                $or: [
+                    searchForAdmin
+                        ? {
+                              admin: { $regex: searchIDs.join("|") },
+                          }
+                        : {
+                              // "ids.platform": { $in: searchPlatforms },
+                              "ids.id": { $in: searchIDs },
+                          },
+                    { id: { $in: [...new Set(searchIDs)] } },
+                ],
+            },
+            {
+                skip: punishmentID - 1,
+            }
+        );
+    }
+
     async updatePlayerHistory(data: {
         ids: { platform: platforms; id: string }[];
         id: string;
