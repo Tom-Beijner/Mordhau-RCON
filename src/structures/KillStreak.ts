@@ -146,8 +146,8 @@ export default class KillStreak {
         }
 
         message = message
-            .replace("{name}", winner.name)
-            .replace("{kills}", kills.toString());
+            .replace(/{name}/g, winner.name)
+            .replace(/{kills}/g, kills.toString());
 
         logger.debug(
             "Killstreak",
