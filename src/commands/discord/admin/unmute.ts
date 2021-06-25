@@ -71,7 +71,7 @@ export default class Unmute extends SlashCommand {
             return (await ctx.send(
                 `Not ${
                     !server.rcon.connected ? "connected" : "authenticated"
-                } to RCON`
+                } to server`
             )) as Message;
         }
 

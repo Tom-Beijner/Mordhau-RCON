@@ -46,29 +46,24 @@ export default class History extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
-        let id = ctx.options.player as string;
+        const options = {
+            player: ctx.options.player as string,
+        };
 
-        const player = await Object.values(this.bot.servers).map(
-            async (server) => await server.rcon.getIngamePlayer(id)
-        )[0];
-        id = (player && player.id) || id;
-        // const playerData = this.bot.cachedPlayers.get(id) || {
-        //     ids: {
-        //         entityID: undefined,
-        //         playFabID: platform.platform === "PlayFab" && platform.id,
-        //         steamID: platform.platform === "Steam" && platform.id,
-        //     },
-        //     id,
-        //     name: undefined,
-        // };
+        const ingamePlayer = await this.bot.rcon.getIngamePlayer(
+            ctx.options.player as string
+        );
+        const player =
+            this.bot.cachedPlayers.get(ingamePlayer?.id || options.player) ||
+            (await LookupPlayer(ingamePlayer?.id || options.player));
 
-        const playerData =
-            this.bot.cachedPlayers.get(id) || (await LookupPlayer(id));
+        if (!player?.id) {
+            return await ctx.send(`Invalid player provided`);
+        }
 
         const playerHistory = await this.bot.database.getPlayerHistory([
-            ...(playerData
-                ? [playerData.ids.playFabID, playerData.ids.steamID]
-                : [id]),
+            player.ids.playFabID,
+            player.ids.steamID,
         ]);
         let playername = player && player.name;
         let playeravatar: string;
@@ -92,7 +87,7 @@ export default class History extends SlashCommand {
         }
 
         const payload = {
-            id,
+            id: player.id,
             playername,
             playeravatar,
             duration: 0,
@@ -100,19 +95,14 @@ export default class History extends SlashCommand {
         };
 
         let pastOffenses: string;
-        let historyOverTen = false;
         let pastBansAmount = 0;
-        let suggestion: string;
 
         if (!payload.history.length) pastOffenses = "None";
         else {
-            pastOffenses = "\n------------------";
-
-            if (payload.history.length > 10) {
-                historyOverTen = true;
-            }
+            pastOffenses = "------------------";
 
             for (let i = 0; i < payload.history.length; i++) {
+                const offenses: string[] = [];
                 const h = payload.history[i];
                 const type = h.type;
                 const admin = h.admin;
@@ -126,33 +116,42 @@ export default class History extends SlashCommand {
                 if (!h.duration) historyDuration = "PERMANENT";
                 else historyDuration = pluralize("minute", h.duration, true);
 
-                pastOffenses += `\nType: ${type}`;
-                pastOffenses += `\nServer: ${h.server}`;
-                pastOffenses += `\nPlatform: ${parsePlayerID(h.id).platform}`;
-                pastOffenses += `\nDate: ${date.toDateString()} (${formatDistanceToNow(
-                    date,
-                    { addSuffix: true }
-                )})\nAdmin: ${admin}\nOffense: ${
-                    h.reason || "None given"
-                }\nDuration: ${historyDuration} ${
-                    h.duration
-                        ? `(Un${
-                              type === "BAN" ? "banned" : "muted"
-                          } ${formatDistanceToNow(
-                              addMinutes(date, h.duration),
-                              {
-                                  addSuffix: true,
-                              }
-                          )})`
-                        : ""
-                }\n------------------`;
+                offenses.push(
+                    [
+                        `\nID: ${i + 1}`,
+                        `Type: ${type}`,
+                        type.includes("GLOBAL")
+                            ? undefined
+                            : `Server: ${h.server}`,
+                        `Platform: ${parsePlayerID(h.id).platform}`,
+                        `Date: ${date.toDateString()} (${formatDistanceToNow(
+                            date,
+                            { addSuffix: true }
+                        )})`,
+                        `Admin: ${admin}`,
+                        `Offense: ${h.reason || "None given"}`,
+                        ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(
+                            type
+                        )
+                            ? `Duration: ${historyDuration} ${
+                                  h.duration
+                                      ? `(Un${
+                                            type === "BAN" ? "banned" : "muted"
+                                        } ${formatDistanceToNow(
+                                            addMinutes(date, h.duration),
+                                            { addSuffix: true }
+                                        )})`
+                                      : ""
+                              }`
+                            : undefined,
+                        `------------------`,
+                    ]
+                        .filter((line) => typeof line !== "undefined")
+                        .join("\n")
+                );
+
+                pastOffenses += offenses.join("\n");
             }
-
-            if (historyOverTen)
-                pastOffenses += "\nHas over 10 punishments\n------------------";
-
-            if (pastBansAmount > 5)
-                suggestion = "\n**SUGGESTION:** PERMA BAN\n";
 
             if (pastOffenses.length < 1025)
                 pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
@@ -163,14 +162,14 @@ export default class History extends SlashCommand {
                 pastOffenses
             )})`;
 
-        let message = suggestion;
+        let message = "";
 
         const historyLength = payload.history.length;
         let color = 3066993;
 
-        if (historyLength > 3) color = 10038562;
-        if (historyLength > 2) color = 15158332;
         if (historyLength > 0) color = 15105570;
+        if (historyLength > 2) color = 15158332;
+        if (historyLength > 3) color = 10038562;
 
         const bannedPlayer = await this.bot.rcon.getBannedPlayer(
             playerHistory.ids.playFabID
@@ -183,10 +182,6 @@ export default class History extends SlashCommand {
         const inServer = await this.bot.rcon.getIngamePlayer(
             playerHistory.ids.playFabID
         );
-
-        // const archives = await this.bot.database.getArchives(
-        //     playerHistory.ids.playFabID
-        // );
 
         await ctx.send({
             content: "",

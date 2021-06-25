@@ -78,7 +78,7 @@ export default class Mute extends SlashCommand {
             return (await ctx.send(
                 `Not ${
                     !server.rcon.connected ? "connected" : "authenticated"
-                } to RCON`
+                } to server`
             )) as Message;
         }
 

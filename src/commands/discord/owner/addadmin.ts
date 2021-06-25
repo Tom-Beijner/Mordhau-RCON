@@ -72,7 +72,7 @@ export default class AddAdmin extends SlashCommand {
             return (await ctx.send(
                 `Not ${
                     !server.rcon.connected ? "connected" : "authenticated"
-                } to RCON`
+                } to server`
             )) as Message;
         }
 
@@ -109,10 +109,12 @@ export default class AddAdmin extends SlashCommand {
                                 player.ids,
                                 true
                             )}) as an admin?`,
+                            color: 15158332,
                         },
                     ],
                 },
                 async (btnCtx) => {
+                    if (ctx.user.id !== btnCtx.user.id) return;
                     server.rcon.admins.add(player.id);
 
                     const result = await server.rcon.addAdmin(player.id);
@@ -135,6 +137,7 @@ export default class AddAdmin extends SlashCommand {
                                 ].join("\n"),
                             },
                         ],
+                        components: [],
                     });
                 }
             );

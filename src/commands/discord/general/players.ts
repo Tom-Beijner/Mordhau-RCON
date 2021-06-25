@@ -59,7 +59,7 @@ export default class Players extends SlashCommand {
                     name: server.name,
                     value: `Not ${
                         !server.rcon.connected ? "connected" : "authenticated"
-                    } to RCON`,
+                    } to server`,
                 });
                 continue;
             }

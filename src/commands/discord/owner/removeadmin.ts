@@ -72,7 +72,7 @@ export default class RemoveAdmin extends SlashCommand {
             return (await ctx.send(
                 `Not ${
                     !server.rcon.connected ? "connected" : "authenticated"
-                } to RCON`
+                } to server`
             )) as Message;
         }
 
@@ -106,10 +106,12 @@ export default class RemoveAdmin extends SlashCommand {
                             description: `Are you sure you want to remove ${
                                 player.name
                             } (${outputPlayerIDs(player.ids, true)}) admin?`,
+                            color: 15158332,
                         },
                     ],
                 },
                 async (btnCtx) => {
+                    if (ctx.user.id !== btnCtx.user.id) return;
                     server.rcon.admins.delete(player.id);
 
                     const result = await server.rcon.removeAdmin(player.id);
@@ -132,6 +134,7 @@ export default class RemoveAdmin extends SlashCommand {
                                 ].join("\n"),
                             },
                         ],
+                        components: [],
                     });
                 }
             );
