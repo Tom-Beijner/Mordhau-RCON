@@ -1,5 +1,5 @@
-import flatMap from "array.prototype.flatmap";
 import mongoose from "mongoose";
+import infractionsSchema from "../models/infractionsSchema";
 import logSchema, { ILog, platforms } from "../models/logSchema";
 import logger from "../utils/logger";
 import { parsePlayerID } from "../utils/PlayerID";
@@ -27,6 +27,7 @@ export default class Database {
             // reconnectTries: 30,
             useCreateIndex: true,
             useUnifiedTopology: true,
+            useFindAndModify: false,
         });
 
         return this;
@@ -36,7 +37,14 @@ export default class Database {
         return logSchema;
     }
 
-    async getPlayerHistory(platformIDs: string[]): Promise<{
+    public get Infractions() {
+        return infractionsSchema;
+    }
+
+    async getPlayerHistory(
+        platformIDs: string[],
+        searchForAdmin?: boolean
+    ): Promise<{
         ids: {
             playFabID?: string;
             steamID?: string;
@@ -46,45 +54,18 @@ export default class Database {
     }> {
         platformIDs = platformIDs.filter((p) => typeof p === "string");
         const platforms = platformIDs.map((id) => parsePlayerID(id));
-        const playFabHistory = await this.Logs.find({
-            $or: [
-                {
-                    // "ids.platform": {
-                    //     $in: platforms.map((platform) => platform.platform),
-                    // },
-                    "ids.id": { $in: platforms.map((platform) => platform.id) },
-                },
-                { id: { $in: platformIDs } },
-            ],
-        }).sort("-_id");
-        const ids: { platform: platforms; id: string }[] = [
-            ...new Set(
-                flatMap(
-                    playFabHistory,
-                    (record) => record.ids || [parsePlayerID(record.id)]
-                ).filter((record) => record.id)
-            ),
-        ];
-        const playFab = ids.find((p) => p.platform === "PlayFab");
-        const steam = ids.find((p) => p.platform === "Steam");
-        // const searchPlatforms: platforms[] = [];
-        const searchIDs: string[] = [...platformIDs];
-
-        if (playFab) {
-            // searchPlatforms.push(playFab.platform);
-            searchIDs.push(playFab.id);
-        }
-        if (steam) {
-            // searchPlatforms.push(steam.platform);
-            searchIDs.push(steam.id);
-        }
+        const searchIDs: string[] = platformIDs;
 
         const playerhistoryData = await this.Logs.find({
             $or: [
-                {
-                    // "ids.platform": { $in: searchPlatforms },
-                    "ids.id": { $in: searchIDs },
-                },
+                searchForAdmin
+                    ? {
+                          admin: { $regex: searchIDs.join("|") },
+                      }
+                    : {
+                          // "ids.platform": { $in: searchPlatforms },
+                          "ids.id": { $in: searchIDs },
+                      },
                 { id: { $in: [...new Set(searchIDs)] } },
             ],
         });
@@ -101,19 +82,95 @@ export default class Database {
 
         return {
             ids: {
-                playFabID:
-                    (playFab && playFab.id) ||
-                    platformIDs.find(
-                        (id) => parsePlayerID(id).platform === "PlayFab"
-                    ),
-                steamID:
-                    (steam && steam.id) ||
-                    platformIDs.find(
-                        (id) => parsePlayerID(id).platform === "Steam"
-                    ),
+                playFabID: platforms.find(
+                    (platform) => platform.platform === "PlayFab"
+                )?.id,
+                steamID: platforms.find(
+                    (platform) => platform.platform === "Steam"
+                )?.id,
             },
             previousNames,
             history: playerhistoryData,
+        };
+    }
+
+    async deletePlayerHistory(
+        platformIDs: string[],
+        searchForAdmin?: boolean
+    ): Promise<{
+        ids: {
+            playFabID?: string;
+            steamID?: string;
+        };
+        previousNames: string;
+        history: ILog[];
+    }> {
+        platformIDs = platformIDs.filter((p) => typeof p === "string");
+        const searchIDs: string[] = [...platformIDs];
+
+        return await this.Logs.deleteMany({
+            $or: [
+                searchForAdmin
+                    ? {
+                          admin: { $regex: searchIDs.join("|") },
+                      }
+                    : {
+                          // "ids.platform": { $in: searchPlatforms },
+                          "ids.id": { $in: searchIDs },
+                      },
+                { id: { $in: [...new Set(searchIDs)] } },
+            ],
+        });
+    }
+
+    async getPlayerPunishment(
+        platformIDs: string[],
+        punishmentID: number,
+        searchForAdmin?: boolean
+    ): Promise<{
+        ids: {
+            playFabID?: string;
+            steamID?: string;
+        };
+        punishment: ILog;
+    }> {
+        platformIDs = platformIDs.filter((p) => typeof p === "string");
+        const platforms = platformIDs.map((id) => parsePlayerID(id));
+        const searchIDs: string[] = [...platformIDs];
+
+        const playerPunishmentData = await this.Logs.findOne(
+            {
+                $or: [
+                    searchForAdmin
+                        ? {
+                              admin: { $regex: searchIDs.join("|") },
+                          }
+                        : {
+                              // "ids.platform": { $in: searchPlatforms },
+                              "ids.id": { $in: searchIDs },
+                          },
+                    { id: { $in: [...new Set(searchIDs)] } },
+                ],
+            },
+            null,
+            {
+                skip: punishmentID - 1,
+            }
+        );
+
+        if (playerPunishmentData) logger.debug("Bot", "Punishment found");
+        else logger.debug("Bot", "No punishment data was found");
+
+        return {
+            ids: {
+                playFabID: platforms.find(
+                    (platform) => platform.platform === "PlayFab"
+                )?.id,
+                steamID: platforms.find(
+                    (platform) => platform.platform === "Steam"
+                )?.id,
+            },
+            punishment: playerPunishmentData,
         };
     }
 
