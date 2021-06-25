@@ -120,7 +120,6 @@ To migrate from the [Mordhau Ban Logger](https://github.com/academy-gaming/mordh
 
 ### v1.1.0
 
--   Added update Discord command
 -   Automod is now fully customizable as well as infractions gets saved to the database (restarting the bot wont reset infractions)
 -   Added `deletehistory` and `deletepunishment` commands
 -   Fixed global punishment commands to not send multiple embeds and not save multiple database documents
