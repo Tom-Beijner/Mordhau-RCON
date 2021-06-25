@@ -94,17 +94,7 @@ export default class Database {
         };
     }
 
-    async deletePlayerHistory(
-        platformIDs: string[],
-        searchForAdmin?: boolean
-    ): Promise<{
-        ids: {
-            playFabID?: string;
-            steamID?: string;
-        };
-        previousNames: string;
-        history: ILog[];
-    }> {
+    async deletePlayerHistory(platformIDs: string[], searchForAdmin?: boolean) {
         platformIDs = platformIDs.filter((p) => typeof p === "string");
         const searchIDs: string[] = [...platformIDs];
 
@@ -178,14 +168,7 @@ export default class Database {
         platformIDs: string[],
         punishmentID: number,
         searchForAdmin?: boolean
-    ): Promise<{
-        ids: {
-            playFabID?: string;
-            steamID?: string;
-        };
-        previousNames: string;
-        history: ILog[];
-    }> {
+    ) {
         platformIDs = platformIDs.filter((p) => typeof p === "string");
         const searchIDs: string[] = [...platformIDs];
 
