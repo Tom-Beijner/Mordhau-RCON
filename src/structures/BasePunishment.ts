@@ -1,15 +1,20 @@
-import { addHours, addMinutes, formatDistanceToNow } from "date-fns";
+import { addMinutes, formatDistanceToNow } from "date-fns";
 import fetch from "node-fetch";
 import pluralize from "pluralize";
 import config from "../config.json";
 import { ILog } from "../models/logSchema";
 import { sendWebhookEmbed, sendWebhookMessage } from "../services/Discord";
+import { LookupPlayer } from "../services/PlayFab";
 import { hastebin } from "../utils/Hastebin";
 import logger from "../utils/logger";
 import { outputPlayerIDs, parsePlayerID } from "../utils/PlayerID";
 import Watchdog from "./Watchdog";
 
 type Types = "MUTE" | "UNMUTE" | "KICK" | "BAN" | "UNBAN";
+// | "GLOBAL BAN"
+// | "GLOBAL MUTE"
+// | "GLOBAL UNBAN"
+// | "GLOBAL UNMUTE";
 
 export default abstract class BasePunishment {
     public bot: Watchdog;
@@ -33,19 +38,33 @@ export default abstract class BasePunishment {
             id: string;
             name?: string;
         },
-        duration: number,
-        reason: string
+        duration?: number,
+        reason?: string,
+        global?: boolean
     ) {
-        const rcon = this.bot.servers.get(server).rcon;
+        const fetchedPlayer =
+            (player?.name ? player : null) ||
+            this.bot.cachedPlayers.get(player.id) ||
+            (await LookupPlayer(player.id));
 
-        // logger.info("Looking up playername by steam ID");
+        if (global) {
+            this.savePayload({
+                player: fetchedPlayer,
+                server: "Global",
+                date,
+                duration,
+                reason,
+                admin,
+                global,
+            });
+
+            return;
+        }
 
         return this.handler(
             server,
             date,
-            (player?.name ? player : null) ||
-                this.bot.cachedPlayers.get(player.id) ||
-                (await rcon.getPlayerToCache(player.id)),
+            fetchedPlayer,
             admin,
             duration,
             reason
@@ -107,15 +126,20 @@ export default abstract class BasePunishment {
         };
         duration?: number;
         reason?: string;
+        global?: boolean;
     }) {
+        const type = `${
+            payload.global && this.type !== "KICK" ? "GLOBAL " : ""
+        }${this.type}` as Types;
+
         logger.info(
             "Bot",
             `${payload.admin.name} (${outputPlayerIDs(
                 payload.admin.ids
-            )}) ${this.type.toLowerCase()}${
-                ["BAN", "UNBAN"].includes(this.type)
+            )}) ${type.toLowerCase().replace("global", "globally")}${
+                ["BAN", "UNBAN", "GLOBAL BAN", "GLOBAL UNBAN"].includes(type)
                     ? "ned"
-                    : this.type === "KICK"
+                    : type === "KICK"
                     ? "ed"
                     : "d"
             } ${payload.player.name} (${outputPlayerIDs(payload.player.ids)})${
@@ -125,7 +149,9 @@ export default abstract class BasePunishment {
                         : ` for ${pluralize("minute", payload.duration, true)}`
                     : ""
             }${
-                payload.reason && payload.reason.length
+                payload.reason &&
+                payload.reason.length &&
+                payload.reason !== "None given"
                     ? ` with the reason: ${payload.reason}`
                     : ""
             }`
@@ -137,9 +163,9 @@ export default abstract class BasePunishment {
 
         if (process.env.NODE_ENV.trim() !== "production") return;
 
-        if (["KICK", "BAN"].includes(this.type))
+        if (["KICK", "BAN", "GLOBAL BAN"].includes(type))
             this.bot.punishedPlayers.set(payload.player.id, {
-                punishment: this.type,
+                punishment: type,
                 admin: payload.admin,
             });
 
@@ -183,16 +209,17 @@ export default abstract class BasePunishment {
                 name: payload.player.name,
             },
             playeravatar,
-            type: this.type,
+            type,
             history: playerHistory.history,
             previousNames: playerHistory.previousNames,
         });
 
-        const punishments = server.rcon.punishments;
+        const punishments = server?.rcon.punishments;
 
         if (
-            !punishments.shouldSave ||
-            !punishments.types[`${this.type.toLocaleLowerCase()}s`]
+            !payload.global &&
+            (!punishments.shouldSave ||
+                !punishments.types[`${this.type.toLocaleLowerCase()}s`])
         )
             return;
 
@@ -207,7 +234,7 @@ export default abstract class BasePunishment {
                     id: steamID,
                 },
             ],
-            type: this.type,
+            type,
             player: payload.player.name,
             server: payload.server,
             id: payload.player.id,
@@ -237,46 +264,36 @@ export default abstract class BasePunishment {
         duration?: number;
         reason?: string;
         history: ILog[];
+        global?: boolean;
     }) {
-        logger.debug("Bot", "Getting channel ID.");
-
         let duration = data.duration && data.duration.toString();
 
         if (!data.duration) {
             duration = "PERMANENT";
 
-            if (data.type === "BAN")
+            if (["BAN", "GLOBAL BAN"].includes(data.type))
                 sendWebhookMessage(
                     config.discord.webhookEndpoints.permanent,
                     `${data.player.name} (${outputPlayerIDs(
                         data.player.ids,
                         true
-                    )}) in ${data.server}`
+                    )}) ${data.global ? "globally" : `in ${data.server}`}`
                 );
         } else duration += ` ${pluralize("minute", data.duration)}`;
 
         let pastOffenses: string;
-        let historyOverTen = false;
-        let pastBansAmount = 0;
         let totalDuration = data.duration || 0;
-        let suggestion: string;
 
         if (!data.history.length) pastOffenses = "None";
         else {
-            pastOffenses = "\n------------------";
-
-            if (data.history.length > 10) {
-                historyOverTen = true;
-            }
+            pastOffenses = "------------------";
 
             for (let i = 0; i < data.history.length; i++) {
-                const offense: string[] = [];
+                const offenses: string[] = [];
                 const h = data.history[i];
                 const type = h.type;
                 const admin = h.admin;
                 const date = new Date(h.date);
-
-                if (type === "BAN") pastBansAmount++;
 
                 let historyDuration: string;
                 if (!h.duration) historyDuration = "PERMANENT";
@@ -285,41 +302,42 @@ export default abstract class BasePunishment {
                     totalDuration += h.duration;
                 }
 
-                offense.push(
+                offenses.push(
                     [
-                        `\nType: ${type}`,
-                        `Server: ${h.server}`,
+                        `\nID: ${i + 1}`,
+                        `Type: ${type}`,
+                        type.includes("GLOBAL")
+                            ? undefined
+                            : `Server: ${h.server}`,
                         `Platform: ${parsePlayerID(h.id).platform}`,
                         `Date: ${date.toDateString()} (${formatDistanceToNow(
                             date,
                             { addSuffix: true }
                         )})`,
+                        `Admin: ${admin}`,
                         `Offense: ${h.reason || "None given"}`,
-                        `Duration: ${historyDuration} ${
-                            h.duration
-                                ? `(Un${
-                                      type === "BAN" ? "banned" : "muted"
-                                  } ${formatDistanceToNow(
-                                      addMinutes(date, h.duration),
-                                      { addSuffix: true }
-                                  )})`
-                                : ""
-                        }`,
-                        `Admin: ${admin}\n------------------`,
-                    ].join("\n")
+                        ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(
+                            type
+                        )
+                            ? `Duration: ${historyDuration} ${
+                                  h.duration
+                                      ? `(Un${
+                                            type === "BAN" ? "banned" : "muted"
+                                        } ${formatDistanceToNow(
+                                            addMinutes(date, h.duration),
+                                            { addSuffix: true }
+                                        )})`
+                                      : ""
+                              }`
+                            : undefined,
+                        `------------------`,
+                    ]
+                        .filter((line) => typeof line !== "undefined")
+                        .join("\n")
                 );
 
-                pastOffenses += offense.join("\n");
+                pastOffenses += offenses.join("\n");
             }
-
-            if (historyOverTen)
-                pastOffenses += "\nHas over 10 punishments\n------------------";
-
-            if (
-                (pastBansAmount > 2 && data.type === "BAN") ||
-                pastBansAmount > 2
-            )
-                suggestion = "\n**SUGGESTION**: PERMA BAN\n";
 
             if (pastOffenses.length < 1025)
                 pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
@@ -336,14 +354,13 @@ export default abstract class BasePunishment {
         );
 
         let message = [
-            suggestion,
-            `**Server**: \`${data.server}\``,
+            data.global ? undefined : `**Server**: \`${data.server}\``,
             `**Admin**: \`${data.admin.name} (${data.admin.id})\``,
-        ];
+        ].filter((line) => typeof line !== "undefined");
 
         let color: number;
 
-        if (data.type === "BAN") {
+        if (["BAN", "GLOBAL BAN"].includes(data.type)) {
             message.push(
                 `**Offense**: \`${data.reason || "None given"}\``,
                 `**Duration**: \`${duration}${
@@ -356,10 +373,10 @@ export default abstract class BasePunishment {
                 }\``
             );
 
-            color = 15158332;
+            color = data.type === "BAN" ? 15158332 : 10038562;
         }
 
-        if (data.type === "MUTE") {
+        if (["MUTE", "GLOBAL MUTE"].includes(data.type)) {
             message.push(
                 `**Duration**: \`${duration} ${
                     data.duration
@@ -371,25 +388,21 @@ export default abstract class BasePunishment {
                 }\``
             );
 
-            color = 3447003;
+            color = data.type === "MUTE" ? 3447003 : 2123412;
         }
 
-        if (data.type === "UNMUTE") {
-            color = 0x7289da;
+        if (["UNMUTE", "GLOBAL UNMUTE"].includes(data.type)) {
+            color = data.type === "UNMUTE" ? 7506394 : 4675208;
         }
 
         if (data.type === "KICK") {
             message.push(`**Offense**: \`${data.reason || "None given"}\``);
-            color = 0x34495e;
+            color = 3426654;
         }
 
-        if (data.type === "UNBAN") {
-            color = 3066993;
+        if (["UNBAN", "GLOBAL UNBAN"].includes(data.type)) {
+            color = data.type === "UNBAN" ? 3066993 : 2067276;
         }
-
-        // const archives = await this.bot.database.getArchives(
-        //     data.player.ids.playFabID
-        // );
 
         sendWebhookEmbed(config.discord.webhookEndpoints.punishments, {
             title: `${data.type} REPORT`,
@@ -414,7 +427,7 @@ export default abstract class BasePunishment {
                     ].join("\n"),
                 },
                 {
-                    name: "Previous Offenses",
+                    name: `Previous Offenses (${data.history.length})`,
                     value: pastOffenses,
                 },
             ],
@@ -422,7 +435,7 @@ export default abstract class BasePunishment {
             image: {
                 url: data.playeravatar,
             },
-            timestamp: addHours(new Date(data.date), 1).toISOString(),
+            timestamp: new Date(data.date).toISOString(),
         });
 
         logger.debug("Bot", "Message sent.");
@@ -442,7 +455,8 @@ export default abstract class BasePunishment {
             name?: string;
         },
         duration?: number,
-        reason?: string
+        reason?: string,
+        global?: boolean
     ) {
         return this._handler(
             server,
@@ -450,7 +464,8 @@ export default abstract class BasePunishment {
             player,
             admin,
             duration,
-            reason
+            reason,
+            global
         );
     }
 

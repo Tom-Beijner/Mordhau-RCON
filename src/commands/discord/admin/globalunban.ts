@@ -11,6 +11,7 @@ import { LookupPlayer } from "../../../services/PlayFab";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import logger from "../../../utils/logger";
+import { outputPlayerIDs } from "../../../utils/PlayerID";
 
 export default class GlobalUnban extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -62,56 +63,47 @@ export default class GlobalUnban extends SlashCommand {
                     embeds: [
                         {
                             description: `Are you sure you want to globally unban ${player.name} (${player.id})?`,
+                            color: 15158332,
                         },
                     ],
                 },
                 async (btnCtx) => {
-                    const failedServers: { name: string; reason: string }[] =
-                        [];
-                    const servers = [...this.bot.servers.values()];
+                    if (ctx.user.id !== btnCtx.user.id) return;
+                    const result = await this.bot.rcon.globalUnban(
+                        {
+                            ids: { playFabID: ctx.member.id },
+                            id: ctx.member.id,
+                            name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                        },
+                        player
+                    );
+                    const failedServers = result.filter(
+                        (result) => result.data.failed
+                    );
 
-                    for (let i = 0; i < servers.length; i++) {
-                        const server = servers[i];
-                        let error = "";
-
-                        if (
-                            !server.rcon.connected ||
-                            !server.rcon.authenticated
-                        ) {
-                            error = `Not ${
-                                !server.rcon.connected
-                                    ? "connected"
-                                    : "authenticated"
-                            } to RCON`;
-                        }
-
-                        error = await server.rcon.unbanUser(
-                            server.name,
-                            {
-                                ids: { playFabID: ctx.member.id },
-                                id: ctx.member.id,
-                                name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                            },
-                            player
-                        );
-
-                        if (error) {
-                            failedServers.push({
-                                name: server.name,
-                                reason: error,
-                            });
-                        }
-                    }
+                    const allServersFailed =
+                        this.bot.servers.size === failedServers.length;
 
                     logger.info(
                         "Command",
-                        `${ctx.member.displayName}#${ctx.member.user.discriminator} globally unbanned ${player.name} (${player.id})`
+                        `${ctx.member.displayName}#${
+                            ctx.member.user.discriminator
+                        }${allServersFailed ? " tried to" : ""} globally ${
+                            allServersFailed ? "unban" : "unbanned"
+                        } ${player.name} (${player.id})`
                     );
 
                     await btnCtx.editParent({
                         embeds: [
                             {
-                                description: `Globally unbanned ${player.name} (${player.id})\n\n`,
+                                description: `${
+                                    allServersFailed ? "Tried to g" : "G"
+                                }lobally ${
+                                    allServersFailed ? "unban" : "unbanned"
+                                } ${player.name} (${outputPlayerIDs(
+                                    player.ids,
+                                    true
+                                )})\n\n`,
                                 ...(failedServers.length && {
                                     fields: [
                                         {
@@ -119,7 +111,7 @@ export default class GlobalUnban extends SlashCommand {
                                             value: failedServers
                                                 .map(
                                                     (server) =>
-                                                        `${server.name} (${server.reason})`
+                                                        `${server.name} (${server.data.result})`
                                                 )
                                                 .join("\n"),
                                         },

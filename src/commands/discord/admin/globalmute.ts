@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
@@ -79,61 +80,55 @@ export default class GlobalMute extends SlashCommand {
                                 } (${outputPlayerIDs(player.ids, true)})?\n`,
                                 `Duration: ${duration}`,
                             ].join("\n"),
+                            color: 15158332,
                         },
                     ],
                 },
                 async (btnCtx) => {
-                    const failedServers: { name: string; reason: string }[] =
-                        [];
-                    const servers = [...this.bot.servers.values()];
+                    if (ctx.user.id !== btnCtx.user.id) return;
+                    const result = await this.bot.rcon.globalMute(
+                        {
+                            ids: { playFabID: ctx.member.id },
+                            id: ctx.member.id,
+                            name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                        },
+                        player,
+                        duration
+                    );
+                    const failedServers = result.filter(
+                        (result) => result.data.failed
+                    );
 
-                    for (let i = 0; i < servers.length; i++) {
-                        const server = servers[i];
-                        let error = "";
-
-                        if (
-                            !server.rcon.connected ||
-                            !server.rcon.authenticated
-                        ) {
-                            error = `Not ${
-                                !server.rcon.connected
-                                    ? "connected"
-                                    : "authenticated"
-                            } to RCON`;
-                        }
-
-                        error = await server.rcon.muteUser(
-                            server.name,
-                            {
-                                ids: { playFabID: ctx.member.id },
-                                id: ctx.member.id,
-                                name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                            },
-                            player,
-                            duration
-                        );
-
-                        if (error) {
-                            failedServers.push({
-                                name: server.name,
-                                reason: error,
-                            });
-                        }
-                    }
+                    const allServersFailed =
+                        this.bot.servers.size === failedServers.length;
 
                     logger.info(
                         "Command",
-                        `${ctx.member.displayName}#${ctx.member.user.discriminator} globally muted ${player.name} (${player.id}) (Duration: ${duration})`
+                        `${ctx.member.displayName}#${
+                            ctx.member.user.discriminator
+                        }${allServersFailed ? " tried to" : ""} globally ${
+                            allServersFailed ? "mute" : "muted"
+                        } ${player.name} (${player.id}) (Duration: ${
+                            pluralize("minute", duration, true) || "PERMANENT"
+                        })`
                     );
 
                     await btnCtx.editParent({
                         embeds: [
                             {
                                 description: [
-                                    `Globally muted ${
-                                        player.name
-                                    } (${outputPlayerIDs(player.ids, true)})\n`,
-                                    `Duration: ${duration}`,
+                                    `${
+                                        allServersFailed ? "Tried to g" : "G"
+                                    }lobally ${
+                                        allServersFailed ? "mute" : "muted"
+                                    } ${player.name} (${outputPlayerIDs(
+                                        player.ids,
+                                        true
+                                    )})\n`,
+                                    `Duration: ${
+                                        pluralize("minute", duration, true) ||
+                                        "PERMANENT"
+                                    }\n`,
                                 ].join("\n"),
                                 ...(failedServers.length && {
                                     fields: [
@@ -142,7 +137,7 @@ export default class GlobalMute extends SlashCommand {
                                             value: failedServers
                                                 .map(
                                                     (server) =>
-                                                        `${server.name} (${server.reason})`
+                                                        `${server.name} (${server.data.result})`
                                                 )
                                                 .join("\n"),
                                         },

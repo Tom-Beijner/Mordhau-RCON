@@ -9,7 +9,7 @@ import LogHandler from "../handlers/logHandler";
 import { CreateAccount, Login } from "../services/PlayFab";
 import logger from "../utils/logger";
 import MordhauAPI from "../utils/MordhauAPI";
-import AntiSlur from "./AntiSlur";
+import AntiSlur from "./AutoMod";
 import BaseRCONCommand from "./BaseRCONCommands";
 import Database from "./Database";
 import Rcon from "./Rcon";
@@ -256,6 +256,389 @@ export default class Watchdog {
             }
 
             return results;
+        },
+        globalBan: async (
+            admin: {
+                ids: { playFabID: string; steamID?: string };
+                id: string;
+                name?: string;
+            },
+            player: {
+                ids: { playFabID: string; steamID: string };
+                id: string;
+                name?: string;
+            },
+            duration?: number,
+            reason?: string
+        ) => {
+            const servers: {
+                name: string;
+                data: { result: string; failed: boolean };
+            }[] = [];
+
+            for (const [serverName, server] of this.servers) {
+                if (!server.rcon.connected || !server.rcon.authenticated) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: `Not ${
+                                !server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                            } to server`,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                const bannedPlayer = await server.rcon.getBannedPlayer(
+                    player.id
+                );
+
+                if (bannedPlayer) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: `Player already is banned ${
+                                bannedPlayer[1] !== "0"
+                                    ? `for ${pluralize(
+                                          "minute",
+                                          Number(bannedPlayer.duration),
+                                          true
+                                      )}`
+                                    : "PERMANENTLY"
+                            }`,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                let result = await server.rcon.send(
+                    `ban ${player.id} ${duration || 0} ${reason}`
+                );
+                result = result.split("\n")[0].trim();
+
+                if (!result.includes("processed successfully")) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: result,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                servers.push({
+                    name: serverName,
+                    data: {
+                        result,
+                        failed: false,
+                    },
+                });
+            }
+
+            if (
+                this.servers.size !==
+                servers.filter((server) => server.data.failed).length
+            ) {
+                await this.logHandler.banHandler.execute(
+                    "Global",
+                    new Date(),
+                    player,
+                    admin,
+                    duration,
+                    reason,
+                    true
+                );
+            }
+
+            return servers;
+        },
+        globalMute: async (
+            admin: {
+                ids: { playFabID: string; steamID?: string };
+                id: string;
+                name?: string;
+            },
+            player: {
+                ids: { playFabID: string; steamID: string };
+                id: string;
+                name?: string;
+            },
+            duration?: number
+        ) => {
+            const servers: {
+                name: string;
+                data: { result: string; failed: boolean };
+            }[] = [];
+
+            for (const [serverName, server] of this.servers) {
+                if (!server.rcon.connected || !server.rcon.authenticated) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: `Not ${
+                                !server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                            } to server`,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
+
+                if (mutedPlayer) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: `Player already is muted ${
+                                mutedPlayer.duration !== "0"
+                                    ? `for ${pluralize(
+                                          "minute",
+                                          Number(mutedPlayer.duration),
+                                          true
+                                      )}`
+                                    : "PERMANENTLY"
+                            }`,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                let result = await server.rcon.send(
+                    `mute ${player.id} ${duration || 0}`
+                );
+                result = result.split("\n")[0].trim();
+
+                if (!result.includes("processed successfully")) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: result,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                servers.push({
+                    name: serverName,
+                    data: {
+                        result,
+                        failed: false,
+                    },
+                });
+            }
+
+            if (
+                this.servers.size !==
+                servers.filter((server) => server.data.failed).length
+            ) {
+                await this.logHandler.muteHandler.execute(
+                    "Global",
+                    new Date(),
+                    player,
+                    admin,
+                    duration,
+                    null,
+                    true
+                );
+            }
+
+            return servers;
+        },
+        globalUnban: async (
+            admin: {
+                ids: { playFabID: string; steamID?: string };
+                id: string;
+                name?: string;
+            },
+            player: {
+                ids: { playFabID: string; steamID: string };
+                id: string;
+                name?: string;
+            }
+        ) => {
+            const servers: {
+                name: string;
+                data: { result: string; failed: boolean };
+            }[] = [];
+
+            for (const [serverName, server] of this.servers) {
+                if (!server.rcon.connected || !server.rcon.authenticated) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: `Not ${
+                                !server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                            } to server`,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                const bannedPlayer = await server.rcon.getBannedPlayer(
+                    player.id
+                );
+
+                if (!bannedPlayer) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: "Player is not banned",
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                let result = await server.rcon.send(`unban ${player.id}`);
+                result = result.split("\n")[0].trim();
+
+                if (!result.includes("processed successfully")) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: result,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                servers.push({
+                    name: serverName,
+                    data: {
+                        result,
+                        failed: false,
+                    },
+                });
+            }
+
+            if (
+                this.servers.size !==
+                servers.filter((server) => server.data.failed).length
+            ) {
+                await this.logHandler.unbanHandler.execute(
+                    "Global",
+                    new Date(),
+                    player,
+                    admin,
+                    null,
+                    null,
+                    true
+                );
+            }
+
+            return servers;
+        },
+        globalUnmute: async (
+            admin: {
+                ids: { playFabID: string; steamID?: string };
+                id: string;
+                name?: string;
+            },
+            player: {
+                ids: { playFabID: string; steamID: string };
+                id: string;
+                name?: string;
+            }
+        ) => {
+            const servers: {
+                name: string;
+                data: { result: string; failed: boolean };
+            }[] = [];
+
+            for (const [serverName, server] of this.servers) {
+                if (!server.rcon.connected || !server.rcon.authenticated) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: `Not ${
+                                !server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                            } to server`,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
+
+                if (!mutedPlayer) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: "Player is not muted",
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                let result = await server.rcon.send(`unmute ${player.id}`);
+                result = result.split("\n")[0].trim();
+
+                if (!result.includes("processed successfully")) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: result,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                servers.push({
+                    name: serverName,
+                    data: {
+                        result,
+                        failed: false,
+                    },
+                });
+            }
+
+            if (
+                this.servers.size !==
+                servers.filter((server) => server.data.failed).length
+            ) {
+                await this.logHandler.unmuteHandler.execute(
+                    "Global",
+                    new Date(),
+                    player,
+                    admin,
+                    null,
+                    null,
+                    true
+                );
+            }
+
+            return servers;
         },
     };
 

@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
@@ -75,45 +76,6 @@ export default class GlobalBan extends SlashCommand {
         }
 
         try {
-            // await ctx.defer();
-
-            // await ctx.send({
-            //     embeds: [
-            //         {
-            //             description: [
-            //                 `Are you sure you want to globally ban ${
-            //                     player.name
-            //                 } (${outputPlayerIDs(player.ids, true)})?\n`,
-            //                 `Duration: ${duration}`,
-            //                 `Reason: ${reason}`,
-            //             ].join("\n"),
-            //         },
-            //     ],
-            //     components: [
-            //         {
-            //             type: ComponentType.ACTION_ROW,
-            //             components: [
-            //                 {
-            //                     type: ComponentType.BUTTON,
-            //                     style: ButtonStyle.SUCCESS,
-            //                     custom_id: "confirm",
-            //                     label: "Confirm",
-            //                     // emoji: {
-            //                     //     name: "✅",
-            //                     // },
-            //                 },
-            //                 {
-            //                     type: ComponentType.BUTTON,
-            //                     style: ButtonStyle.DESTRUCTIVE,
-            //                     custom_id: "cancel",
-            //                     label: "Cancel",
-            //                     // emoji: { name: "❌" },
-            //                 },
-            //             ],
-            //         },
-            //     ],
-            // });
-
             ComponentConfirmation(
                 ctx,
                 {
@@ -123,66 +85,64 @@ export default class GlobalBan extends SlashCommand {
                                 `Are you sure you want to globally ban ${
                                     player.name
                                 } (${outputPlayerIDs(player.ids, true)})?\n`,
-                                `Duration: ${duration}`,
-                                `Reason: ${reason}`,
+                                `Duration: ${
+                                    pluralize("minute", duration, true) ||
+                                    "PERMANENT"
+                                }`,
+                                `Reason: ${reason || "None given"}`,
                             ].join("\n"),
+                            color: 15158332,
                         },
                     ],
                 },
                 async (btnCtx) => {
-                    const failedServers: { name: string; reason: string }[] =
-                        [];
-                    const servers = [...this.bot.servers.values()];
+                    if (ctx.user.id !== btnCtx.user.id) return;
 
-                    for (let i = 0; i < servers.length; i++) {
-                        const server = servers[i];
-                        let error = "";
+                    const result = await this.bot.rcon.globalBan(
+                        {
+                            ids: { playFabID: ctx.member.id },
+                            id: ctx.member.id,
+                            name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                        },
+                        player,
+                        duration,
+                        reason
+                    );
+                    const failedServers = result.filter(
+                        (result) => result.data.failed
+                    );
 
-                        if (
-                            !server.rcon.connected ||
-                            !server.rcon.authenticated
-                        ) {
-                            error = `Not ${
-                                !server.rcon.connected
-                                    ? "connected"
-                                    : "authenticated"
-                            } to RCON`;
-                        }
-
-                        error = await server.rcon.banUser(
-                            server.name,
-                            {
-                                ids: { playFabID: ctx.member.id },
-                                id: ctx.member.id,
-                                name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                            },
-                            player,
-                            duration,
-                            reason
-                        );
-
-                        if (error) {
-                            failedServers.push({
-                                name: server.name,
-                                reason: error,
-                            });
-                        }
-                    }
+                    const allServersFailed =
+                        this.bot.servers.size === failedServers.length;
 
                     logger.info(
                         "Command",
-                        `${ctx.member.displayName}#${ctx.member.user.discriminator} globally banned ${player.name} (${player.id}) (Duration: ${duration}, Reason: ${reason})`
+                        `${ctx.member.displayName}#${
+                            ctx.member.user.discriminator
+                        }${allServersFailed ? " tried to" : ""} globally ${
+                            allServersFailed ? "ban" : "banned"
+                        } ${player.name} (${player.id}) (Duration: ${
+                            pluralize("minute", duration, true) || "PERMANENT"
+                        }, Reason: ${reason || "None given"})`
                     );
 
                     await btnCtx.editParent({
                         embeds: [
                             {
                                 description: [
-                                    `Globally banned ${
-                                        player.name
-                                    } (${outputPlayerIDs(player.ids, true)})\n`,
-                                    `Duration: ${duration}`,
-                                    `Reason: ${reason || "None given"}`,
+                                    `${
+                                        allServersFailed ? "Tried to g" : "G"
+                                    }lobally ${
+                                        allServersFailed ? "ban" : "banned"
+                                    } ${player.name} (${outputPlayerIDs(
+                                        player.ids,
+                                        true
+                                    )})\n`,
+                                    `Duration: ${
+                                        pluralize("minute", duration, true) ||
+                                        "PERMANENT"
+                                    }`,
+                                    `Reason: ${reason || "None given"}\n`,
                                 ].join("\n"),
                                 ...(failedServers.length && {
                                     fields: [
@@ -191,7 +151,7 @@ export default class GlobalBan extends SlashCommand {
                                             value: failedServers
                                                 .map(
                                                     (server) =>
-                                                        `${server.name} (${server.reason})`
+                                                        `${server.name} (${server.data.result})`
                                                 )
                                                 .join("\n"),
                                         },
