@@ -1,4 +1,4 @@
-import flatMap from "array.prototype.flatmap/implementation";
+import flatMap from "array.prototype.flatmap";
 import { compareArrayVals } from "crud-object-diff";
 import { addMinutes, addSeconds, formatDistanceToNow } from "date-fns";
 import deepClean from "deep-cleaner";
@@ -23,11 +23,12 @@ export default class Rcon {
     reconnecting: boolean = false;
     admins: Set<string> = new Set();
     options: {
-        killstreaks?: {
+        adminListSaving: boolean;
+        killstreaks: {
             enabled: boolean;
             countBotKills: boolean;
         };
-        automod?: boolean;
+        automod: boolean;
         name: string;
         host: string;
         port: number;
@@ -39,11 +40,12 @@ export default class Rcon {
     constructor(
         bot: Watchdog,
         options: {
-            killstreaks?: {
+            adminListSaving: boolean;
+            killstreaks: {
                 enabled: boolean;
                 countBotKills: boolean;
             };
-            automod?: boolean;
+            automod: boolean;
             name: string;
             host: string;
             port: number;
@@ -73,6 +75,12 @@ export default class Rcon {
         duration: number,
         reason: string
     ) {
+        if (!this.connected || !this.authenticated) {
+            return `Not ${
+                !this.connected ? "connected" : "authenticated"
+            } to server`;
+        }
+
         const bans = (await this.rcon.send("banlist"))
             .split("\n")
             .map((line) => line.split(", "));
@@ -87,13 +95,13 @@ export default class Rcon {
 
         // const res = await rcon.send(`ban 909275ECE8FEDDB 1 test`);
         // return console.log(res);
-        let res = await this.rcon.send(
+        let result = await this.rcon.send(
             `ban ${player.id} ${duration || 0} ${reason}`
         );
-        res = res.split("\n")[0].trim();
-        if (res === "Invalid PlayFab Id")
-            return "Invalid player id (This seems to happen because the player isn't in server)";
-
+        result = result.split("\n")[0].trim();
+        if (!result.includes("processed successfully")) {
+            return result;
+        }
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) banned player ${player.id} (Duration: ${duration}, Reason: ${reason})`;
         // const lineDate = new Date();
 
@@ -120,13 +128,16 @@ export default class Rcon {
             name?: string;
         }
     ) {
-        let res = await this.rcon.send(`unban ${player.id}`);
-        res = res.split("\n")[0].trim();
-        if (res === "Invalid PlayFab Id") {
-            return "Invalid player id";
+        if (!this.connected || !this.authenticated) {
+            return `Not ${
+                !this.connected ? "connected" : "authenticated"
+            } to server`;
         }
-        if (res.includes("failed")) {
-            return "Player is not banned";
+
+        let result = await this.rcon.send(`unban ${player.id}`);
+        result = result.split("\n")[0].trim();
+        if (!result.includes("processed successfully")) {
+            return result;
         }
 
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) unbanned player ${player.id}`;
@@ -154,11 +165,17 @@ export default class Rcon {
         },
         reason: string
     ) {
-        let res = await this.rcon.send(`kick ${player.id} ${reason}`);
-        res = res.split("\n")[0].trim();
-        if (res === "Invalid PlayFab Id")
-            return "Invalid player id (This seems to happen because the player isn't in server)";
+        if (!this.connected || !this.authenticated) {
+            return `Not ${
+                !this.connected ? "connected" : "authenticated"
+            } to server`;
+        }
 
+        let result = await this.rcon.send(`kick ${player.id} ${reason}`);
+        result = result.split("\n")[0].trim();
+        if (!result.includes("succeeded")) {
+            return result;
+        }
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) kicked player ${player.id} (Reason: ${reason})`;
         // const lineDate = new Date();
 
@@ -189,6 +206,12 @@ export default class Rcon {
         duration: number,
         shouldSave: boolean = true
     ) {
+        if (!this.connected || !this.authenticated) {
+            return `Not ${
+                !this.connected ? "connected" : "authenticated"
+            } to server`;
+        }
+
         const mutes = (await this.rcon.send("mutelist"))
             .split("\n")
             .map((line) => line.split(", "));
@@ -203,10 +226,11 @@ export default class Rcon {
 
         // const res = await rcon.send(`mute 909275ECE8FEDDB 1`);
         // return console.log(res);
-        let res = await this.rcon.send(`mute ${player.id} ${duration || 0}`);
-        res = res.split("\n")[0].trim();
-        if (res === "Invalid PlayFab Id")
-            return "Invalid player id (This seems to happen because the player isn't in server)";
+        let result = await this.rcon.send(`mute ${player.id} ${duration || 0}`);
+        result = result.split("\n")[0].trim();
+        if (!result.includes("processed successfully")) {
+            return result;
+        }
 
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) muted player ${player.id} (Duration: ${duration})`;
         // const lineDate = new Date();
@@ -234,6 +258,12 @@ export default class Rcon {
             name?: string;
         }
     ) {
+        if (!this.connected || !this.authenticated) {
+            return `Not ${
+                !this.connected ? "connected" : "authenticated"
+            } to server`;
+        }
+
         const mutes = (await this.rcon.send("mutelist"))
             .split("\n")
             .map((line) => line.split(", "));
@@ -243,10 +273,11 @@ export default class Rcon {
 
         // const res = await rcon.send(`mute 909275ECE8FEDDB 1`);
         // return console.log(res);
-        let res = await this.rcon.send(`unmute ${player.id}`);
-        res = res.split("\n")[0].trim();
-        if (res === "Invalid PlayFab Id")
-            return "Invalid player id (This seems to happen because the player isn't in server)";
+        let result = await this.rcon.send(`unmute ${player.id}`);
+        result = result.split("\n")[0].trim();
+        if (!result.includes("processed successfully")) {
+            return result;
+        }
 
         this.bot.logHandler.unmuteHandler.execute(
             server,
@@ -301,7 +332,7 @@ export default class Rcon {
             currentAdminList.add(adminID);
         });
 
-        if (this.initiate) {
+        if (this.initiate || !this.options.adminListSaving) {
             this.admins = currentAdminList;
             return;
         }
@@ -312,6 +343,9 @@ export default class Rcon {
         } = compareArrayVals([[...this.admins], [...currentAdminList]]);
 
         if (!unauthorizedNewAdmins && !unauthorizedRemovedAdmins) return;
+
+        if (!config.adminListSaving.rollbackAdmins)
+            this.admins = currentAdminList;
 
         // Unauthorized new admins
         const affectedPlayers: {
@@ -330,7 +364,8 @@ export default class Rcon {
             for (let i = 0; i < unauthorizedNewAdmins.length; i++) {
                 const adminID = unauthorizedNewAdmins[i];
 
-                await this.removeAdmin(adminID);
+                if (config.adminListSaving.rollbackAdmins)
+                    await this.removeAdmin(adminID);
 
                 affectedPlayers.push(
                     this.bot.cachedPlayers.get(adminID) ||
@@ -340,16 +375,16 @@ export default class Rcon {
 
             logger.warn(
                 "RCON",
-                `Players ${affectedPlayers
+                `Following players: ${affectedPlayers
                     .map(
                         (player) =>
                             `${player.name} (${outputPlayerIDs(player.ids)})`
                     )
-                    .join(
-                        ", "
-                    )} was given privileges without permission, they've been removed (Server: ${
-                    this.options.name
-                })`
+                    .join(", ")} was given privileges without permission${
+                    config.adminListSaving.rollbackAdmins
+                        ? ", they've been removed"
+                        : ""
+                } (Server: ${this.options.name})`
             );
 
             sendWebhookMessage(
@@ -357,9 +392,7 @@ export default class Rcon {
                 `${flatMap(
                     config.discord.roles.filter((role) => role.receiveMentions),
                     (role) => role.Ids.map((id) => mentionRole(id))
-                )} Following players was given admin privileges on \`${
-                    this.options.name
-                }\` without permission, but it was removed: ${affectedPlayers
+                )} Following players: ${affectedPlayers
                     .map(
                         (player) =>
                             `${player.name} (${outputPlayerIDs(
@@ -367,14 +400,21 @@ export default class Rcon {
                                 true
                             )})`
                     )
-                    .join(", ")}`
+                    .join(
+                        ", "
+                    )} was given admin privileges on without permission${
+                    config.adminListSaving.rollbackAdmins
+                        ? ", they've been removed"
+                        : ""
+                } (Server: ${this.options.name})`
             );
         }
         if (unauthorizedRemovedAdmins?.length) {
             for (let i = 0; i < unauthorizedRemovedAdmins.length; i++) {
                 const adminID = unauthorizedRemovedAdmins[i];
 
-                await this.addAdmin(adminID);
+                if (config.adminListSaving.rollbackAdmins)
+                    await this.addAdmin(adminID);
 
                 affectedAdmins.push(
                     this.bot.cachedPlayers.get(adminID) ||
@@ -384,16 +424,18 @@ export default class Rcon {
 
             logger.warn(
                 "RCON",
-                `Admins ${affectedAdmins
+                `Following admins: ${affectedAdmins
                     .map(
                         (admin) =>
                             `${admin.name} (${outputPlayerIDs(admin.ids)})`
                     )
                     .join(
                         ", "
-                    )} had their privileges removed without permission, they've been added back (Server: ${
-                    this.options.name
-                })`
+                    )} had their privileges removed without permission${
+                    config.adminListSaving.rollbackAdmins
+                        ? ", they've been added back"
+                        : ""
+                } (Server: ${this.options.name})`
             );
 
             sendWebhookMessage(
@@ -401,17 +443,18 @@ export default class Rcon {
                 `${flatMap(
                     config.discord.roles.filter((role) => role.receiveMentions),
                     (role) => role.Ids.map((id) => mentionRole(id))
-                )} Following admins had their privileges removed on \`${
-                    this.options.name
-                }\` without permission, they've been given it back: ${affectedAdmins
+                )} Following admins: ${affectedAdmins
                     .map(
-                        (player) =>
-                            `${player.name} (${outputPlayerIDs(
-                                player.ids,
-                                true
-                            )})`
+                        (admin) =>
+                            `${admin.name} (${outputPlayerIDs(admin.ids)})`
                     )
-                    .join(", ")}`
+                    .join(
+                        ", "
+                    )} had their privileges removed without permission${
+                    config.adminListSaving.rollbackAdmins
+                        ? ", they've been added back"
+                        : ""
+                } (Server: ${this.options.name})`
             );
         }
 
@@ -862,6 +905,11 @@ export default class Rcon {
         // this.bot.logHandler.read(this.bot, ``, this.options.name)
 
         // if (process.env.NODE_ENV.trim() === "development") return;
+
+        if (this.options.adminListSaving && !this.admins.has(adminID)) {
+            await this.saveAdmins();
+            return;
+        }
 
         const admin =
             this.bot.cachedPlayers.get(adminID) ||
@@ -1355,7 +1403,7 @@ export default class Rcon {
                     logger.error(
                         "RCON",
                         `Keepalive failed (Error: ${
-                            err.message || err
+                            err.stack || err
                         }, Server: ${this.options.name})`
                     );
 
