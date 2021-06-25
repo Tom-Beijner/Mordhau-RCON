@@ -33,11 +33,37 @@ A Discord bot that utilizes RCON for the Mordhau server and logs punishments wit
 
 You can only have a maximum of 25 servers (not that you will have that many) as this is a limitation of Discord\'s Slash Commands.
 
+#### Commands
+
+For setting discord role commands access
+
+```
+ban
+banned
+deletehistory
+deletepunishment
+globalban
+globalmute
+globalunban
+globalunmute
+history
+kick
+mute
+rename
+say
+unban
+unmute
+addadmin
+removeadmin
+rcon
+```
+
 ### Features
 
 -   Per-server punishments saving (You can customize each server to save specific punishment types or just disable it altogether)
 -   Killstreaks (You can toggle this feature, as well as a toggle to count bot kills for each server and customize it, for each kill threshold with its message. The available variables are `{name}` and `{kills}`)
 -   Automod (Currently a hardcoded threshold is in place but you can define which words should be forbidden in the `bannedWords.json` file located in the `locales` directory)
+-   Admin list saving/rollback (Toggleable feature with notify only mode)
 
 ## Prerequisites
 
@@ -83,10 +109,25 @@ To migrate from the [Mordhau Ban Logger](https://github.com/academy-gaming/mordh
 
 ## To Do
 
--   [ ] Fix global punishment commands to use one embed and one database document
--   [ ] Global addadmin/removeadmin commands
--   [ ] Clear system for players and admins
--   [ ] Add confirmation system, like reactions for global and clear system
+-   [x] Fix global punishment commands to use one embed and one database documents
+-   [x] Global addadmin/removeadmin commands
+-   [x] Clear system for players and admins
+-   [x] Add confirmation system, like reactions for global and clear system
+-   [x] Make admin list saving/rollback toggleable as well as only notify mode
+-   [x] Make automod customizable
+
+## Changelog
+
+### v1.1.0
+
+-   Added update Discord command
+-   Automod is now fully customizable as well as infractions gets saved to the database (restarting the bot wont reset infractions)
+-   Added `deletehistory` and `deletepunishment` commands
+-   Fixed global punishment commands to not send multiple embeds and not save multiple database documents
+-   Made admin list saving/rollback toggleable and included notify only mode
+-   Made RCON command use codeblock
+-   Removed history suggestion
+-   Removed history over 10 offenses history
 
 ## Author
 
