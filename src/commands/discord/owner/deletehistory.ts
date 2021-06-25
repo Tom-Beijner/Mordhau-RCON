@@ -206,7 +206,7 @@ export default class DeleteHistory extends SlashCommand {
                         "Command",
                         `${ctx.member.displayName}#${
                             ctx.member.user.discriminator
-                        } cleared ${options.type} history of ${
+                        } deleted ${options.type} history of ${
                             player.name
                         } (${outputPlayerIDs(player.ids, true)})`
                     );
@@ -216,9 +216,15 @@ export default class DeleteHistory extends SlashCommand {
                             {
                                 description: `Cleared \`${
                                     options.type
-                                }\` history of ${
+                                }\` punishment of ${
                                     player.name
-                                } (${outputPlayerIDs(player.ids, true)})\n`,
+                                } (${outputPlayerIDs(player.ids, true)})`,
+                                fields: [
+                                    {
+                                        name: `Deleted Data (${playerHistory.history.length})`,
+                                        value: pastOffenses,
+                                    },
+                                ],
                             },
                         ],
                         components: [],
