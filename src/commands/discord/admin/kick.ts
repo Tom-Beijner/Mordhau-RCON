@@ -82,6 +82,11 @@ export default class Kick extends SlashCommand {
         }
 
         const ingamePlayer = await server.rcon.getIngamePlayer(options.player);
+
+        if (!ingamePlayer?.id) {
+            return await ctx.send(`Invalid player provided`);
+        }
+
         const player = this.bot.cachedPlayers.get(
             ingamePlayer?.id || options.player
         ) || {
@@ -89,10 +94,6 @@ export default class Kick extends SlashCommand {
             ...(await LookupPlayer(ingamePlayer?.id || options.player)),
         };
         const reason = options.reason;
-
-        if (!player?.id) {
-            return await ctx.send(`Invalid player provided`);
-        }
 
         try {
             const error = await server.rcon.kickUser(
