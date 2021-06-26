@@ -81,20 +81,18 @@ export default class Rcon {
             } to server`;
         }
 
-        const bans = (await this.rcon.send("banlist"))
-            .split("\n")
-            .map((line) => line.split(", "));
-        const bannedPlayer = bans.find((banned) => banned[0] === player.id);
+        // const bans = (await this.rcon.send("banlist"))
+        //     .split("\n")
+        //     .map((line) => line.split(", "));
+        // const bannedPlayer = bans.find((banned) => banned[0] === player.id);
 
-        if (bannedPlayer)
-            return `Player already is banned for ${
-                bannedPlayer[1] !== "0"
-                    ? pluralize("minute", Number(bannedPlayer[1]), true)
-                    : "PERMANENTLY"
-            }`;
+        // if (bannedPlayer)
+        //     return `Player already is banned for ${
+        //         bannedPlayer[1] !== "0"
+        //             ? pluralize("minute", Number(bannedPlayer[1]), true)
+        //             : "PERMANENTLY"
+        //     }`;
 
-        // const res = await rcon.send(`ban 909275ECE8FEDDB 1 test`);
-        // return console.log(res);
         let result = await this.rcon.send(
             `ban ${player.id} ${duration || 0} ${reason}`
         );
@@ -212,17 +210,17 @@ export default class Rcon {
             } to server`;
         }
 
-        const mutes = (await this.rcon.send("mutelist"))
-            .split("\n")
-            .map((line) => line.split(", "));
-        const mutedPlayer = mutes.find((muted) => muted[0] === player.id);
+        // const mutes = (await this.rcon.send("mutelist"))
+        //     .split("\n")
+        //     .map((line) => line.split(", "));
+        // const mutedPlayer = mutes.find((muted) => muted[0] === player.id);
 
-        if (mutedPlayer)
-            return `Player already is muted for ${
-                mutedPlayer[1] !== "0"
-                    ? pluralize("minute", Number(mutedPlayer[1]), true)
-                    : "PERMANENTLY"
-            }`;
+        // if (mutedPlayer)
+        //     return `Player already is muted for ${
+        //         mutedPlayer[1] !== "0"
+        //             ? pluralize("minute", Number(mutedPlayer[1]), true)
+        //             : "PERMANENTLY"
+        //     }`;
 
         // const res = await rcon.send(`mute 909275ECE8FEDDB 1`);
         // return console.log(res);
@@ -264,12 +262,12 @@ export default class Rcon {
             } to server`;
         }
 
-        const mutes = (await this.rcon.send("mutelist"))
-            .split("\n")
-            .map((line) => line.split(", "));
-        const mutedPlayer = mutes.find((muted) => muted[0] === player.id);
+        // const mutes = (await this.rcon.send("mutelist"))
+        //     .split("\n")
+        //     .map((line) => line.split(", "));
+        // const mutedPlayer = mutes.find((muted) => muted[0] === player.id);
 
-        if (!mutedPlayer) return "Player is not muted";
+        // if (!mutedPlayer) return "Player is not muted";
 
         // const res = await rcon.send(`mute 909275ECE8FEDDB 1`);
         // return console.log(res);
