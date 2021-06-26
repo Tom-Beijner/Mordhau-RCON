@@ -293,29 +293,29 @@ export default class Watchdog {
                     continue;
                 }
 
-                const bannedPlayer = await server.rcon.getBannedPlayer(
-                    player.id
-                );
+                // const bannedPlayer = await server.rcon.getBannedPlayer(
+                //     player.id
+                // );
 
-                if (bannedPlayer) {
-                    servers.push({
-                        name: serverName,
-                        data: {
-                            result: `Player already is banned ${
-                                bannedPlayer[1] !== "0"
-                                    ? `for ${pluralize(
-                                          "minute",
-                                          Number(bannedPlayer.duration),
-                                          true
-                                      )}`
-                                    : "PERMANENTLY"
-                            }`,
-                            failed: true,
-                        },
-                    });
+                // if (bannedPlayer) {
+                //     servers.push({
+                //         name: serverName,
+                //         data: {
+                //             result: `Player already is banned ${
+                //                 bannedPlayer[1] !== "0"
+                //                     ? `for ${pluralize(
+                //                           "minute",
+                //                           Number(bannedPlayer.duration),
+                //                           true
+                //                       )}`
+                //                     : "PERMANENTLY"
+                //             }`,
+                //             failed: true,
+                //         },
+                //     });
 
-                    continue;
-                }
+                //     continue;
+                // }
 
                 let result = await server.rcon.send(
                     `ban ${player.id} ${duration || 0} ${reason}`
@@ -395,27 +395,27 @@ export default class Watchdog {
                     continue;
                 }
 
-                const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
+                // const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
 
-                if (mutedPlayer) {
-                    servers.push({
-                        name: serverName,
-                        data: {
-                            result: `Player already is muted ${
-                                mutedPlayer.duration !== "0"
-                                    ? `for ${pluralize(
-                                          "minute",
-                                          Number(mutedPlayer.duration),
-                                          true
-                                      )}`
-                                    : "PERMANENTLY"
-                            }`,
-                            failed: true,
-                        },
-                    });
+                // if (mutedPlayer) {
+                //     servers.push({
+                //         name: serverName,
+                //         data: {
+                //             result: `Player already is muted ${
+                //                 mutedPlayer.duration !== "0"
+                //                     ? `for ${pluralize(
+                //                           "minute",
+                //                           Number(mutedPlayer.duration),
+                //                           true
+                //                       )}`
+                //                     : "PERMANENTLY"
+                //             }`,
+                //             failed: true,
+                //         },
+                //     });
 
-                    continue;
-                }
+                //     continue;
+                // }
 
                 let result = await server.rcon.send(
                     `mute ${player.id} ${duration || 0}`
@@ -494,21 +494,21 @@ export default class Watchdog {
                     continue;
                 }
 
-                const bannedPlayer = await server.rcon.getBannedPlayer(
-                    player.id
-                );
+                // const bannedPlayer = await server.rcon.getBannedPlayer(
+                //     player.id
+                // );
 
-                if (!bannedPlayer) {
-                    servers.push({
-                        name: serverName,
-                        data: {
-                            result: "Player is not banned",
-                            failed: true,
-                        },
-                    });
+                // if (!bannedPlayer) {
+                //     servers.push({
+                //         name: serverName,
+                //         data: {
+                //             result: "Player is not banned",
+                //             failed: true,
+                //         },
+                //     });
 
-                    continue;
-                }
+                //     continue;
+                // }
 
                 let result = await server.rcon.send(`unban ${player.id}`);
                 result = result.split("\n")[0].trim();
@@ -585,19 +585,19 @@ export default class Watchdog {
                     continue;
                 }
 
-                const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
+                // const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
 
-                if (!mutedPlayer) {
-                    servers.push({
-                        name: serverName,
-                        data: {
-                            result: "Player is not muted",
-                            failed: true,
-                        },
-                    });
+                // if (!mutedPlayer) {
+                //     servers.push({
+                //         name: serverName,
+                //         data: {
+                //             result: "Player is not muted",
+                //             failed: true,
+                //         },
+                //     });
 
-                    continue;
-                }
+                //     continue;
+                // }
 
                 let result = await server.rcon.send(`unmute ${player.id}`);
                 result = result.split("\n")[0].trim();

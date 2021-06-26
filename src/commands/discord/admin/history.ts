@@ -171,13 +171,13 @@ export default class History extends SlashCommand {
         if (historyLength > 2) color = 15158332;
         if (historyLength > 3) color = 10038562;
 
-        const bannedPlayer = await this.bot.rcon.getBannedPlayer(
-            playerHistory.ids.playFabID
-        );
+        // const bannedPlayer = await this.bot.rcon.getBannedPlayer(
+        //     playerHistory.ids.playFabID
+        // );
 
-        const mutedPlayer = await this.bot.rcon.getMutedPlayer(
-            playerHistory.ids.playFabID
-        );
+        // const mutedPlayer = await this.bot.rcon.getMutedPlayer(
+        //     playerHistory.ids.playFabID
+        // );
 
         const inServer = await this.bot.rcon.getIngamePlayer(
             playerHistory.ids.playFabID
@@ -201,82 +201,82 @@ export default class History extends SlashCommand {
                                         ? playerHistory.previousNames
                                         : "None"
                                 }\``,
-                                `**Is Banned**: \`${
-                                    bannedPlayer.length
-                                        ? `Yes\`\n${bannedPlayer
-                                              .map(
-                                                  (server) =>
-                                                      `↳ **${
-                                                          server.server
-                                                      }**: \`${
-                                                          server.data
-                                                              .duration === "0"
-                                                              ? "Permanent"
-                                                              : `${pluralize(
-                                                                    "minute",
-                                                                    Number(
-                                                                        server
-                                                                            .data
-                                                                            .duration
-                                                                    ),
-                                                                    true
-                                                                )}, unbanned ${formatDistanceToNow(
-                                                                    addMinutes(
-                                                                        new Date(),
-                                                                        parseInt(
-                                                                            server
-                                                                                .data
-                                                                                .duration
-                                                                        )
-                                                                    ),
-                                                                    {
-                                                                        addSuffix:
-                                                                            true,
-                                                                    }
-                                                                )}`
-                                                      }\``
-                                              )
-                                              .join("\n")}`
-                                        : "No`"
-                                }`,
-                                `**Is Muted**: \`${
-                                    mutedPlayer.length
-                                        ? `Yes\`\n${mutedPlayer
-                                              .map(
-                                                  (server) =>
-                                                      `↳ **${
-                                                          server.server
-                                                      }**: \`${
-                                                          server.data
-                                                              .duration === "0"
-                                                              ? "Permanent"
-                                                              : `${pluralize(
-                                                                    "minute",
-                                                                    Number(
-                                                                        server
-                                                                            .data
-                                                                            .duration
-                                                                    ),
-                                                                    true
-                                                                )}, unbanned ${formatDistanceToNow(
-                                                                    addMinutes(
-                                                                        new Date(),
-                                                                        parseInt(
-                                                                            server
-                                                                                .data
-                                                                                .duration
-                                                                        )
-                                                                    ),
-                                                                    {
-                                                                        addSuffix:
-                                                                            true,
-                                                                    }
-                                                                )}`
-                                                      }\``
-                                              )
-                                              .join("\n")}`
-                                        : "No`"
-                                }`,
+                                // `**Is Banned**: \`${
+                                //     bannedPlayer.length
+                                //         ? `Yes\`\n${bannedPlayer
+                                //               .map(
+                                //                   (server) =>
+                                //                       `↳ **${
+                                //                           server.server
+                                //                       }**: \`${
+                                //                           server.data
+                                //                               .duration === "0"
+                                //                               ? "Permanent"
+                                //                               : `${pluralize(
+                                //                                     "minute",
+                                //                                     Number(
+                                //                                         server
+                                //                                             .data
+                                //                                             .duration
+                                //                                     ),
+                                //                                     true
+                                //                                 )}, unbanned ${formatDistanceToNow(
+                                //                                     addMinutes(
+                                //                                         new Date(),
+                                //                                         parseInt(
+                                //                                             server
+                                //                                                 .data
+                                //                                                 .duration
+                                //                                         )
+                                //                                     ),
+                                //                                     {
+                                //                                         addSuffix:
+                                //                                             true,
+                                //                                     }
+                                //                                 )}`
+                                //                       }\``
+                                //               )
+                                //               .join("\n")}`
+                                //         : "No`"
+                                // }`,
+                                // `**Is Muted**: \`${
+                                //     mutedPlayer.length
+                                //         ? `Yes\`\n${mutedPlayer
+                                //               .map(
+                                //                   (server) =>
+                                //                       `↳ **${
+                                //                           server.server
+                                //                       }**: \`${
+                                //                           server.data
+                                //                               .duration === "0"
+                                //                               ? "Permanent"
+                                //                               : `${pluralize(
+                                //                                     "minute",
+                                //                                     Number(
+                                //                                         server
+                                //                                             .data
+                                //                                             .duration
+                                //                                     ),
+                                //                                     true
+                                //                                 )}, unbanned ${formatDistanceToNow(
+                                //                                     addMinutes(
+                                //                                         new Date(),
+                                //                                         parseInt(
+                                //                                             server
+                                //                                                 .data
+                                //                                                 .duration
+                                //                                         )
+                                //                                     ),
+                                //                                     {
+                                //                                         addSuffix:
+                                //                                             true,
+                                //                                     }
+                                //                                 )}`
+                                //                       }\``
+                                //               )
+                                //               .join("\n")}`
+                                //         : "No`"
+                                // }`,
                                 `**In A Server**: \`${
                                     inServer
                                         ? `Yes in ${inServer.server}`

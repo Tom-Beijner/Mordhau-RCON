@@ -1,6 +1,6 @@
 import flatMap from "array.prototype.flatmap";
 import { compareArrayVals } from "crud-object-diff";
-import { addMinutes, addSeconds, formatDistanceToNow } from "date-fns";
+import { addSeconds, formatDistanceToNow } from "date-fns";
 import deepClean from "deep-cleaner";
 import pluralize from "pluralize";
 import config from "../config.json";
@@ -634,61 +634,59 @@ export default class Rcon {
             server,
         });
 
-        // this.bot.nextJoinedPlayer = { id: player.id };
+        // const isBanned = await this.getBannedPlayer(id);
 
-        const isBanned = await this.getBannedPlayer(id);
+        // if (isBanned) {
+        //     logger.info(
+        //         "Server",
+        //         `${admin ? "Admin" : "Player"} ${
+        //             player.name
+        //         } (${outputPlayerIDs(
+        //             player.ids
+        //         )}) tried to join but is banned (Duration: ${
+        //             isBanned.duration === "0"
+        //                 ? "Permanent"
+        //                 : `${pluralize(
+        //                       "minute",
+        //                       Number(isBanned.duration),
+        //                       true
+        //                   )} (unbanned ${formatDistanceToNow(
+        //                       addMinutes(
+        //                           new Date(),
+        //                           parseInt(isBanned.duration)
+        //                       ),
+        //                       { addSuffix: true }
+        //                   )})`
+        //         }, Server: ${server})`
+        //     );
 
-        if (isBanned) {
-            logger.info(
-                "Server",
-                `${admin ? "Admin" : "Player"} ${
-                    player.name
-                } (${outputPlayerIDs(
-                    player.ids
-                )}) tried to join but is banned (Duration: ${
-                    isBanned.duration === "0"
-                        ? "Permanent"
-                        : `${pluralize(
-                              "minute",
-                              Number(isBanned.duration),
-                              true
-                          )} (unbanned ${formatDistanceToNow(
-                              addMinutes(
-                                  new Date(),
-                                  parseInt(isBanned.duration)
-                              ),
-                              { addSuffix: true }
-                          )})`
-                }, Server: ${server})`
-            );
+        //     if (process.env.NODE_ENV.trim() === "production")
+        //         sendWebhookMessage(
+        //             config.discord.webhookEndpoints.activity,
+        //             `${admin ? "Admin" : "Player"} ${
+        //                 player.name
+        //             } (${outputPlayerIDs(
+        //                 player.ids,
+        //                 true
+        //             )}) tried to join but is banned (Duration: ${
+        //                 isBanned.duration === "0"
+        //                     ? "Permanent"
+        //                     : `${pluralize(
+        //                           "minute",
+        //                           Number(isBanned.duration),
+        //                           true
+        //                       )} (unbanned ${formatDistanceToNow(
+        //                           addMinutes(
+        //                               new Date(),
+        //                               parseInt(isBanned.duration)
+        //                           ),
+        //                           { addSuffix: true }
+        //                       )})`
+        //             }, Server: ${server})`
+        //         );
 
-            if (process.env.NODE_ENV.trim() === "production")
-                sendWebhookMessage(
-                    config.discord.webhookEndpoints.activity,
-                    `${admin ? "Admin" : "Player"} ${
-                        player.name
-                    } (${outputPlayerIDs(
-                        player.ids,
-                        true
-                    )}) tried to join but is banned (Duration: ${
-                        isBanned.duration === "0"
-                            ? "Permanent"
-                            : `${pluralize(
-                                  "minute",
-                                  Number(isBanned.duration),
-                                  true
-                              )} (unbanned ${formatDistanceToNow(
-                                  addMinutes(
-                                      new Date(),
-                                      parseInt(isBanned.duration)
-                                  ),
-                                  { addSuffix: true }
-                              )})`
-                    }, Server: ${server})`
-                );
-
-            return;
-        }
+        //     return;
+        // }
 
         const history = (
             await this.bot.database.getPlayerHistory([
@@ -812,8 +810,8 @@ export default class Rcon {
                 );
             }
         } else {
-            const isBanned = await this.getBannedPlayer(player.id);
-            if (isBanned) return;
+            // const isBanned = await this.getBannedPlayer(player.id);
+            // if (isBanned) return;
 
             logger.info(
                 "Server",
