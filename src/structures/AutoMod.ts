@@ -297,10 +297,17 @@ export default class AutoMod {
                 }
 
                 this.sendMessage(
-                    `${punishment.type}${
+                    `${
+                        punishment.type === "globalban"
+                            ? "Globally ban"
+                            : punishment.type === "globalmute"
+                            ? "Globally mute"
+                            : punishment.type[0].toUpperCase() +
+                              punishment.type.substr(1)
+                    }${
                         ["ban", "globalban"].includes(punishment.type)
                             ? "ned"
-                            : punishment.type === "kick"
+                            : ["warn", "kick"].includes(punishment.type)
                             ? "ed"
                             : "d"
                     } ${player.name} (${outputPlayerIDs(
