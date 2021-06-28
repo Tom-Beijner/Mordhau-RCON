@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Automod is now fully customizable as well as infractions gets saved to the database (restarting the bot wont reset infractions)
 -   Added `deletehistory` and `deletepunishment` commands
 
-## Changed
+### Changed
 
 -   Made admin list saving/rollback toggleable and included notify only mode
 -   Made RCON command use codeblock
