@@ -116,25 +116,8 @@ To migrate from the [Mordhau Ban Logger](https://github.com/academy-gaming/mordh
 -   [x] Add confirmation system, like reactions for global and clear system
 -   [x] Make admin list saving/rollback toggleable as well as only notify mode
 -   [x] Make automod customizable
-
-## Changelog
-
-### v1.1.1
-
--   Fix RCON error when list responses are too large
--   Kicks now fail when the player isn't in-game
-
-Because all the code related to lists (like bans) has been disabled, there's no check for if a player who already banned is trying to join, it will look like the player successfully joined according to the logs.
-
-### v1.1.0
-
--   Automod is now fully customizable as well as infractions gets saved to the database (restarting the bot wont reset infractions)
--   Added `deletehistory` and `deletepunishment` commands
--   Fixed global punishment commands to not send multiple embeds and not save multiple database documents
--   Made admin list saving/rollback toggleable and included notify only mode
--   Made RCON command use codeblock
--   Removed history suggestion
--   Removed history over 10 offenses history
+-   [ ] Make punishments_id allow multiple ids for punishments deletion
+-   [ ] Each server has own log channel with id instead of webhook url
 
 ## Author
 
