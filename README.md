@@ -116,7 +116,7 @@ To migrate from the [Mordhau Ban Logger](https://github.com/academy-gaming/mordh
 -   [x] Add confirmation system, like reactions for global and clear system
 -   [x] Make admin list saving/rollback toggleable as well as only notify mode
 -   [x] Make automod customizable
--   [ ] Make punishments_id allow multiple ids for punishments deletion
+-   [x] Make punishments_id allow multiple ids for punishments deletion
 -   [ ] Each server has own log channel with id instead of webhook url
 
 ## Author
