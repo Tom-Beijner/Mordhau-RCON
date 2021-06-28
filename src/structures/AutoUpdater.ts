@@ -4,6 +4,7 @@ import download from "download-git-repo";
 import fs from "fs-extra";
 import fetch from "node-fetch";
 import path from "path";
+import removeMarkdown from "remove-markdown";
 import { promisify } from "util";
 import logger from "../utils/logger";
 
@@ -148,7 +149,7 @@ export default class AutoUpdater {
                 child.stdout.on("data", (data) =>
                     logger.info(
                         "Auto Updater",
-                        `npm install: ${data.replace(/\r?\n|\r/g, "")}`
+                        `npm install: ${data.replace(/\r?\n\r?\n/g, "")}`
                     )
                 );
                 child.stderr.on("data", (data) => {
@@ -157,7 +158,7 @@ export default class AutoUpdater {
                         logger.error(
                             "Auto Updater",
                             `Error occurred while installing dependencies (${data.replace(
-                                /\r?\n|\r/g,
+                                /\r?\n\r?\n/g,
                                 ""
                             )})`
                         );
@@ -165,13 +166,38 @@ export default class AutoUpdater {
                     } else {
                         logger.warn(
                             "Auto Updater",
-                            data.replace(/\r?\n|\r/g, "")
+                            data.replace(/\r?\n\r?\n/g, "")
                         );
                     }
                 });
             });
 
+            const changelog = removeMarkdown(
+                (
+                    await fs.readFile(`${appRootPath}/CHANGELOG.md`, "utf8")
+                ).replace("\n", ""),
+                { stripListLeaders: false }
+            ).split("\n") as string[];
+            const firstOccurance = changelog.findIndex((string) =>
+                string.includes("[")
+            );
+
             logger.info("Auto Updater", "Finished installing update");
+            logger.info(
+                "Auto Updater",
+                `Latest Update:\n${changelog
+                    .splice(
+                        4,
+                        firstOccurance === -1
+                            ? changelog.length
+                            : firstOccurance
+                    )
+                    .join("\n")}`
+            );
+            logger.info(
+                "Auto Updater",
+                "Carefully read through the changelog and make any necessary changes"
+            );
 
             return { success: true, error: null };
         } catch (error) {
