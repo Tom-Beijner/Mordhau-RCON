@@ -304,7 +304,7 @@ export default abstract class BasePunishment {
 
                 offenses.push(
                     [
-                        `\nID: ${i + 1}`,
+                        `\nID: ${h._id}`,
                         `Type: ${type}`,
                         type.includes("GLOBAL")
                             ? undefined

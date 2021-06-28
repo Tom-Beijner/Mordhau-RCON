@@ -1,5 +1,6 @@
 import flatMap from "array.prototype.flatmap";
 import { addMinutes, formatDistanceToNow } from "date-fns";
+import { isValidObjectId, ObjectId } from "mongoose";
 import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
@@ -38,10 +39,11 @@ export default class DeletePunishment extends SlashCommand {
                     ],
                 },
                 {
-                    name: "punishment_id",
-                    description: "The ID of the punishment to clear",
+                    name: "punishment_ids",
+                    description:
+                        "The ID of the punishments to clear, separate them with |",
                     required: true,
-                    type: CommandOptionType.INTEGER,
+                    type: CommandOptionType.STRING,
                 },
                 {
                     name: "player",
@@ -71,7 +73,7 @@ export default class DeletePunishment extends SlashCommand {
         const options = {
             type: ctx.options.type.toLowerCase() as string,
             player: ctx.options.player as string,
-            punishmentID: ctx.options.punishment_id as number,
+            punishmentIDs: ctx.options.punishment_ids as string,
         };
 
         const ingamePlayer = await this.bot.rcon.getIngamePlayer(
@@ -86,11 +88,21 @@ export default class DeletePunishment extends SlashCommand {
         }
 
         try {
-            if (options.punishmentID < 1)
-                return "Punishment ID must be at least 1";
+            const punishmentIDs = options.punishmentIDs.split("|");
+            if (punishmentIDs.some((ID) => !isValidObjectId(ID)))
+                return "Punishment ID must be valid";
 
-            const {
-                punishment: {
+            const punishments = await this.bot.database.getPlayerPunishment(
+                [player.ids.playFabID, player.ids.steamID],
+                punishmentIDs as unknown as ObjectId[],
+                options.type === "admin"
+            );
+
+            const message = [];
+
+            for (let i = 0; i < punishments.length; i++) {
+                const {
+                    _id,
                     type,
                     server,
                     date,
@@ -98,53 +110,61 @@ export default class DeletePunishment extends SlashCommand {
                     duration,
                     reason,
                     id: punishedPlayerID,
-                },
-            } = await this.bot.database.getPlayerPunishment(
-                [player.ids.playFabID, player.ids.steamID],
-                options.punishmentID,
-                options.type === "admin"
-            );
+                } = punishments[i];
 
-            const punishedPlayer =
-                this.bot.cachedPlayers.get(punishedPlayerID) ||
-                (await LookupPlayer(punishedPlayerID));
+                const punishedPlayer =
+                    this.bot.cachedPlayers.get(punishedPlayerID) ||
+                    (await LookupPlayer(punishedPlayerID));
 
-            const message = [
-                `\`\`\`Type: ${type}`,
-                type.includes("GLOBAL") ? undefined : `Server: ${server}`,
-                `Platform: ${parsePlayerID(punishedPlayerID).platform}`,
-                options.type === "admin"
-                    ? `Player: ${punishedPlayer.name} (${outputPlayerIDs(
-                          punishedPlayer.ids
-                      )})`
-                    : undefined,
-                `Date: ${new Date(date).toDateString()} (${formatDistanceToNow(
-                    date,
-                    { addSuffix: true }
-                )})`,
-                `Offense: ${reason || "None given"}`,
-                ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(type)
-                    ? `Duration: ${
-                          !duration
-                              ? "PERMANENT"
-                              : pluralize("minute", duration, true)
-                      } ${
-                          duration
-                              ? `(Un${
-                                    type === "BAN" ? "banned" : "muted"
-                                } ${formatDistanceToNow(
-                                    addMinutes(date, duration),
-                                    {
-                                        addSuffix: true,
-                                    }
-                                )})`
-                              : ""
-                      }`
-                    : undefined,
-                `Admin: ${admin}\`\`\``,
-            ]
-                .filter((line) => typeof line !== "undefined")
-                .join("\n");
+                message.push(
+                    [
+                        `ID: ${_id}`,
+                        `Type: ${type}`,
+                        type.includes("GLOBAL")
+                            ? undefined
+                            : `Server: ${server}`,
+                        `Platform: ${parsePlayerID(punishedPlayerID).platform}`,
+                        options.type === "admin"
+                            ? `Player: ${
+                                  punishedPlayer.name
+                              } (${outputPlayerIDs(punishedPlayer.ids)})`
+                            : undefined,
+                        `Date: ${new Date(
+                            date
+                        ).toDateString()} (${formatDistanceToNow(date, {
+                            addSuffix: true,
+                        })})`,
+                        `Offense: ${reason || "None given"}`,
+                        ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(
+                            type
+                        )
+                            ? `Duration: ${
+                                  !duration
+                                      ? "PERMANENT"
+                                      : pluralize("minute", duration, true)
+                              } ${
+                                  duration
+                                      ? `(Un${
+                                            type === "BAN" ? "banned" : "muted"
+                                        } ${formatDistanceToNow(
+                                            addMinutes(date, duration),
+                                            {
+                                                addSuffix: true,
+                                            }
+                                        )})`
+                                      : ""
+                              }`
+                            : undefined,
+                        `Admin: ${admin}`,
+                    ]
+                        .filter((line) => typeof line !== "undefined")
+                        .join("\n")
+                );
+            }
+
+            const completeMessage = `\`\`\`${message.join(
+                "\n------------------\n"
+            )}\`\`\``;
 
             ComponentConfirmation(
                 ctx,
@@ -153,17 +173,22 @@ export default class DeletePunishment extends SlashCommand {
                         {
                             description: `Are you sure you want to delete \`${
                                 options.type
-                            }\` punishment of ${player.name} (${outputPlayerIDs(
+                            }\` ${pluralize(
+                                "punishment",
+                                punishments.length
+                            )} of ${player.name} (${outputPlayerIDs(
                                 player.ids,
                                 true
                             )})?`,
                             fields: [
                                 {
-                                    name:
+                                    name: `${
                                         options.type === "player"
-                                            ? `Punishment Received (ID: ${options.punishmentID})`
-                                            : `Punishment Given (ID: ${options.punishmentID})`,
-                                    value: message,
+                                            ? "Punishment Received"
+                                            : "Punishment Given"
+                                    } (
+                                        IDs: ${punishments.length})`,
+                                    value: completeMessage,
                                 },
                             ],
                             color: 15158332,
@@ -175,7 +200,7 @@ export default class DeletePunishment extends SlashCommand {
 
                     await this.bot.database.deletePlayerPunishment(
                         [options.player],
-                        options.punishmentID,
+                        punishmentIDs as unknown as ObjectId[],
                         options.type === "admin"
                     );
 
@@ -191,15 +216,19 @@ export default class DeletePunishment extends SlashCommand {
                     await btnCtx.editParent({
                         embeds: [
                             {
-                                description: `Swlwrws \`${
+                                description: `Deleted \`${
                                     options.type
-                                }\` punishment of ${
-                                    player.name
-                                } (${outputPlayerIDs(player.ids, true)})`,
+                                }\` ${pluralize(
+                                    "punishment",
+                                    punishments.length
+                                )} of ${player.name} (${outputPlayerIDs(
+                                    player.ids,
+                                    true
+                                )})`,
                                 fields: [
                                     {
-                                        name: `Deleted Data (ID: ${options.punishmentID})`,
-                                        value: message,
+                                        name: `Deleted Data (${punishments.length})`,
+                                        value: completeMessage,
                                     },
                                 ],
                             },

@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
 import infractionsSchema from "../models/infractionsSchema";
 import logSchema, { ILog, platforms } from "../models/logSchema";
 import logger from "../utils/logger";
@@ -115,81 +115,64 @@ export default class Database {
 
     async getPlayerPunishment(
         platformIDs: string[],
-        punishmentID: number,
+        punishmentIDs: ObjectId[],
         searchForAdmin?: boolean
-    ): Promise<{
-        ids: {
-            playFabID?: string;
-            steamID?: string;
-        };
-        punishment: ILog;
-    }> {
+    ): Promise<ILog[]> {
         platformIDs = platformIDs.filter((p) => typeof p === "string");
-        const platforms = platformIDs.map((id) => parsePlayerID(id));
         const searchIDs: string[] = [...platformIDs];
 
-        const playerPunishmentData = await this.Logs.findOne(
-            {
-                $or: [
-                    searchForAdmin
-                        ? {
-                              admin: { $regex: searchIDs.join("|") },
-                          }
-                        : {
-                              // "ids.platform": { $in: searchPlatforms },
-                              "ids.id": { $in: searchIDs },
-                          },
-                    { id: { $in: [...new Set(searchIDs)] } },
-                ],
-            },
-            null,
-            {
-                skip: punishmentID - 1,
-            }
-        );
+        const playerPunishmentData = await this.Logs.find({
+            $or: [
+                searchForAdmin
+                    ? {
+                          _id: { $in: punishmentIDs },
+                          admin: { $regex: searchIDs.join("|") },
+                      }
+                    : {
+                          _id: { $in: punishmentIDs },
+                          // "ids.platform": { $in: searchPlatforms },
+                          "ids.id": { $in: searchIDs },
+                      },
+                {
+                    _id: { $in: punishmentIDs },
+                    id: { $in: [...new Set(searchIDs)] },
+                },
+            ],
+        });
 
         if (playerPunishmentData) logger.debug("Bot", "Punishment found");
         else logger.debug("Bot", "No punishment data was found");
 
-        return {
-            ids: {
-                playFabID: platforms.find(
-                    (platform) => platform.platform === "PlayFab"
-                )?.id,
-                steamID: platforms.find(
-                    (platform) => platform.platform === "Steam"
-                )?.id,
-            },
-            punishment: playerPunishmentData,
-        };
+        return playerPunishmentData;
     }
 
     async deletePlayerPunishment(
         platformIDs: string[],
-        punishmentID: number,
+
+        punishmentIDs: ObjectId[],
         searchForAdmin?: boolean
     ) {
         platformIDs = platformIDs.filter((p) => typeof p === "string");
         const searchIDs: string[] = [...platformIDs];
 
-        return await this.Logs.deleteOne(
-            {
-                $or: [
-                    searchForAdmin
-                        ? {
-                              admin: { $regex: searchIDs.join("|") },
-                          }
-                        : {
-                              // "ids.platform": { $in: searchPlatforms },
-                              "ids.id": { $in: searchIDs },
-                          },
-                    { id: { $in: [...new Set(searchIDs)] } },
-                ],
-            },
-            {
-                skip: punishmentID - 1,
-            }
-        );
+        return await this.Logs.deleteMany({
+            $or: [
+                searchForAdmin
+                    ? {
+                          _id: { $in: punishmentIDs },
+                          admin: { $regex: searchIDs.join("|") },
+                      }
+                    : {
+                          _id: { $in: punishmentIDs },
+                          // "ids.platform": { $in: searchPlatforms },
+                          "ids.id": { $in: searchIDs },
+                      },
+                {
+                    _id: { $in: punishmentIDs },
+                    id: { $in: [...new Set(searchIDs)] },
+                },
+            ],
+        });
     }
 
     async updatePlayerHistory(data: {
