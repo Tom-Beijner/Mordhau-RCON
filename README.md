@@ -119,6 +119,13 @@ To migrate from the [Mordhau Ban Logger](https://github.com/academy-gaming/mordh
 
 ## Changelog
 
+### v1.1.1
+
+-   Fix RCON error when list responses are too large
+-   Kicks now fail when the player isn't in-game
+
+Because all the code related to lists (like bans) has been disabled, there's no check for if a player who already banned is trying to join, it will look like the player successfully joined according to the logs.
+
 ### v1.1.0
 
 -   Automod is now fully customizable as well as infractions gets saved to the database (restarting the bot wont reset infractions)
