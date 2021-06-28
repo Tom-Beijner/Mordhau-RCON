@@ -10,6 +10,7 @@ import { CreateAccount, Login } from "../services/PlayFab";
 import logger from "../utils/logger";
 import MordhauAPI from "../utils/MordhauAPI";
 import AntiSlur from "./AutoMod";
+import AutoUpdater from "./AutoUpdater";
 import BaseRCONCommand from "./BaseRCONCommands";
 import Database from "./Database";
 import Rcon from "./Rcon";
@@ -24,6 +25,7 @@ export default class Watchdog {
     private client: Client;
     private token: string;
     public startTime: number = Date.now();
+    public autoUpdater: AutoUpdater;
     public RCONCommands: BaseRCONCommand[] = [];
     public database: Database;
     public slashCreator: SlashCreator;
@@ -661,7 +663,14 @@ export default class Watchdog {
 
         this.token = token;
 
-        // this.rconOptions = rconOptions;
+        this.autoUpdater = new AutoUpdater({
+            repository: "Tom-Beijner/Mordhau-RCON",
+            branch: "master",
+            ignoredFiles: ["src/locales/bannedWords.json"],
+            downloadSubdirectory: "repo",
+            backupSubdirectory: "backup",
+            autoUpdateInterval: config.autoUpdate.checkInterval,
+        });
 
         this.launch();
     }
@@ -674,6 +683,8 @@ export default class Watchdog {
     }
 
     async launch() {
+        if (config.autoUpdate.enabled) await this.autoUpdater.autoUpdate();
+
         const database = new Database({
             host: config.database.host,
             database: config.database.database,
@@ -684,8 +695,6 @@ export default class Watchdog {
         this.database = await database.connect();
 
         this.logHandler = new LogHandler(this);
-
-        // const servers = await this.database.Servers.find().lean();
 
         this.requestingPlayers = new LRU({
             updateAgeOnGet: true,
@@ -723,30 +732,6 @@ export default class Watchdog {
             "Bot",
             `Loaded ${pluralize("server", config.servers.length, true)}`
         );
-
-        // for (const [name, options] of Object.entries(config.servers)) {
-        //     const [
-        //         protocol,
-        //         host,
-        //         port,
-        //         username,
-        //         password,
-        //     ] = options.path.split(":");
-        //     this.servers.set(name, {
-        //         rcon: new Rcon(this, { ...options.rcon, name }),
-        //         name,
-        //         options: {
-        //             protocol: protocol as "local" | "ftp" | "sftp",
-        //             path: "/Mordhau/Saved/Logs/Mordhau.log",
-        //             host,
-        //             port: parseInt(port),
-        //             username,
-        //             password,
-        //         },
-        //     });
-        // }
-
-        // this.rcon = new Rcon(this, this.rconOptions);
 
         this.antiSlur = new AntiSlur(this);
 
@@ -787,23 +772,15 @@ export default class Watchdog {
             server.rcon.initialize();
         }
 
-        // await this.rcon.saveCurrentPlayers();
-        // await this.rcon.saveAdmins();
-
-        // this.antiSlur.options.ignoredPlayers = [...this.admins.keys()];
-
         await this.client.connect();
 
         logger.info("Bot", "Client initialized - running client.");
     }
 
     private loadDiscordCommands() {
-        // const bar = singleBar("Commands");
         const walker = walk(path.join(__dirname, "../commands/discord"));
 
         walker.on("files", (root, files, next) => {
-            // bar.start(files.length, 0, { name: "" });
-
             const module = path.basename(root);
 
             logger.info(
@@ -825,10 +802,6 @@ export default class Watchdog {
                                 fileStats.name.slice(0, -3).toLowerCase()
                             )
                         );
-
-                        // bar.increment(1, {
-                        //     name: props.default.name,
-                        // });
 
                         loadedCommands++;
                     }
@@ -861,12 +834,9 @@ export default class Watchdog {
     }
 
     private loadRCONCommands() {
-        // const bar = singleBar("Commands");
         const walker = walk(path.join(__dirname, "../commands/rcon"));
 
         walker.on("files", (root, files, next) => {
-            // bar.start(files.length, 0, { name: "" });
-
             const module = path.basename(root);
 
             logger.info(
@@ -884,10 +854,6 @@ export default class Watchdog {
                         const command: BaseRCONCommand = new Command(this);
 
                         this.RCONCommands.push(command);
-
-                        // bar.increment(1, {
-                        //     name: props.default.name,
-                        // });
 
                         loadedCommands++;
                     }

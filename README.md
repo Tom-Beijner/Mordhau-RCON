@@ -56,6 +56,7 @@ unmute
 addadmin
 removeadmin
 rcon
+update
 ```
 
 ### Features
@@ -75,7 +76,7 @@ rcon
 ## Installation
 
 1. Clone the repository
-2. Clone `example.config.json` file (located in `src` as well as in `src/migration` directories) to `config.json` and edit the values
+2. Copy `example.config.json` file (located in `src` as well as in `src/migration` directories) as `config.json` and edit the values
 3. Install the required dependencies: `npm install` or `yarn install`
 4. Build the bot: `npm run build` or `yarn build`
 5. Start the bot `npm run start` or `yarn start`

@@ -1,5 +1,9 @@
 {
     "ingamePrefix": "/",
+    "autoUpdate": {
+        "enabled": true,
+        "checkInterval": 30
+    },
     "bot": {
         "token": "",
         "publicKey": "",
@@ -147,7 +151,8 @@
                     "unmute",
                     "addadmin",
                     "removeadmin",
-                    "rcon"
+                    "rcon",
+                    "update"
                 ],
                 "receiveMentions": true
             }

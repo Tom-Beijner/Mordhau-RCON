@@ -132,3 +132,4 @@ dist
 
 config.json
 save
+.autoUpdater
