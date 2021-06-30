@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 -   Made so all servers run their webhooks as well as you only have to use the channel id, the bot will automatically create its webhooks. This also means you have to give it bot and applications.commands scopes also manage webhooks permission.
+-   `config.json` and `example.config.json` has been moved to the root folder ("/") and there's now a validation check
 
 ## [1.3.0] - 2021-06-28
 
