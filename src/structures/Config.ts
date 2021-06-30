@@ -74,6 +74,7 @@ export interface Rcon {
     port: number;
     password: string;
     adminListSaving: boolean;
+    ignoreGlobalPunishments: boolean;
     killstreaks: Killstreaks;
     automod: boolean;
     punishments: Punishments;
@@ -195,6 +196,9 @@ export default new Conf<Config>({
                             adminListSaving: {
                                 type: "boolean",
                             },
+                            ignoreGlobalPunishments: {
+                                type: "boolean",
+                            },
                             killstreaks: {
                                 type: "object",
                                 properties: {
@@ -300,6 +304,7 @@ export default new Conf<Config>({
                 },
                 required: ["name", "rcon"],
             },
+            minItems: 1,
         },
         adminListSaving: {
             type: "object",
@@ -378,6 +383,7 @@ export default new Conf<Config>({
                                 items: {
                                     type: "string",
                                 },
+                                minItems: 1,
                             },
                             commands: {
                                 type: "array",
@@ -404,10 +410,12 @@ export default new Conf<Config>({
                                         "update",
                                     ],
                                 },
+                                minItems: 1,
                             },
                         },
                         required: ["name", "Ids", "commands"],
                     },
+                    minItems: 1,
                 },
             },
             required: ["guildId", "roles"],
@@ -468,6 +476,7 @@ export default new Conf<Config>({
                     port: 1234,
                     password: "password",
                     adminListSaving: true,
+                    ignoreGlobalPunishments: false,
                     killstreaks: {
                         enabled: true,
                         countBotKills: false,
