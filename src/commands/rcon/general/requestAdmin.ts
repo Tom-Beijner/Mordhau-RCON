@@ -1,4 +1,3 @@
-import config from "../../../config.json";
 import { sendWebhookMessage } from "../../../services/Discord";
 import BaseRCONCommand from "../../../structures/BaseRCONCommands";
 import RCONCommandContext from "../../../structures/RCONCommandContext";
@@ -21,7 +20,7 @@ export default class RequestAdmin extends BaseRCONCommand {
         };
 
         sendWebhookMessage(
-            config.discord.webhookEndpoints.adminCalls,
+            ctx.rcon.webhooks.get("adminCalls"),
             `${player.name} (${outputPlayerIDs(
                 player.ids,
                 true

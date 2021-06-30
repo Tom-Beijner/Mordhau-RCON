@@ -4,10 +4,6 @@ import logger from "../utils/logger";
 import Rcon from "./Rcon";
 
 export default class KillStreak {
-    // <
-    //     string,
-    //     { message: string; profaneWords: string[] }[]
-    // >
     public cache: {
         players: Map<
             string,
@@ -33,7 +29,7 @@ export default class KillStreak {
 
     public sendMessage(message: string) {
         return sendWebhookMessage(
-            config.discord.webhookEndpoints.killstreak,
+            this.rcon.webhooks.get("killstreak"),
             `${message} (Server: ${this.serverName})`
         );
     }

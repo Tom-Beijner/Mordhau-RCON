@@ -15,12 +15,6 @@ import Watchdog from "./Watchdog";
 
 interface IOptions {
     name?: string;
-    channelID: string;
-    // muteDuration?: number;
-    // banDuration?: number;
-    // muteThreshold?: number;
-    // banThreshold?: number;
-    // ignoredPlayers?: string[];
 }
 
 export interface Punishment {
@@ -48,12 +42,6 @@ export default class AutoMod {
     constructor(bot: Watchdog, options?: IOptions) {
         this.options = options || {
             name: "AutoMod",
-            channelID: config.discord.webhookEndpoints.automod,
-            // muteDuration: 500,
-            // banDuration: 500,
-            // muteThreshold: 1,
-            // banThreshold: 2,
-            // ignoredPlayers: [],
         };
         this.bot = bot;
         this.stringChecker = unified()
@@ -82,8 +70,11 @@ export default class AutoMod {
             .use(stringify);
     }
 
-    private sendMessage(message: string) {
-        return sendWebhookMessage(this.options.channelID, message);
+    private sendMessage(
+        webhookCredentials: { id: string; token: string },
+        message: string
+    ) {
+        return sendWebhookMessage(webhookCredentials, message);
     }
 
     public async check(
@@ -297,6 +288,7 @@ export default class AutoMod {
                 }
 
                 this.sendMessage(
+                    rcon.webhooks.get("automod"),
                     `${
                         punishment.type === "globalban"
                             ? "Globally ban"

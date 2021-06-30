@@ -6,36 +6,42 @@ import CommandContext, {
 import { Embed } from "../structures/DiscordEmbed";
 
 export async function sendWebhookMessage(
-    webhookEndpoint: string,
+    webhookCredentials: { id: string; token: string },
     content: string
 ) {
-    if (!webhookEndpoint) return "Webhook endpoint not provided";
+    if (!webhookCredentials) return "Webhook endpoint not provided";
 
     const body = {
         content,
     };
 
-    return await send(webhookEndpoint, body);
+    return await send(webhookCredentials, body);
 }
 
-export async function sendWebhookEmbed(webhookEndpoint: string, embed: Embed) {
-    if (!webhookEndpoint) return "Webhook endpoint not provided";
+export async function sendWebhookEmbed(
+    webhookCredentials: { id: string; token: string },
+    embed: Embed
+) {
+    if (!webhookCredentials) return "Webhook endpoint not provided";
 
     const body = {
         embeds: [embed],
     };
 
-    return await send(webhookEndpoint, body);
+    return await send(webhookCredentials, body);
 }
 
-function send(webhookEndpoint: string, content: any) {
-    return fetch(webhookEndpoint, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(content),
-    });
+function send(webhookCredentials: { id: string; token: string }, content: any) {
+    return fetch(
+        `https://discord.com/api/webhooks/${webhookCredentials.id}/${webhookCredentials.token}`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(content),
+        }
+    );
 }
 
 export function mentionRole(id: string) {

@@ -266,6 +266,10 @@ export default abstract class BasePunishment {
         history: ILog[];
         global?: boolean;
     }) {
+        const webhookCredentials = this.bot.servers
+            .get(data.server)
+            .rcon.webhooks.get("permanent");
+
         let duration = data.duration && data.duration.toString();
 
         if (!data.duration) {
@@ -273,7 +277,7 @@ export default abstract class BasePunishment {
 
             if (["BAN", "GLOBAL BAN"].includes(data.type))
                 sendWebhookMessage(
-                    config.discord.webhookEndpoints.permanent,
+                    webhookCredentials,
                     `${data.player.name} (${outputPlayerIDs(
                         data.player.ids,
                         true
@@ -404,7 +408,7 @@ export default abstract class BasePunishment {
             color = data.type === "UNBAN" ? 3066993 : 2067276;
         }
 
-        sendWebhookEmbed(config.discord.webhookEndpoints.punishments, {
+        sendWebhookEmbed(webhookCredentials, {
             title: `${data.type} REPORT`,
             description: message.join("\n"),
             fields: [

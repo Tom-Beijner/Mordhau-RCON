@@ -21,6 +21,20 @@ export default class Rcon {
     connected: boolean = false;
     authenticated: boolean = false;
     reconnecting: boolean = false;
+    webhooks: Map<
+        | "chat"
+        | "punishments"
+        | "activity"
+        | "wanted"
+        | "permanent"
+        | "automod"
+        | "killstreak"
+        | "adminCalls",
+        {
+            id: string;
+            token: string;
+        }
+    > = new Map();
     admins: Set<string> = new Set();
     options: {
         adminListSaving: boolean;
@@ -386,7 +400,7 @@ export default class Rcon {
             );
 
             sendWebhookMessage(
-                config.discord.webhookEndpoints.activity,
+                this.webhooks.get("activity"),
                 `${flatMap(
                     config.discord.roles.filter((role) => role.receiveMentions),
                     (role) => role.Ids.map((id) => mentionRole(id))
@@ -437,7 +451,7 @@ export default class Rcon {
             );
 
             sendWebhookMessage(
-                config.discord.webhookEndpoints.activity,
+                this.webhooks.get("activity"),
                 `${flatMap(
                     config.discord.roles.filter((role) => role.receiveMentions),
                     (role) => role.Ids.map((id) => mentionRole(id))
@@ -717,7 +731,7 @@ export default class Rcon {
 
         if (process.env.NODE_ENV.trim() === "production")
             sendWebhookMessage(
-                config.discord.webhookEndpoints.activity,
+                this.webhooks.get("activity"),
                 `${admin ? "Admin" : "Player"} ${
                     player.name
                 } (${outputPlayerIDs(
@@ -759,7 +773,7 @@ export default class Rcon {
 
         if (process.env.NODE_ENV.trim() === "production")
             sendWebhookMessage(
-                config.discord.webhookEndpoints.wanted,
+                this.webhooks.get("activity"),
                 `Naughty ${admin ? "admin" : "player"} ${
                     player.name
                 } (${outputPlayerIDs(
@@ -798,7 +812,7 @@ export default class Rcon {
 
             if (process.env.NODE_ENV.trim() === "production") {
                 sendWebhookMessage(
-                    config.discord.webhookEndpoints.activity,
+                    this.webhooks.get("activity"),
                     `${admin ? "Admin" : "Player"} ${
                         player.name
                     } (${outputPlayerIDs(
@@ -824,7 +838,7 @@ export default class Rcon {
 
             if (process.env.NODE_ENV.trim() === "production") {
                 sendWebhookMessage(
-                    config.discord.webhookEndpoints.activity,
+                    this.webhooks.get("activity"),
                     `${admin ? "Admin" : "Player"} ${
                         player.name
                     } (${outputPlayerIDs(
@@ -850,7 +864,7 @@ export default class Rcon {
                     );
 
                     sendWebhookMessage(
-                        config.discord.webhookEndpoints.wanted,
+                        this.webhooks.get("wanted"),
                         `Naughty ${admin ? "admin" : "player"} ${
                             player.name
                         } (${outputPlayerIDs(
@@ -873,7 +887,7 @@ export default class Rcon {
                     );
 
                     sendWebhookMessage(
-                        config.discord.webhookEndpoints.wanted,
+                        this.webhooks.get("wanted"),
                         `Naughty ${admin ? "admin" : "player"} ${
                             player.name
                         } (${outputPlayerIDs(
@@ -1085,6 +1099,18 @@ export default class Rcon {
 
             await this.updateCache();
 
+            this.rcon.socket.once("end", async () => {
+                this.connected = false;
+                this.authenticated = false;
+
+                logger.info(
+                    "RCON",
+                    `Disconnected from server (Server: ${this.options.name})`
+                );
+
+                await this.reconnect();
+            });
+
             this.initiate = false;
         });
         this.rcon.on("end", async () => {
@@ -1230,7 +1256,7 @@ export default class Rcon {
                 const admin = this.admins.has(player.id);
 
                 await sendWebhookMessage(
-                    config.discord.webhookEndpoints.chat,
+                    this.webhooks.get("chat"),
                     `${admin ? "Admin" : "Player"} ${
                         player.name
                     } (${outputPlayerIDs(
