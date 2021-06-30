@@ -17,6 +17,7 @@
                 "port": 1234,
                 "password": "password",
                 "adminListSaving": true,
+                "ignoreGlobalPunishments": false,
                 "killstreaks": {
                     "enabled": true,
                     "countBotKills": false
@@ -31,6 +32,16 @@
                         "mutes": true,
                         "unmutes": false
                     }
+                },
+                "logChannels": {
+                    "chat": "",
+                    "punishments": "",
+                    "activity": "",
+                    "wanted": "",
+                    "permanent": "",
+                    "automod": "",
+                    "killstreak": "",
+                    "adminCalls": ""
                 }
             }
         }
@@ -85,16 +96,6 @@
     },
     "discord": {
         "guildId": "",
-        "webhookEndpoints": {
-            "chat": "",
-            "punishments": "",
-            "activity": "",
-            "wanted": "",
-            "permanent": "",
-            "automod": "",
-            "killstreak": "",
-            "adminCalls": ""
-        },
         "roles": [
             {
                 "name": "Mods",

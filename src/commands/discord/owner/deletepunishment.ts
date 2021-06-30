@@ -8,9 +8,9 @@ import {
     CommandOptionType,
     SlashCreator,
 } from "slash-create";
-import config from "../../../config.json";
 import { ComponentConfirmation } from "../../../services/Discord";
 import { LookupPlayer } from "../../../services/PlayFab";
+import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import logger from "../../../utils/logger";
@@ -54,8 +54,8 @@ export default class DeletePunishment extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: flatMap(
-                    config.discord.roles.filter((role) =>
+                [config.get("discord.guildId") as string]: flatMap(
+                    (config.get("discord.roles") as Role[]).filter((role) =>
                         role.commands.includes(commandName)
                     ),
                     (role) =>

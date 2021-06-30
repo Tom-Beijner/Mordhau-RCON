@@ -4,9 +4,9 @@ import path, { resolve as res } from "path";
 import pluralize from "pluralize";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { walk } from "walk";
-import config from "../config.json";
 import LogHandler from "../handlers/logHandler";
 import { CreateAccount, Login } from "../services/PlayFab";
+import config from "../structures/Config";
 import logger from "../utils/logger";
 import MordhauAPI from "../utils/MordhauAPI";
 import AntiSlur from "./AutoMod";
@@ -667,7 +667,7 @@ export default class Watchdog {
             ignoredFiles: ["src/locales/bannedWords.json"],
             downloadSubdirectory: "repo",
             backupSubdirectory: "backup",
-            autoUpdateInterval: config.autoUpdate.checkInterval,
+            autoUpdateInterval: config.get("autoUpdate.checkInterval"),
         });
 
         this.launch();
@@ -681,13 +681,14 @@ export default class Watchdog {
     }
 
     async launch() {
-        if (config.autoUpdate.enabled) await this.autoUpdater.autoUpdate();
+        if (config.get("autoUpdate.enabled"))
+            await this.autoUpdater.autoUpdate();
 
         const database = new Database({
-            host: config.database.host,
-            database: config.database.database,
-            username: config.database.username,
-            password: config.database.password,
+            host: config.get("database.host"),
+            database: config.get("database.database"),
+            username: config.get("database.username"),
+            password: config.get("database.password"),
         });
 
         this.database = await database.connect();
@@ -707,7 +708,7 @@ export default class Watchdog {
             updateAgeOnGet: true,
         });
 
-        this.setCacheMaxSize(config.servers.length);
+        this.setCacheMaxSize(config.get("servers").length);
 
         await CreateAccount();
 
@@ -716,11 +717,11 @@ export default class Watchdog {
 
         this.client.once("ready", async () => {
             const webhooks = await this.client.guilds
-                .get(config.discord.guildId)
+                .get(config.get("discord.guildId"))
                 .getWebhooks();
 
-            for (let i = 0; i < config.servers.length; i++) {
-                const server = config.servers[i];
+            for (let i = 0; i < config.get("servers").length; i++) {
+                const server = config.get("servers")[i];
 
                 for (const channel in server.rcon.logChannels) {
                     const channelID = server.rcon.logChannels[channel];
@@ -728,7 +729,7 @@ export default class Watchdog {
 
                     const fetchedChannel = this.client.guilds
 
-                        .get(config.discord.guildId)
+                        .get(config.get("discord.guildId"))
                         .channels.filter((channel) => channel.type === 0)
                         .find(
                             (channel) => channel.id === channelID
@@ -841,8 +842,8 @@ export default class Watchdog {
 
         await this.client.connect();
 
-        for (let i = 0; i < config.servers.length; i++) {
-            const server = config.servers[i];
+        for (let i = 0; i < config.get("servers").length; i++) {
+            const server = config.get("servers")[i];
 
             this.servers.set(server.name, {
                 rcon: new Rcon(this, {
@@ -855,14 +856,14 @@ export default class Watchdog {
 
         logger.info(
             "Bot",
-            `Loaded ${pluralize("server", config.servers.length, true)}`
+            `Loaded ${pluralize("server", config.get("servers").length, true)}`
         );
 
         this.antiSlur = new AntiSlur(this);
 
         this.slashCreator = new SlashCreator({
-            applicationID: config.bot.id,
-            publicKey: config.bot.publicKey,
+            applicationID: config.get("bot.id"),
+            publicKey: config.get("bot.publicKey"),
             token: this.token,
         })
             .withServer(

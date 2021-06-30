@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import config from "../config.json";
+import config from "../structures/Config";
 import Database from "../structures/Database";
 import { parsePlayerID } from "../utils/PlayerID";
 import migrationConfig from "./config.json";
@@ -45,10 +45,10 @@ async function getAllFiles(dirPath: string, arrayOfFiles?: Files[]) {
 
 (async function main() {
     const database = new Database({
-        host: config.database.host,
-        database: config.database.database,
-        username: config.database.username,
-        password: config.database.password,
+        host: config.get("database.host"),
+        database: config.get("database.database"),
+        username: config.get("database.username"),
+        password: config.get("database.password"),
     });
 
     await database.connect();

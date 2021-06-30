@@ -26,6 +26,7 @@
     "app-root-path": "^3.0.0",
     "array.prototype.flatmap": "^1.2.4",
     "cli-progress": "^3.8.2",
+    "conf": "^10.0.1",
     "cross-env": "^7.0.3",
     "crud-object-diff": "^2.3.5",
     "dashdash": "^2.0.0",

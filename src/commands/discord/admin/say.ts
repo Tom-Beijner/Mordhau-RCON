@@ -6,7 +6,7 @@ import {
     Message,
     SlashCreator,
 } from "slash-create";
-import config from "../../../config.json";
+import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import logger from "../../../utils/logger";
@@ -22,7 +22,7 @@ export default class Say extends SlashCommand {
                     description: "Server to run the command on",
                     required: true,
                     type: CommandOptionType.STRING,
-                    choices: config.servers.map((server) => ({
+                    choices: config.get("servers").map((server) => ({
                         name: server.name,
                         value: server.name,
                     })),
@@ -36,8 +36,8 @@ export default class Say extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: flatMap(
-                    config.discord.roles.filter((role) =>
+                [config.get("discord.guildId") as string]: flatMap(
+                    (config.get("discord.roles") as Role[]).filter((role) =>
                         role.commands.includes(commandName)
                     ),
                     (role) =>

@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 import { PlayFab, PlayFabClient, PlayFabData } from "playfab-sdk";
 import { promisify } from "util";
-import config from "../config.json";
+import config from "../structures/Config";
 import logger from "../utils/logger";
 import { parsePlayerID } from "../utils/PlayerID";
 
@@ -19,7 +19,7 @@ PlayFab.settings.titleId = titleId;
 export async function CreateAccount() {
     const body = {
         TitleId: PlayFab.settings.titleId,
-        CustomId: config.mordhau.accountId,
+        CustomId: config.get("mordhau.accountId"),
         CreateAccount: true,
     };
 
@@ -42,7 +42,7 @@ export async function Login() {
         // Currently, you need to look up the correct format for this object in the API-docs:
         // https://api.playfab.com/Documentation/Client/method/LoginWithCustomID
         TitleId: PlayFab.settings.titleId,
-        CustomId: config.mordhau.accountId,
+        CustomId: config.get("mordhau.accountId") as string,
     };
 
     try {

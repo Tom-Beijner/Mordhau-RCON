@@ -3,10 +3,10 @@ import { compareArrayVals } from "crud-object-diff";
 import { addSeconds, formatDistanceToNow } from "date-fns";
 import deepClean from "deep-cleaner";
 import pluralize from "pluralize";
-import config from "../config.json";
 import { Rcon as RconClient } from "../rcon";
 import { mentionRole, sendWebhookMessage } from "../services/Discord";
 import { LookupPlayer } from "../services/PlayFab";
+import config, { Role } from "../structures/Config";
 import logger from "../utils/logger";
 import { outputPlayerIDs } from "../utils/PlayerID";
 import KillStreak from "./KillStreak";
@@ -356,7 +356,7 @@ export default class Rcon {
 
         if (!unauthorizedNewAdmins && !unauthorizedRemovedAdmins) return;
 
-        if (!config.adminListSaving.rollbackAdmins)
+        if (!config.get("adminListSaving.rollbackAdmins"))
             this.admins = currentAdminList;
 
         // Unauthorized new admins
@@ -376,7 +376,7 @@ export default class Rcon {
             for (let i = 0; i < unauthorizedNewAdmins.length; i++) {
                 const adminID = unauthorizedNewAdmins[i];
 
-                if (config.adminListSaving.rollbackAdmins)
+                if (config.get("adminListSaving.rollbackAdmins"))
                     await this.removeAdmin(adminID);
 
                 affectedPlayers.push(
@@ -393,7 +393,7 @@ export default class Rcon {
                             `${player.name} (${outputPlayerIDs(player.ids)})`
                     )
                     .join(", ")} was given privileges without permission${
-                    config.adminListSaving.rollbackAdmins
+                    config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been removed"
                         : ""
                 } (Server: ${this.options.name})`
@@ -402,7 +402,9 @@ export default class Rcon {
             sendWebhookMessage(
                 this.webhooks.get("activity"),
                 `${flatMap(
-                    config.discord.roles.filter((role) => role.receiveMentions),
+                    (config.get("discord.roles") as Role[]).filter(
+                        (role) => role.receiveMentions
+                    ),
                     (role) => role.Ids.map((id) => mentionRole(id))
                 )} Following players: ${affectedPlayers
                     .map(
@@ -415,7 +417,7 @@ export default class Rcon {
                     .join(
                         ", "
                     )} was given admin privileges on without permission${
-                    config.adminListSaving.rollbackAdmins
+                    config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been removed"
                         : ""
                 } (Server: ${this.options.name})`
@@ -425,7 +427,7 @@ export default class Rcon {
             for (let i = 0; i < unauthorizedRemovedAdmins.length; i++) {
                 const adminID = unauthorizedRemovedAdmins[i];
 
-                if (config.adminListSaving.rollbackAdmins)
+                if (config.get("adminListSaving.rollbackAdmins"))
                     await this.addAdmin(adminID);
 
                 affectedAdmins.push(
@@ -444,7 +446,7 @@ export default class Rcon {
                     .join(
                         ", "
                     )} had their privileges removed without permission${
-                    config.adminListSaving.rollbackAdmins
+                    config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been added back"
                         : ""
                 } (Server: ${this.options.name})`
@@ -453,7 +455,9 @@ export default class Rcon {
             sendWebhookMessage(
                 this.webhooks.get("activity"),
                 `${flatMap(
-                    config.discord.roles.filter((role) => role.receiveMentions),
+                    (config.get("discord.roles") as Role[]).filter(
+                        (role) => role.receiveMentions
+                    ),
                     (role) => role.Ids.map((id) => mentionRole(id))
                 )} Following admins: ${affectedAdmins
                     .map(
@@ -463,7 +467,7 @@ export default class Rcon {
                     .join(
                         ", "
                     )} had their privileges removed without permission${
-                    config.adminListSaving.rollbackAdmins
+                    config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been added back"
                         : ""
                 } (Server: ${this.options.name})`
@@ -1269,10 +1273,10 @@ export default class Rcon {
                     await this.bot.antiSlur.check(this, player, message);
                 // }
 
-                if (!message.startsWith(config.ingamePrefix)) return;
+                if (!message.startsWith(config.get("ingamePrefix"))) return;
 
                 const args = message
-                    .slice(config.ingamePrefix.length)
+                    .slice(config.get("ingamePrefix").length)
                     .trim()
                     .split(/ +/);
 

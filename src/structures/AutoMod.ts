@@ -5,9 +5,9 @@ import english from "retext-english";
 import factory from "retext-profanities/factory.js";
 import stringify from "retext-stringify";
 import unified from "unified";
-import config from "../config.json";
 import baseList from "../locales/bannedWords.json";
 import { sendWebhookMessage } from "../services/Discord";
+import config, { InfractionThreshold } from "../structures/Config";
 import logger from "../utils/logger";
 import { outputPlayerIDs } from "../utils/PlayerID";
 import Rcon from "./Rcon";
@@ -86,7 +86,8 @@ export default class AutoMod {
         },
         message: string
     ) {
-        if (config.automod.adminsBypass && rcon.admins.has(player.id)) return;
+        if (config.get("automod.adminsBypass") && rcon.admins.has(player.id))
+            return;
 
         const result = await this.stringChecker.process(message);
 
@@ -124,14 +125,15 @@ export default class AutoMod {
             (words) => words
         ).join(", ");
 
-        for (const infractionsThreshhold in config.automod
-            .infractionThresholds) {
-            console.log(infractionsThreshhold, playerMessages.infractions);
+        for (const infractionsThreshhold in config.get(
+            "automod.infractionThresholds"
+        ) as { [key: string]: InfractionThreshold }) {
             if (
                 parseInt(infractionsThreshhold) === playerMessages.infractions
             ) {
-                const punishment: Punishment =
-                    config.automod.infractionThresholds[infractionsThreshhold];
+                const punishment: Punishment = config.get(
+                    `automod.infractionThresholds[${infractionsThreshhold}]`
+                );
                 const server = this.bot.cachedPlayers.get(player.id)?.server;
                 const admin = {
                     ids: { playFabID: "1337" },
@@ -338,7 +340,7 @@ export default class AutoMod {
 
                 if (
                     parseInt(infractionsThreshhold) >=
-                    Object.keys(config.automod.infractionThresholds).length
+                    Object.keys(config.get("automod.infractionThresholds")).length
                 ) {
                     await this.bot.database.Infractions.deleteOne({
                         id: player.id,

@@ -1,10 +1,10 @@
 import { addMinutes, formatDistanceToNow } from "date-fns";
 import fetch from "node-fetch";
 import pluralize from "pluralize";
-import config from "../config.json";
 import { ILog } from "../models/logSchema";
 import { sendWebhookEmbed, sendWebhookMessage } from "../services/Discord";
 import { LookupPlayer } from "../services/PlayFab";
+import config from "../structures/Config";
 import { hastebin } from "../utils/Hastebin";
 import logger from "../utils/logger";
 import { outputPlayerIDs, parsePlayerID } from "../utils/PlayerID";
@@ -157,9 +157,9 @@ export default abstract class BasePunishment {
             }`
         );
 
-        const server = config.servers.find(
-            (server) => server.name === payload.server
-        );
+        const server = config
+            .get("servers")
+            .find((server) => server.name === payload.server);
 
         if (process.env.NODE_ENV.trim() !== "production") return;
 
@@ -177,7 +177,9 @@ export default abstract class BasePunishment {
         let playeravatar: string;
         if (playerHistory.ids.steamID) {
             await fetch(
-                `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${config.steam.key}&steamids=${playerHistory.ids.steamID}`
+                `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${config.get(
+                    "steam.key"
+                )}&steamids=${playerHistory.ids.steamID}`
             )
                 .then(async (res) => {
                     const json = await res.json();

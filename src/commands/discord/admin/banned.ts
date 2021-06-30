@@ -6,8 +6,8 @@ import {
     CommandOptionType,
     SlashCreator,
 } from "slash-create";
-import config from "../../../config.json";
 import { LookupPlayer } from "../../../services/PlayFab";
+import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 
@@ -26,8 +26,8 @@ export default class Banned extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: flatMap(
-                    config.discord.roles.filter((role) =>
+                [config.get("discord.guildId") as string]: flatMap(
+                    (config.get("discord.roles") as Role[]).filter((role) =>
                         role.commands.includes(commandName)
                     ),
                     (role) =>

@@ -8,8 +8,8 @@ import {
     CommandOptionType,
     SlashCreator,
 } from "slash-create";
-import config from "../../../config.json";
 import { LookupPlayer } from "../../../services/PlayFab";
+import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import { hastebin } from "../../../utils";
@@ -30,8 +30,8 @@ export default class History extends SlashCommand {
             ],
             defaultPermission: false,
             permissions: {
-                [config.discord.guildId]: flatMap(
-                    config.discord.roles.filter((role) =>
+                [config.get("discord.guildId") as string]: flatMap(
+                    (config.get("discord.roles") as Role[]).filter((role) =>
                         role.commands.includes(commandName)
                     ),
                     (role) =>
@@ -70,7 +70,9 @@ export default class History extends SlashCommand {
 
         if (playerHistory.ids.steamID) {
             await fetch(
-                `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${config.steam.key}&steamids=${playerHistory.ids.steamID}`
+                `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${config.get(
+                    "steam.key"
+                )}&steamids=${playerHistory.ids.steamID}`
             )
                 .then(async (res) => {
                     const json = await res.json();

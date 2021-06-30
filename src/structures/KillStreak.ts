@@ -1,5 +1,5 @@
-import config from "../config.json";
 import { sendWebhookMessage } from "../services/Discord";
+import config from "../structures/Config";
 import logger from "../utils/logger";
 import Rcon from "./Rcon";
 
@@ -130,12 +130,12 @@ export default class KillStreak {
             if (!this.cache.canFirstBlood) return;
             this.cache.canFirstBlood = false;
             message =
-                config.killstreakMessages["1"] ||
+                config.get("killstreakMessages")["1"] ||
                 `${winner.name} got first blood!`;
         } else {
-            for (const killsThreshhold in config.killstreakMessages) {
+            for (const killsThreshhold in config.get("killstreakMessages")) {
                 if (parseInt(killsThreshhold) === kills) {
-                    message = config.killstreakMessages[killsThreshhold];
+                    message = config.get("killstreakMessages")[killsThreshhold];
                     break;
                 }
             }
