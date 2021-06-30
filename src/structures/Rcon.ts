@@ -38,6 +38,7 @@ export default class Rcon {
     admins: Set<string> = new Set();
     options: {
         adminListSaving: boolean;
+        ignoreGlobalPunishments: boolean;
         killstreaks: {
             enabled: boolean;
             countBotKills: boolean;
@@ -55,6 +56,7 @@ export default class Rcon {
         bot: Watchdog,
         options: {
             adminListSaving: boolean;
+            ignoreGlobalPunishments: boolean;
             killstreaks: {
                 enabled: boolean;
                 countBotKills: boolean;

@@ -277,15 +277,21 @@ export default class Watchdog {
             }[] = [];
 
             for (const [serverName, server] of this.servers) {
-                if (!server.rcon.connected || !server.rcon.authenticated) {
+                if (
+                    server.rcon.options.ignoreGlobalPunishments ||
+                    !server.rcon.connected ||
+                    !server.rcon.authenticated
+                ) {
                     servers.push({
                         name: serverName,
                         data: {
-                            result: `Not ${
-                                !server.rcon.connected
-                                    ? "connected"
-                                    : "authenticated"
-                            } to server`,
+                            result: server.rcon.options.ignoreGlobalPunishments
+                                ? "Ignores global punishments"
+                                : `Not ${
+                                      !server.rcon.connected
+                                          ? "connected"
+                                          : "authenticated"
+                                  } to server`,
                             failed: true,
                         },
                     });
@@ -344,8 +350,9 @@ export default class Watchdog {
             }
 
             if (
+                this.servers.size &&
                 this.servers.size !==
-                servers.filter((server) => server.data.failed).length
+                    servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.banHandler.execute(
                     "Global",
@@ -379,15 +386,21 @@ export default class Watchdog {
             }[] = [];
 
             for (const [serverName, server] of this.servers) {
-                if (!server.rcon.connected || !server.rcon.authenticated) {
+                if (
+                    server.rcon.options.ignoreGlobalPunishments ||
+                    !server.rcon.connected ||
+                    !server.rcon.authenticated
+                ) {
                     servers.push({
                         name: serverName,
                         data: {
-                            result: `Not ${
-                                !server.rcon.connected
-                                    ? "connected"
-                                    : "authenticated"
-                            } to server`,
+                            result: server.rcon.options.ignoreGlobalPunishments
+                                ? "Ignores global punishments"
+                                : `Not ${
+                                      !server.rcon.connected
+                                          ? "connected"
+                                          : "authenticated"
+                                  } to server`,
                             failed: true,
                         },
                     });
@@ -444,8 +457,9 @@ export default class Watchdog {
             }
 
             if (
+                this.servers.size &&
                 this.servers.size !==
-                servers.filter((server) => server.data.failed).length
+                    servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.muteHandler.execute(
                     "Global",
@@ -478,15 +492,21 @@ export default class Watchdog {
             }[] = [];
 
             for (const [serverName, server] of this.servers) {
-                if (!server.rcon.connected || !server.rcon.authenticated) {
+                if (
+                    server.rcon.options.ignoreGlobalPunishments ||
+                    !server.rcon.connected ||
+                    !server.rcon.authenticated
+                ) {
                     servers.push({
                         name: serverName,
                         data: {
-                            result: `Not ${
-                                !server.rcon.connected
-                                    ? "connected"
-                                    : "authenticated"
-                            } to server`,
+                            result: server.rcon.options.ignoreGlobalPunishments
+                                ? "Ignores global punishments"
+                                : `Not ${
+                                      !server.rcon.connected
+                                          ? "connected"
+                                          : "authenticated"
+                                  } to server`,
                             failed: true,
                         },
                     });
@@ -535,8 +555,9 @@ export default class Watchdog {
             }
 
             if (
+                this.servers.size &&
                 this.servers.size !==
-                servers.filter((server) => server.data.failed).length
+                    servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.unbanHandler.execute(
                     "Global",
@@ -569,15 +590,21 @@ export default class Watchdog {
             }[] = [];
 
             for (const [serverName, server] of this.servers) {
-                if (!server.rcon.connected || !server.rcon.authenticated) {
+                if (
+                    server.rcon.options.ignoreGlobalPunishments ||
+                    !server.rcon.connected ||
+                    !server.rcon.authenticated
+                ) {
                     servers.push({
                         name: serverName,
                         data: {
-                            result: `Not ${
-                                !server.rcon.connected
-                                    ? "connected"
-                                    : "authenticated"
-                            } to server`,
+                            result: server.rcon.options.ignoreGlobalPunishments
+                                ? "Ignores global punishments"
+                                : `Not ${
+                                      !server.rcon.connected
+                                          ? "connected"
+                                          : "authenticated"
+                                  } to server`,
                             failed: true,
                         },
                     });
@@ -624,8 +651,9 @@ export default class Watchdog {
             }
 
             if (
+                this.servers.size &&
                 this.servers.size !==
-                servers.filter((server) => server.data.failed).length
+                    servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.unmuteHandler.execute(
                     "Global",
