@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   You can now toggle servers to ignore global punishments
+-   You can now toggle servers to ignore global punishments (using `ignoreGlobalPunishments`)
 
 ### Changed
 
