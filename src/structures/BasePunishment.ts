@@ -268,10 +268,6 @@ export default abstract class BasePunishment {
         history: ILog[];
         global?: boolean;
     }) {
-        const webhookCredentials = this.bot.servers
-            .get(data.server)
-            .rcon.webhooks.get("permanent");
-
         let duration = data.duration && data.duration.toString();
 
         if (!data.duration) {
@@ -279,7 +275,9 @@ export default abstract class BasePunishment {
 
             if (["BAN", "GLOBAL BAN"].includes(data.type))
                 sendWebhookMessage(
-                    webhookCredentials,
+                    this.bot.servers
+                        .get(data.server)
+                        .rcon.webhooks.get("permanent"),
                     `${data.player.name} (${outputPlayerIDs(
                         data.player.ids,
                         true
@@ -410,39 +408,42 @@ export default abstract class BasePunishment {
             color = data.type === "UNBAN" ? 3066993 : 2067276;
         }
 
-        sendWebhookEmbed(webhookCredentials, {
-            title: `${data.type} REPORT`,
-            description: message.join("\n"),
-            fields: [
-                {
-                    name: "Player",
-                    value: [
-                        `**Name**: \`${data.player.name}\``,
-                        `**PlayFabID**: \`${data.player.ids.playFabID}\``,
-                        `**SteamID**: [${data.player.ids.steamID}](<http://steamcommunity.com/profiles/${data.player.ids.steamID}>)`,
-                        `**Previous Names**: \`${
-                            data.previousNames.length
-                                ? data.previousNames
-                                : "None"
-                        }\``,
-                        `**Total Duration**: \`${pluralize(
-                            "minute",
-                            totalDuration,
-                            true
-                        )}\``,
-                    ].join("\n"),
+        sendWebhookEmbed(
+            this.bot.servers.get(data.server).rcon.webhooks.get("punishments"),
+            {
+                title: `${data.type} REPORT`,
+                description: message.join("\n"),
+                fields: [
+                    {
+                        name: "Player",
+                        value: [
+                            `**Name**: \`${data.player.name}\``,
+                            `**PlayFabID**: \`${data.player.ids.playFabID}\``,
+                            `**SteamID**: [${data.player.ids.steamID}](<http://steamcommunity.com/profiles/${data.player.ids.steamID}>)`,
+                            `**Previous Names**: \`${
+                                data.previousNames.length
+                                    ? data.previousNames
+                                    : "None"
+                            }\``,
+                            `**Total Duration**: \`${pluralize(
+                                "minute",
+                                totalDuration,
+                                true
+                            )}\``,
+                        ].join("\n"),
+                    },
+                    {
+                        name: `Previous Offenses (${data.history.length})`,
+                        value: pastOffenses,
+                    },
+                ],
+                color,
+                image: {
+                    url: data.playeravatar,
                 },
-                {
-                    name: `Previous Offenses (${data.history.length})`,
-                    value: pastOffenses,
-                },
-            ],
-            color,
-            image: {
-                url: data.playeravatar,
-            },
-            timestamp: new Date(data.date).toISOString(),
-        });
+                timestamp: new Date(data.date).toISOString(),
+            }
+        );
 
         logger.debug("Bot", "Message sent.");
     }
