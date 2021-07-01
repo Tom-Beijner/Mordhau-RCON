@@ -647,6 +647,7 @@ export default new Conf<Config>({
                     killstreak: "",
                     adminCalls: "",
                 });
+                // @ts-ignore
                 store.delete("discord.webhookEndpoints");
             }
         },
