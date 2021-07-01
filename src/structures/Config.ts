@@ -631,4 +631,24 @@ export default new Conf<Config>({
             password: "",
         },
     },
+    migrations: {
+        "1.4.0": (store) => {
+            const servers = store.get("servers");
+
+            for (let i = 0; i < servers.length; i++) {
+                store.set(`servers[${i}].rcon.ignoreGlobalPunishments`, false);
+                store.set(`servers[${i}].rcon.logChannels`, {
+                    chat: "",
+                    punishments: "",
+                    activity: "",
+                    wanted: "",
+                    permanent: "",
+                    automod: "",
+                    killstreak: "",
+                    adminCalls: "",
+                });
+                store.delete("discord.webhookEndpoints");
+            }
+        },
+    },
 });
