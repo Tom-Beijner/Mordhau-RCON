@@ -42,6 +42,7 @@ For setting discord role commands access
 ```
 ban
 banned
+chatlog
 deletehistory
 deletepunishment
 globalban

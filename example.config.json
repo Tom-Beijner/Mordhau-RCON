@@ -103,6 +103,7 @@
                 "commands": [
                     "ban",
                     "banned",
+                    "chatlog",
                     "history",
                     "kick",
                     "mute",

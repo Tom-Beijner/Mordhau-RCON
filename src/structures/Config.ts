@@ -391,6 +391,7 @@ export default new Conf<Config>({
                                     enum: [
                                         "ban",
                                         "banned",
+                                        "chatlog",
                                         "deletehistory",
                                         "deletepunishment",
                                         "globalban",
@@ -562,6 +563,7 @@ export default new Conf<Config>({
                     commands: [
                         "ban",
                         "banned",
+                        "chatlog",
                         "history",
                         "kick",
                         "mute",
