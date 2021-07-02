@@ -638,8 +638,8 @@ export default new Conf<Config>({
             const servers = store.get("servers");
 
             for (let i = 0; i < servers.length; i++) {
-                store.set(`servers[${i}].rcon.ignoreGlobalPunishments`, false);
-                store.set(`servers[${i}].rcon.logChannels`, {
+                store.set(`servers.${i}.rcon.ignoreGlobalPunishments`, false);
+                store.set(`servers.${i}.rcon.logChannels`, {
                     chat: "",
                     punishments: "",
                     activity: "",

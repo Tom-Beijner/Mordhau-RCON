@@ -130,12 +130,14 @@ export default class KillStreak {
             if (!this.cache.canFirstBlood) return;
             this.cache.canFirstBlood = false;
             message =
-                config.get("killstreakMessages")["1"] ||
+                config.get("killstreakMessages.1") ||
                 `${winner.name} got first blood!`;
         } else {
             for (const killsThreshhold in config.get("killstreakMessages")) {
                 if (parseInt(killsThreshhold) === kills) {
-                    message = config.get("killstreakMessages")[killsThreshhold];
+                    message = config.get(
+                        `killstreakMessages.${killsThreshhold}`
+                    );
                     break;
                 }
             }

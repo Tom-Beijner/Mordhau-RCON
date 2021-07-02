@@ -132,7 +132,7 @@ export default class AutoMod {
                 parseInt(infractionsThreshhold) === playerMessages.infractions
             ) {
                 const punishment: Punishment = config.get(
-                    `automod.infractionThresholds[${infractionsThreshhold}]`
+                    `automod.infractionThresholds.${infractionsThreshhold}`
                 );
                 const server = this.bot.cachedPlayers.get(player.id)?.server;
                 const admin = {
@@ -340,7 +340,8 @@ export default class AutoMod {
 
                 if (
                     parseInt(infractionsThreshhold) >=
-                    Object.keys(config.get("automod.infractionThresholds")).length
+                    Object.keys(config.get("automod.infractionThresholds"))
+                        .length
                 ) {
                     await this.bot.database.Infractions.deleteOne({
                         id: player.id,
