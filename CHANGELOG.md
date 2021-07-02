@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 -   Moved `bannedWords.json` and migration config.json (which is now named `migration.json`) file to root directory of the project
--   Global punishments (`ban` and `mute`) will now override currently applied punishment duration (though if the player is already permanently banned on a server the player's current duration will not be forced)
+-   Global punishments (`ban` and `mute`) will now override currently applied punishment duration (though if the player is already permanently banned or muted on a server the player's current duration will not be forced)
 
 ### Fixed
 
