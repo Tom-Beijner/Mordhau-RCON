@@ -302,9 +302,25 @@ export default class Watchdog {
                     continue;
                 }
 
-                // const bannedPlayer = await server.rcon.getBannedPlayer(
-                //     player.id
-                // );
+                const bannedPlayer = await server.rcon.getBannedPlayer(
+                    player.id
+                );
+
+                if (bannedPlayer) {
+                    if (Number(bannedPlayer.duration) === 0) {
+                        servers.push({
+                            name: serverName,
+                            data: {
+                                result: "Player is currently permanently banned",
+                                failed: true,
+                            },
+                        });
+
+                        continue;
+                    }
+
+                    await server.rcon.send(`unban ${player.id}`);
+                }
 
                 // if (bannedPlayer) {
                 //     servers.push({
@@ -411,7 +427,23 @@ export default class Watchdog {
                     continue;
                 }
 
-                // const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
+                const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
+
+                if (mutedPlayer) {
+                    if (Number(mutedPlayer.duration) === 0) {
+                        servers.push({
+                            name: serverName,
+                            data: {
+                                result: "Player is currently permanently muted",
+                                failed: true,
+                            },
+                        });
+
+                        continue;
+                    }
+
+                    await server.rcon.send(`unmute ${player.id}`);
+                }
 
                 // if (mutedPlayer) {
                 //     servers.push({
