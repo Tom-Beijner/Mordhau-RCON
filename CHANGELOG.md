@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5] - 2021-07-02
+
+### Added
+
+-   Added global add/remove admin commands (Totally didn't mark the todo for this as done without adding them)
+-   Auto Updater now sends a message every 5 minutes to remind the user to restart the bot after an update have been installed
+-   Added a check for some array fields for `config.json` and `bannedWords.json` to only allow unique items
+
+### Changed
+
+-   Moved `bannedWords.json` and migration config.json (which is now named `migration.json`) file to root directory of the project
+-   Global punishments (`ban` and `mute`) will now override currently applied punishment duration (though if the player is already permanently banned on a server the player's current duration will not be forced)
+
+### Fixed
+
+-   Fixed dot notation to use correct format (fixes `automod` and config auto `migration`)
+-   Fixed naughty message notification being sent to activity instead of wanted channel
+
 ## [1.4.1] - 2021-07-01
 
 ### Fixed

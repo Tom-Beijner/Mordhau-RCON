@@ -35,6 +35,8 @@ You can only have a maximum of 25 servers (not that you will have that many) as 
 
 Invite your bot using the link (replace "\<bot ID\>" with your bot ID): https://discord.com/api/oauth2/authorize?client_id=<bot ID\>&permissions=536870912&scope=applications.commands%20bot
 
+Auto updater will download, install all dependencies, build and migrate configs automatically when theres a update available, only thing you should do is make sure the settings in the `config` files fits your preferences.
+
 #### Commands
 
 For setting discord role commands access
@@ -69,7 +71,7 @@ update
 -   Per-server punishments saving (You can customize each server to save specific punishment types or just disable it altogether)
 -   Global punishments (Servers can be set to ignore global punishments)
 -   Killstreaks (You can toggle this feature, as well as a toggle to count bot kills for each server and customize it, for each kill threshold with its message. The available variables are `{name}` and `{kills}`)
--   Automod (Currently a hardcoded threshold is in place but you can define which words should be forbidden in the `bannedWords.json` file located in the `locales` directory)
+-   Automod (Fully customizable, you can also change the profane words list by configuring `bannedWords.json`)
 -   Admin list saving/rollback (Toggleable feature with notify only mode)
 -   Auto Update (The bot will automatically download and overwrite files though you have to manually configure and build the bot)
 
@@ -83,7 +85,7 @@ update
 ## Installation
 
 1. Clone the repository
-2. Copy `example.config.json` file (as well as in `src/migration`) as `config.json` and edit the values
+2. Copy `example.config.json` file as `config.json` and edit the settings
 3. Install the required dependencies: `npm install` or `yarn install`
 4. Build the bot: `npm run build` or `yarn build`
 5. Start the bot `npm run start` or `yarn start`
