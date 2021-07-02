@@ -9,6 +9,7 @@ import { promisify } from "util";
 import logger from "../utils/logger";
 
 const downloadPromise = promisify(download);
+const execPromise = promisify(exec);
 
 interface Config {
     repository: string;
@@ -172,6 +173,16 @@ export default class AutoUpdater {
                 });
             });
 
+            const { stderr } = await execPromise("npm run build");
+            if (stderr) {
+                logger.error(
+                    "Auto Updater",
+                    `Error occurred while building (${stderr})`
+                );
+
+                throw new Error(stderr);
+            }
+
             const changelog = removeMarkdown(
                 (
                     await fs.readFile(`${appRootPath}/CHANGELOG.md`, "utf8")
@@ -198,6 +209,14 @@ export default class AutoUpdater {
                 "Auto Updater",
                 "Carefully read through the changelog and make any necessary changes"
             );
+
+            setInterval(() => {
+                logger.warn(
+                    "Auto Updater",
+                    `Bot was updated to ${this.readLocalVersion()}, restart the bot`
+                );
+                300000;
+            });
 
             return { success: true, error: null };
         } catch (error) {
