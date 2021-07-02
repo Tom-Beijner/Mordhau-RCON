@@ -1,3 +1,4 @@
+import flatMap from "array.prototype.flatmap";
 import Eris, { Client } from "eris";
 import LRU from "lru-cache";
 import path, { resolve as res } from "path";
@@ -5,10 +6,12 @@ import pluralize from "pluralize";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { walk } from "walk";
 import LogHandler from "../handlers/logHandler";
+import { mentionRole, sendWebhookMessage } from "../services/Discord";
 import { CreateAccount, Login } from "../services/PlayFab";
-import config from "../structures/Config";
+import config, { Role } from "../structures/Config";
 import logger from "../utils/logger";
 import MordhauAPI from "../utils/MordhauAPI";
+import { outputPlayerIDs } from "../utils/PlayerID";
 import AntiSlur from "./AutoMod";
 import AutoUpdater from "./AutoUpdater";
 import BaseRCONCommand from "./BaseRCONCommands";
@@ -664,6 +667,154 @@ export default class Watchdog {
                     null,
                     true
                 );
+            }
+
+            return servers;
+        },
+        globalAddAdmin: async (player: {
+            ids: { playFabID: string; steamID: string };
+            id: string;
+            name?: string;
+        }) => {
+            const servers: {
+                name: string;
+                data: { result: string; failed: boolean };
+            }[] = [];
+
+            for (const [serverName, server] of this.servers) {
+                if (
+                    server.rcon.admins.has(player.id) ||
+                    !server.rcon.connected ||
+                    !server.rcon.authenticated
+                ) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: server.rcon.admins.has(player.id)
+                                ? "Already an admin"
+                                : `Not ${
+                                      !server.rcon.connected
+                                          ? "connected"
+                                          : "authenticated"
+                                  } to server`,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                server.rcon.admins.add(player.id);
+
+                let result = await server.rcon.send(`addadmin ${player.id}`);
+                result = result.split("\n")[0].trim();
+
+                if (!result.includes("is now an admin")) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: result,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                sendWebhookMessage(
+                    server.rcon.webhooks.get("activity"),
+                    `${flatMap(
+                        (config.get("discord.roles") as Role[]).filter(
+                            (role) => role.receiveMentions
+                        ),
+                        (role) => role.Ids.map((id) => mentionRole(id))
+                    )} ${player.name} (${outputPlayerIDs(
+                        player.ids,
+                        true
+                    )})) was given admin privileges (Reason: Global Add Admin)`
+                );
+
+                servers.push({
+                    name: serverName,
+                    data: {
+                        result,
+                        failed: false,
+                    },
+                });
+            }
+
+            return servers;
+        },
+        globalRemoveAdmin: async (player: {
+            ids: { playFabID: string; steamID: string };
+            id: string;
+            name?: string;
+        }) => {
+            const servers: {
+                name: string;
+                data: { result: string; failed: boolean };
+            }[] = [];
+
+            for (const [serverName, server] of this.servers) {
+                if (
+                    !server.rcon.admins.has(player.id) ||
+                    !server.rcon.connected ||
+                    !server.rcon.authenticated
+                ) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: !server.rcon.admins.has(player.id)
+                                ? "Not an admin"
+                                : `Not ${
+                                      !server.rcon.connected
+                                          ? "connected"
+                                          : "authenticated"
+                                  } to server`,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                server.rcon.admins.delete(player.id);
+
+                let result = await server.rcon.send(`removeadmin ${player.id}`);
+                result = result.split("\n")[0].trim();
+                console.log(result);
+                if (!result.includes("is no longer an admin")) {
+                    servers.push({
+                        name: serverName,
+                        data: {
+                            result: result,
+                            failed: true,
+                        },
+                    });
+
+                    continue;
+                }
+
+                sendWebhookMessage(
+                    server.rcon.webhooks.get("activity"),
+                    `${flatMap(
+                        (config.get("discord.roles") as Role[]).filter(
+                            (role) => role.receiveMentions
+                        ),
+                        (role) => role.Ids.map((id) => mentionRole(id))
+                    )} ${player.name} (${outputPlayerIDs(
+                        player.ids,
+                        true
+                    )})) had their admin privileges removed (Reason: Global Remove Admin)`
+                );
+
+                servers.push({
+                    name: serverName,
+                    data: {
+                        result,
+                        failed: false,
+                    },
+                });
             }
 
             return servers;

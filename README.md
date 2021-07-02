@@ -58,6 +58,8 @@ unban
 unmute
 addadmin
 removeadmin
+globaladdadmin
+globalremoveadmin
 rcon
 update
 ```
