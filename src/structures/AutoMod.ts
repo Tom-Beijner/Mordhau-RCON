@@ -44,7 +44,8 @@ export default class AutoMod {
                     items: {
                         type: "string",
                     },
-                    exclusiveMinimum: 0,
+                    minItems: 1,
+                    uniqueItems: true,
                 },
             },
             defaults: {
