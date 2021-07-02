@@ -779,7 +779,7 @@ export default class Rcon {
 
         if (process.env.NODE_ENV.trim() === "production")
             sendWebhookMessage(
-                this.webhooks.get("activity"),
+                this.webhooks.get("wanted"),
                 `Naughty ${admin ? "admin" : "player"} ${
                     player.name
                 } (${outputPlayerIDs(
