@@ -1,9 +1,9 @@
+import Conf from "conf";
 import fs from "fs/promises";
 import path from "path";
 import config from "../structures/Config";
 import Database from "../structures/Database";
 import { parsePlayerID } from "../utils/PlayerID";
-import migrationConfig from "./config.json";
 
 interface History {
     BanDate: string;
@@ -53,6 +53,39 @@ async function getAllFiles(dirPath: string, arrayOfFiles?: Files[]) {
 
     await database.connect();
 
+    const migrationConfig = new Conf({
+        configName: "migration",
+        cwd: "./",
+        accessPropertiesByDotNotation: true,
+        schema: {
+            exclude: {
+                type: "object",
+                properties: {
+                    admins: {
+                        type: "array",
+                        items: {
+                            type: "string",
+                        },
+                        exclusiveMinimum: 0,
+                    },
+                    players: {
+                        type: "array",
+                        items: {
+                            type: "string",
+                        },
+                        exclusiveMinimum: 0,
+                    },
+                },
+            },
+        },
+        defaults: {
+            exclude: {
+                admins: [],
+                players: [],
+            },
+        },
+    });
+
     try {
         const directoryExists = await fs.stat(path.join(__dirname, "save"));
 
@@ -78,7 +111,12 @@ async function getAllFiles(dirPath: string, arrayOfFiles?: Files[]) {
         );
 
         for (const player in punishments) {
-            if (migrationConfig.exclude.players.includes(player)) continue;
+            if (
+                (migrationConfig.get("exclude.players") as string[]).includes(
+                    player
+                )
+            )
+                continue;
 
             const { history }: { history: History[] } = punishments[player];
 
@@ -90,7 +128,11 @@ async function getAllFiles(dirPath: string, arrayOfFiles?: Files[]) {
                 const regex = new RegExp(/.+((?<=\()(.*?)(?=\s*\)).+)$/g);
                 const regexParsed = regex.exec(admin);
 
-                if (migrationConfig.exclude.admins.includes(regexParsed[2]))
+                if (
+                    (
+                        migrationConfig.get("exclude.admins") as string[]
+                    ).includes(regexParsed[2])
+                )
                     continue;
 
                 const duplicate = await database.Logs.findOne({
