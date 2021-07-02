@@ -1,11 +1,10 @@
 import flatMap from "array.prototype.flatmap";
-import NodeCache from "node-cache";
+import Conf from "conf";
 import pluralize from "pluralize";
 import english from "retext-english";
 import factory from "retext-profanities/factory.js";
 import stringify from "retext-stringify";
 import unified from "unified";
-import baseList from "../locales/bannedWords.json";
 import { sendWebhookMessage } from "../services/Discord";
 import config, { InfractionThreshold } from "../structures/Config";
 import logger from "../utils/logger";
@@ -25,17 +24,8 @@ export interface Punishment {
 }
 
 export default class AutoMod {
-    // <
-    //     string,
-    //     { message: string; profaneWords: string[] }[]
-    // >
-    public cache: {
-        playerMessages: NodeCache;
-    } = {
-        // TTL 8.333333 hours
-        playerMessages: new NodeCache({ stdTTL: 30000 }),
-    };
     private bot: Watchdog;
+    public profaneWords: string[];
     public options: IOptions;
     private stringChecker: unified.Processor<unified.Settings>;
 
@@ -44,12 +34,79 @@ export default class AutoMod {
             name: "AutoMod",
         };
         this.bot = bot;
+        const config = new Conf({
+            configName: "bannedWords",
+            cwd: "./",
+            accessPropertiesByDotNotation: true,
+            schema: {
+                words: {
+                    type: "array",
+                    items: {
+                        type: "string",
+                    },
+                    exclusiveMinimum: 0,
+                },
+            },
+            defaults: {
+                words: [
+                    "beaners",
+                    "beaner",
+                    "bimbo",
+                    "coon",
+                    "coons",
+                    "cunt",
+                    "cunts",
+                    "darkie",
+                    "darkies",
+                    "fag",
+                    "fags",
+                    "faggot",
+                    "faggots",
+                    "gook",
+                    "hooker",
+                    "kike",
+                    "kikes",
+                    "nazi",
+                    "nazis",
+                    "neonazi",
+                    "neonazis",
+                    "negro",
+                    "negros",
+                    "nigga",
+                    "niggas",
+                    "nigger",
+                    "niggers",
+                    "niglet",
+                    "paki",
+                    "pakis",
+                    "raghead",
+                    "ragheads",
+                    "shemale",
+                    "shemales",
+                    "slut",
+                    "sluts",
+                    "spic",
+                    "spics",
+                    "swastika",
+                    "towelhead",
+                    "towelheads",
+                    "tranny",
+                    "trannys",
+                    "trannies",
+                    "twink",
+                    "twinks",
+                    "wetback",
+                    "wetbacks",
+                ],
+            },
+        });
+        this.profaneWords = config.get("words") as string[];
         this.stringChecker = unified()
             .use(english)
             .use(
                 factory({
                     lang: "en",
-                    cuss: baseList.words.reduce((result, word) => {
+                    cuss: this.profaneWords.reduce((result, word) => {
                         result[word] = 1;
                         return result;
                     }, {}),
@@ -111,15 +168,6 @@ export default class AutoMod {
                 { new: true, upsert: true }
             );
 
-        // this.cache.playerMessages.set(player.id, [
-        //     ...((this.cache.playerMessages.get(player.id) as []) || []),
-        //     { message, profaneWords },
-        // ]);
-
-        // const playerMessages: {
-        //     message: string;
-        //     profaneWords: string[];
-        // }[] = this.cache.playerMessages.get(player.id) || [];
         const allProfaneWords = flatMap(
             playerMessages.words,
             (words) => words
