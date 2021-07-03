@@ -875,7 +875,7 @@ export default class Watchdog {
         this.autoUpdater = new AutoUpdater({
             repository: "Tom-Beijner/Mordhau-RCON",
             branch: "master",
-            ignoredFiles: ["src/locales/bannedWords.json"],
+            ignoredFiles: ["bannedWords.json"],
             downloadSubdirectory: "repo",
             backupSubdirectory: "backup",
             autoUpdateInterval: config.get("autoUpdate.checkInterval"),
