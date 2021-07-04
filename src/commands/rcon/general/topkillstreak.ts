@@ -12,7 +12,7 @@ export default class TopKillstreak extends BaseRCONCommand {
     }
 
     async execute(ctx: RCONCommandContext) {
-        if (!ctx.rcon.options.killstreaks) return;
+        if (!ctx.rcon.options.killstreaks.enabled) return;
 
         const highestKillstreak = ctx.rcon.killStreak.cache.highestKillstreak;
 

@@ -228,7 +228,7 @@ export default class Watchdog {
             }[] = [];
 
             for (const [serverName, server] of this.servers) {
-                if (!server.rcon.options.killstreaks) continue;
+                if (!server.rcon.options.killstreaks.enabled) continue;
 
                 results.push({
                     server: serverName,
@@ -246,7 +246,7 @@ export default class Watchdog {
 
             for (const [serverName, server] of this.servers) {
                 if (
-                    !server.rcon.options.killstreaks ||
+                    !server.rcon.options.killstreaks.enabled ||
                     !server.rcon.connected ||
                     !server.rcon.authenticated
                 )

@@ -11,7 +11,7 @@ export default class Killstreak extends BaseRCONCommand {
     }
 
     async execute(ctx: RCONCommandContext) {
-        if (!ctx.rcon.options.killstreaks) return;
+        if (!ctx.rcon.options.killstreaks.enabled) return;
 
         let player: {
             ids?: { playFabID: string; steamID?: string };
