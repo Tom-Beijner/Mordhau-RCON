@@ -814,7 +814,6 @@ export default class Watchdog {
 
                 let result = await server.rcon.send(`removeadmin ${player.id}`);
                 result = result.split("\n")[0].trim();
-                console.log(result);
                 if (!result.includes("is no longer an admin")) {
                     servers.push({
                         name: serverName,
