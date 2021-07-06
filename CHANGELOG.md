@@ -5,13 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2021-07-06
+
+### Added
+
+-   Added `info` command
+-   Added more config checks
+
+### Fixed
+
+-   Fixed killstreak check not working, before it would cause crashes
+
 ## [1.6.1] - 2021-07-03
 
 ### Fixed
 
 -   Fixed auto updater trying to remove non-existing `bannedWords.json` file (so it doesn't override user version)
 
-## [1.6] - 2021-07-02
+## [1.6.0] - 2021-07-02
 
 ### Added
 
