@@ -163,12 +163,15 @@ export default new Conf<Config>({
             properties: {
                 token: {
                     type: "string",
+                    minLength: 1,
                 },
                 publicKey: {
                     type: "string",
+                    minLength: 1,
                 },
                 id: {
                     type: "string",
+                    minLength: 1,
                 },
             },
             required: ["token", "publicKey", "id"],
@@ -180,12 +183,14 @@ export default new Conf<Config>({
                 properties: {
                     name: {
                         type: "string",
+                        minLength: 1,
                     },
                     rcon: {
                         type: "object",
                         properties: {
                             host: {
                                 type: "string",
+                                minLength: 1,
                             },
                             port: {
                                 type: "number",
@@ -320,8 +325,10 @@ export default new Conf<Config>({
             patternProperties: {
                 "^(([0-9])+)$": {
                     type: "string",
+                    minLength: 1,
                 },
             },
+            minProperties: 1,
         },
         automod: {
             type: "object",
@@ -348,6 +355,7 @@ export default new Conf<Config>({
                                 },
                                 message: {
                                     type: "string",
+                                    minLength: 1,
                                 },
                                 duration: {
                                     type: "number",
@@ -355,11 +363,13 @@ export default new Conf<Config>({
                                 },
                                 reason: {
                                     type: "string",
+                                    minLength: 1,
                                 },
                             },
                             required: ["type", "message"],
                         },
                     },
+                    minProperties: 1,
                 },
             },
             required: ["adminsBypass", "infractionThresholds"],
@@ -369,6 +379,7 @@ export default new Conf<Config>({
             properties: {
                 guildId: {
                     type: "string",
+                    minLength: 1,
                 },
                 roles: {
                     type: "array",
@@ -377,6 +388,7 @@ export default new Conf<Config>({
                         properties: {
                             name: {
                                 type: "string",
+                                minLength: 1,
                             },
                             Ids: {
                                 type: "array",
@@ -430,6 +442,7 @@ export default new Conf<Config>({
             properties: {
                 accountId: {
                     type: "string",
+                    minLength: 1,
                 },
             },
             required: ["accountId"],
@@ -439,6 +452,7 @@ export default new Conf<Config>({
             properties: {
                 key: {
                     type: "string",
+                    minLength: 1,
                 },
             },
             required: ["key"],
@@ -448,12 +462,15 @@ export default new Conf<Config>({
             properties: {
                 host: {
                     type: "string",
+                    minLength: 1,
                 },
                 database: {
                     type: "string",
+                    minLength: 1,
                 },
                 username: {
                     type: "string",
+                    minLength: 1,
                 },
                 password: {
                     type: "string",
