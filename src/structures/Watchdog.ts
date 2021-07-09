@@ -926,11 +926,10 @@ export default class Watchdog {
         if (error) logger.error("PlayFab", error);
 
         this.client.once("ready", async () => {
-            const webhooks = await this.client.guilds
-                .get(config.get("discord.guildId"))
-                .getWebhooks();
-
             for (let i = 0; i < config.get("servers").length; i++) {
+                const webhooks = await this.client.guilds
+                    .get(config.get("discord.guildId"))
+                    .getWebhooks();
                 const server = config.get("servers")[i];
 
                 for (const channel in server.rcon.logChannels) {
@@ -938,7 +937,6 @@ export default class Watchdog {
                     if (!channelID.length) continue;
 
                     const fetchedChannel = this.client.guilds
-
                         .get(config.get("discord.guildId"))
                         .channels.filter((channel) => channel.type === 0)
                         .find(
