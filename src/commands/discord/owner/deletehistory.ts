@@ -143,7 +143,9 @@ export default class DeleteHistory extends SlashCommand {
                                 ? `Duration: ${historyDuration} ${
                                       h.duration
                                           ? `(Un${
-                                                type === "BAN"
+                                                ["BAN", "GLOBAL BAN"].includes(
+                                                    type
+                                                )
                                                     ? "banned"
                                                     : "muted"
                                             } ${formatDistanceToNow(

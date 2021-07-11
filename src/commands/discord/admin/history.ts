@@ -175,7 +175,9 @@ export default class History extends SlashCommand {
                                 ? `Duration: ${historyDuration} ${
                                       h.duration
                                           ? `(Un${
-                                                type === "BAN"
+                                                ["BAN", "GLOBAL BAN"].includes(
+                                                    type
+                                                )
                                                     ? "banned"
                                                     : "muted"
                                             } ${formatDistanceToNow(

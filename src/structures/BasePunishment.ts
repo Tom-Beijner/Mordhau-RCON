@@ -326,7 +326,9 @@ export default abstract class BasePunishment {
                             ? `Duration: ${historyDuration} ${
                                   h.duration
                                       ? `(Un${
-                                            type === "BAN" ? "banned" : "muted"
+                                            ["BAN", "GLOBAL BAN"].includes(type)
+                                                ? "banned"
+                                                : "muted"
                                         } ${formatDistanceToNow(
                                             addMinutes(date, h.duration),
                                             { addSuffix: true }
