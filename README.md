@@ -39,6 +39,8 @@ Auto updater will download, install all dependencies, build and migrate configs 
 
 #### Commands
 
+##### Discord
+
 For setting discord role commands access
 
 ```
@@ -66,9 +68,26 @@ rcon
 update
 ```
 
+##### Ingame
+
+Which commands are available ingame
+
+```
+killstreak
+requestadmin
+topkillstreak
+ban
+kick
+mute
+unban
+unmute
+```
+
 ### Features
 
 -   Per-server punishments saving (You can customize each server to save specific punishment types or just disable it altogether)
+-   Per-server ingame commands specification (You can choose which commands are available ingame)
+-   Per discord role slash commands access (You can choose which commands are available for each role, multiple roles can have same permissions)
 -   Global punishments (Servers can be set to ignore global punishments)
 -   Killstreaks (You can toggle this feature, as well as a toggle to count bot kills for each server and customize it, for each kill threshold with its message. The available variables are `{name}` and `{kills}`)
 -   Automod (Fully customizable, you can also change the profane words list by configuring `bannedWords.json`)
