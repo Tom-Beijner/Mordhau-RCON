@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2021-07-09
+
+### Added
+
+-   You can now toggle ingame (RCON) commands
+
+### Changed
+
+-   You can now use the `history` command to see admins' punishments given history (this functionality was previously available when using `deletehistory` and used admin as type)
+
+### Fixed
+
+-   Fixed old typo on the `players` command
+-   Fixed typo on history when an global ban was issued, it would say unmuted instead of unbanned
+
 ## [1.6.3] - 2021-07-09
 
 ### Fixed
