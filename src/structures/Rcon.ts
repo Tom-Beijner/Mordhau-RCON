@@ -1290,6 +1290,18 @@ export default class Rcon {
                 if (!command) return;
                 if (command.meta.adminsOnly && !this.admins.has(id))
                     return this.say("Permission denied");
+                if (
+                    !config
+                        .get("servers")
+                        .find((server) => server.name === this.options.name)
+                        .rcon.ingameCommands.includes(command.meta.name)
+                )
+                    return;
+
+                logger.info(
+                    "Ingame Command",
+                    `${player.name} ran ${command.meta.name}`
+                );
 
                 command.execute(
                     new RCONCommandContext(

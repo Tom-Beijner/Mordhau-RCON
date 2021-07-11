@@ -3,9 +3,9 @@ import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
 
 export default class Mute extends BaseRCONCommand {
-    constructor(bot: Watchdog) {
+    constructor(bot: Watchdog, commandName: string) {
         super(bot, {
-            name: "mute",
+            name: commandName,
             usage: "mute <player name/id> [--duration positiveInteger]",
             adminsOnly: true,
             options: [

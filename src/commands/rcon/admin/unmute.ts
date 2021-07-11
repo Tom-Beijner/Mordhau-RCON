@@ -3,9 +3,9 @@ import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
 
 export default class Unmute extends BaseRCONCommand {
-    constructor(bot: Watchdog) {
+    constructor(bot: Watchdog, commandName: string) {
         super(bot, {
-            name: "unmute",
+            name: commandName,
             usage: "unmute <player name/id>",
             adminsOnly: true,
         });

@@ -79,6 +79,7 @@ export interface Rcon {
     automod: boolean;
     punishments: Punishments;
     logChannels: LogChannels;
+    ingameCommands: string[];
 }
 
 export interface Killstreaks {
@@ -96,6 +97,8 @@ export interface LogChannels {
     killstreak: string;
     adminCalls: string;
 }
+
+export interface IngameCommands {}
 
 export interface Punishments {
     shouldSave: boolean;
@@ -294,6 +297,23 @@ export default new Conf<Config>({
                                     "adminCalls",
                                 ],
                             },
+                            ingameCommands: {
+                                type: "array",
+                                items: {
+                                    enum: [
+                                        "killstreak",
+                                        "requestadmin",
+                                        "topkillstreak",
+                                        "ban",
+                                        "kick",
+                                        "mute",
+                                        "unban",
+                                        "unmute",
+                                    ],
+                                },
+                                minItems: 1,
+                                uniqueItems: true,
+                            },
                         },
                         required: [
                             "host",
@@ -304,6 +324,7 @@ export default new Conf<Config>({
                             "automod",
                             "punishments",
                             "logChannels",
+                            "ingameCommands",
                         ],
                     },
                 },
@@ -524,6 +545,16 @@ export default new Conf<Config>({
                         killstreak: "",
                         adminCalls: "",
                     },
+                    ingameCommands: [
+                        "killstreak",
+                        "requestadmin",
+                        "topkillstreak",
+                        "ban",
+                        "kick",
+                        "mute",
+                        "unban",
+                        "unmute",
+                    ],
                 },
             },
         ],
@@ -674,6 +705,22 @@ export default new Conf<Config>({
                 });
                 // @ts-ignore
                 store.delete("discord.webhookEndpoints");
+            }
+        },
+        "1.7.0": (store) => {
+            const servers = store.get("servers");
+
+            for (let i = 0; i < servers.length; i++) {
+                store.set(`servers.${i}.rcon.ingameCommands`, [
+                    "killstreak",
+                    "requestadmin",
+                    "topkillstreak",
+                    "ban",
+                    "kick",
+                    "mute",
+                    "unban",
+                    "unmute",
+                ]);
             }
         },
     },

@@ -3,9 +3,9 @@ import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
 
 export default class Ban extends BaseRCONCommand {
-    constructor(bot: Watchdog) {
+    constructor(bot: Watchdog, commandName: string) {
         super(bot, {
-            name: "ban",
+            name: commandName,
             usage: "ban <player name/id> [--duration positiveInteger] [--reason string]",
             adminsOnly: true,
             options: [

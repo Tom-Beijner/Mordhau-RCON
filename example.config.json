@@ -42,7 +42,17 @@
                     "automod": "",
                     "killstreak": "",
                     "adminCalls": ""
-                }
+                },
+                "ingameCommands": [
+                    "killstreak",
+                    "requestadmin",
+                    "topkillstreak",
+                    "ban",
+                    "kick",
+                    "mute",
+                    "unban",
+                    "unmute"
+                ]
             }
         }
     ],

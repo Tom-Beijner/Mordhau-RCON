@@ -5,11 +5,11 @@ import Watchdog from "../../../structures/Watchdog";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 
 export default class RequestAdmin extends BaseRCONCommand {
-    constructor(bot: Watchdog) {
+    constructor(bot: Watchdog, commandName: string) {
         super(bot, {
-            name: "requestadmins",
+            name: commandName,
             usage: "requestadmins",
-            aliases: ["reqadmins", "requestadmin", "reqadmin", "admincall"],
+            aliases: ["requestadmins", "reqadmins", "reqadmin", "admincall"],
         });
     }
 

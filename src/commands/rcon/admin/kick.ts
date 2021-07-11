@@ -3,9 +3,9 @@ import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
 
 export default class Kick extends BaseRCONCommand {
-    constructor(bot: Watchdog) {
+    constructor(bot: Watchdog, commandName: string) {
         super(bot, {
-            name: "kick",
+            name: commandName,
             usage: "kick <player name/id> [--reason string]",
             adminsOnly: true,
             options: [

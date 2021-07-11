@@ -1183,7 +1183,10 @@ export default class Watchdog {
                     const props = require(`${res(root)}/${fileStats.name}`);
                     if (props) {
                         const Command = props.default;
-                        const command: BaseRCONCommand = new Command(this);
+                        const command: BaseRCONCommand = new Command(
+                            this,
+                            fileStats.name.slice(0, -3).toLowerCase()
+                        );
 
                         this.RCONCommands.push(command);
 

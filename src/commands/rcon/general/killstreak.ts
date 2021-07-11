@@ -3,9 +3,9 @@ import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
 
 export default class Killstreak extends BaseRCONCommand {
-    constructor(bot: Watchdog) {
+    constructor(bot: Watchdog, commandName: string) {
         super(bot, {
-            name: "killstreak",
+            name: commandName,
             usage: "killstreak [player name/id]",
         });
     }
