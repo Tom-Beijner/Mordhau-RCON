@@ -13,14 +13,30 @@ import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import { hastebin } from "../../../utils";
-import { parsePlayerID } from "../../../utils/PlayerID";
+import { outputPlayerIDs, parsePlayerID } from "../../../utils/PlayerID";
 
 export default class History extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
             name: commandName,
-            description: "Get player's punishment history",
+            description: "Get player's or admin's punishment history",
             options: [
+                {
+                    name: "type",
+                    description: "Type of player to clear",
+                    required: true,
+                    type: CommandOptionType.STRING,
+                    choices: [
+                        {
+                            name: "Player",
+                            value: "Player",
+                        },
+                        {
+                            name: "Admin",
+                            value: "Admin",
+                        },
+                    ],
+                },
                 {
                     name: "player",
                     description: "PlayFab ID or the name of the player",
@@ -47,6 +63,7 @@ export default class History extends SlashCommand {
 
     async run(ctx: CommandContext) {
         const options = {
+            type: ctx.options.type.toLowerCase() as "player" | "admin",
             player: ctx.options.player as string,
         };
 
@@ -61,263 +78,289 @@ export default class History extends SlashCommand {
             return await ctx.send(`Invalid player provided`);
         }
 
-        const playerHistory = await this.bot.database.getPlayerHistory([
-            player.ids.playFabID,
-            player.ids.steamID,
-        ]);
-        let playername = player && player.name;
-        let playeravatar: string;
+        try {
+            const playerHistory = await this.bot.database.getPlayerHistory(
+                [player.ids.playFabID, player.ids.steamID],
+                options.type === "admin"
+            );
+            let playername = player && player.name;
+            let playeravatar: string;
 
-        if (playerHistory.ids.steamID) {
-            await fetch(
-                `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${config.get(
-                    "steam.key"
-                )}&steamids=${playerHistory.ids.steamID}`
-            )
-                .then(async (res) => {
-                    const json = await res.json();
-                    if (!playername)
-                        playername =
-                            json["response"]["players"][0]["personaname"];
-                    playeravatar = json["response"]["players"][0]["avatarfull"];
-                })
-                .catch(() => {
-                    // return { content: "Error looking up user on steam" }
-                    // playername = undefined;
-                    // playeravatar = undefined;
-                });
-        }
-
-        const payload = {
-            id: player.id,
-            playername,
-            playeravatar,
-            duration: 0,
-            history: playerHistory.history,
-        };
-
-        let pastOffenses: string;
-        let pastBansAmount = 0;
-
-        if (!payload.history.length) pastOffenses = "None";
-        else {
-            pastOffenses = "------------------";
-
-            for (let i = 0; i < payload.history.length; i++) {
-                const offenses: string[] = [];
-                const h = payload.history[i];
-                const type = h.type;
-                const admin = h.admin;
-                const date = new Date(h.date);
-
-                if (type === "BAN") pastBansAmount++;
-
-                if (h.duration) payload.duration += h.duration;
-
-                let historyDuration: string;
-                if (!h.duration) historyDuration = "PERMANENT";
-                else historyDuration = pluralize("minute", h.duration, true);
-
-                offenses.push(
-                    [
-                        `\nID: ${h._id}`,
-                        `Type: ${type}`,
-                        type.includes("GLOBAL")
-                            ? undefined
-                            : `Server: ${h.server}`,
-                        `Platform: ${parsePlayerID(h.id).platform}`,
-                        `Date: ${date.toDateString()} (${formatDistanceToNow(
-                            date,
-                            { addSuffix: true }
-                        )})`,
-                        `Admin: ${admin}`,
-                        `Offense: ${h.reason || "None given"}`,
-                        ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(
-                            type
-                        )
-                            ? `Duration: ${historyDuration} ${
-                                  h.duration
-                                      ? `(Un${
-                                            type === "BAN" ? "banned" : "muted"
-                                        } ${formatDistanceToNow(
-                                            addMinutes(date, h.duration),
-                                            { addSuffix: true }
-                                        )})`
-                                      : ""
-                              }`
-                            : undefined,
-                        `------------------`,
-                    ]
-                        .filter((line) => typeof line !== "undefined")
-                        .join("\n")
-                );
-
-                pastOffenses += offenses.join("\n");
+            if (playerHistory.ids.steamID) {
+                await fetch(
+                    `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${config.get(
+                        "steam.key"
+                    )}&steamids=${playerHistory.ids.steamID}`
+                )
+                    .then(async (res) => {
+                        const json = await res.json();
+                        if (!playername)
+                            playername =
+                                json["response"]["players"][0]["personaname"];
+                        playeravatar =
+                            json["response"]["players"][0]["avatarfull"];
+                    })
+                    .catch(() => {
+                        // return { content: "Error looking up user on steam" }
+                        // playername = undefined;
+                        // playeravatar = undefined;
+                    });
             }
 
-            if (pastOffenses.length < 1025)
-                pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
-        }
+            const payload = {
+                id: player.id,
+                playername,
+                playeravatar,
+                duration: 0,
+                history: playerHistory.history,
+            };
 
-        if (pastOffenses.length > 1024)
-            pastOffenses = `The output was too long, but was uploaded to [hastebin](${await hastebin(
-                pastOffenses
-            )})`;
+            let pastOffenses: string;
+            let pastBansAmount = 0;
 
-        let message = "";
+            if (!payload.history.length) pastOffenses = "None";
+            else {
+                pastOffenses = "------------------";
 
-        const historyLength = payload.history.length;
-        let color = 3066993;
+                for (let i = 0; i < payload.history.length; i++) {
+                    const offenses: string[] = [];
+                    const h = payload.history[i];
+                    const type = h.type;
+                    const admin = h.admin;
+                    const date = new Date(h.date);
 
-        if (historyLength > 0) color = 15105570;
-        if (historyLength > 2) color = 15158332;
-        if (historyLength > 3) color = 10038562;
+                    if (type === "BAN") pastBansAmount++;
 
-        // const bannedPlayer = await this.bot.rcon.getBannedPlayer(
-        //     playerHistory.ids.playFabID
-        // );
+                    if (h.duration) payload.duration += h.duration;
 
-        // const mutedPlayer = await this.bot.rcon.getMutedPlayer(
-        //     playerHistory.ids.playFabID
-        // );
+                    let historyDuration: string;
+                    if (!h.duration) historyDuration = "PERMANENT";
+                    else
+                        historyDuration = pluralize("minute", h.duration, true);
 
-        const inServer = await this.bot.rcon.getIngamePlayer(
-            playerHistory.ids.playFabID
-        );
+                    offenses.push(
+                        [
+                            `\nID: ${h._id}`,
+                            `Type: ${type}`,
+                            type.includes("GLOBAL")
+                                ? undefined
+                                : `Server: ${h.server}`,
+                            `Platform: ${parsePlayerID(h.id).platform}`,
+                            options.type === "admin"
+                                ? `Player: ${h.player} (${outputPlayerIDs(
+                                      h.ids.length
+                                          ? h.ids
+                                          : [
+                                                {
+                                                    platform: parsePlayerID(
+                                                        h.id
+                                                    ).platform,
+                                                    id: h.id,
+                                                },
+                                            ]
+                                  )})`
+                                : undefined,
+                            `Date: ${date.toDateString()} (${formatDistanceToNow(
+                                date,
+                                { addSuffix: true }
+                            )})`,
+                            `Admin: ${admin}`,
+                            `Offense: ${h.reason || "None given"}`,
+                            [
+                                "BAN",
+                                "MUTE",
+                                "GLOBAL BAN",
+                                "GLOBAL MUTE",
+                            ].includes(type)
+                                ? `Duration: ${historyDuration} ${
+                                      h.duration
+                                          ? `(Un${
+                                                type === "BAN"
+                                                    ? "banned"
+                                                    : "muted"
+                                            } ${formatDistanceToNow(
+                                                addMinutes(date, h.duration),
+                                                { addSuffix: true }
+                                            )})`
+                                          : ""
+                                  }`
+                                : undefined,
+                            `------------------`,
+                        ]
+                            .filter((line) => typeof line !== "undefined")
+                            .join("\n")
+                    );
 
-        await ctx.send({
-            content: "",
-            embeds: [
-                {
-                    title: "HISTORY REPORT",
-                    description: message,
-                    fields: [
-                        {
-                            name: "Player",
-                            value: [
-                                `**Name**: \`${payload.playername}\``,
-                                `**PlayFabID**: \`${playerHistory.ids.playFabID}\``,
-                                `**SteamID**: [${playerHistory.ids.steamID}](<http://steamcommunity.com/profiles/${playerHistory.ids.steamID}>)`,
-                                `**Previous Names**: \`${
-                                    playerHistory.previousNames.length
-                                        ? playerHistory.previousNames
-                                        : "None"
-                                }\``,
-                                // `**Is Banned**: \`${
-                                //     bannedPlayer.length
-                                //         ? `Yes\`\n${bannedPlayer
-                                //               .map(
-                                //                   (server) =>
-                                //                       `↳ **${
-                                //                           server.server
-                                //                       }**: \`${
-                                //                           server.data
-                                //                               .duration === "0"
-                                //                               ? "Permanent"
-                                //                               : `${pluralize(
-                                //                                     "minute",
-                                //                                     Number(
-                                //                                         server
-                                //                                             .data
-                                //                                             .duration
-                                //                                     ),
-                                //                                     true
-                                //                                 )}, unbanned ${formatDistanceToNow(
-                                //                                     addMinutes(
-                                //                                         new Date(),
-                                //                                         parseInt(
-                                //                                             server
-                                //                                                 .data
-                                //                                                 .duration
-                                //                                         )
-                                //                                     ),
-                                //                                     {
-                                //                                         addSuffix:
-                                //                                             true,
-                                //                                     }
-                                //                                 )}`
-                                //                       }\``
-                                //               )
-                                //               .join("\n")}`
-                                //         : "No`"
-                                // }`,
-                                // `**Is Muted**: \`${
-                                //     mutedPlayer.length
-                                //         ? `Yes\`\n${mutedPlayer
-                                //               .map(
-                                //                   (server) =>
-                                //                       `↳ **${
-                                //                           server.server
-                                //                       }**: \`${
-                                //                           server.data
-                                //                               .duration === "0"
-                                //                               ? "Permanent"
-                                //                               : `${pluralize(
-                                //                                     "minute",
-                                //                                     Number(
-                                //                                         server
-                                //                                             .data
-                                //                                             .duration
-                                //                                     ),
-                                //                                     true
-                                //                                 )}, unbanned ${formatDistanceToNow(
-                                //                                     addMinutes(
-                                //                                         new Date(),
-                                //                                         parseInt(
-                                //                                             server
-                                //                                                 .data
-                                //                                                 .duration
-                                //                                         )
-                                //                                     ),
-                                //                                     {
-                                //                                         addSuffix:
-                                //                                             true,
-                                //                                     }
-                                //                                 )}`
-                                //                       }\``
-                                //               )
-                                //               .join("\n")}`
-                                //         : "No`"
-                                // }`,
-                                `**In A Server**: \`${
-                                    inServer
-                                        ? `Yes in ${inServer.server}`
-                                        : "No"
-                                }\``,
-                                `**Total Duration**: \`${pluralize(
-                                    "minute",
-                                    payload.duration,
-                                    true
-                                )}\`\n`,
-                            ].join("\n"),
+                    pastOffenses += offenses.join("\n");
+                }
+
+                if (pastOffenses.length < 1025)
+                    pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
+            }
+
+            if (pastOffenses.length > 1024)
+                pastOffenses = `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                    pastOffenses
+                )})`;
+            let message = "";
+
+            const historyLength = payload.history.length;
+            let color: number;
+
+            if (options.type === "player") {
+                color = 3066993;
+                if (historyLength > 0) color = 15105570;
+                if (historyLength > 2) color = 15158332;
+                if (historyLength > 3) color = 10038562;
+            }
+
+            // const bannedPlayer = await this.bot.rcon.getBannedPlayer(
+            //     playerHistory.ids.playFabID
+            // );
+
+            // const mutedPlayer = await this.bot.rcon.getMutedPlayer(
+            //     playerHistory.ids.playFabID
+            // );
+
+            const inServer = await this.bot.rcon.getIngamePlayer(
+                playerHistory.ids.playFabID
+            );
+
+            await ctx.send({
+                content: "",
+                embeds: [
+                    {
+                        title: `${options.type.toUpperCase()} HISTORY REPORT`,
+                        description: message,
+                        fields: [
+                            {
+                                name:
+                                    options.type[0].toUpperCase() +
+                                    options.type.substr(1),
+                                value: [
+                                    `**Name**: \`${payload.playername}\``,
+                                    `**PlayFabID**: \`${playerHistory.ids.playFabID}\``,
+                                    `**SteamID**: [${playerHistory.ids.steamID}](<http://steamcommunity.com/profiles/${playerHistory.ids.steamID}>)`,
+                                    options.type === "player"
+                                        ? `**Previous Names**: \`${
+                                              playerHistory.previousNames.length
+                                                  ? playerHistory.previousNames
+                                                  : "None"
+                                          }\``
+                                        : undefined,
+                                    // `**Is Banned**: \`${
+                                    //     bannedPlayer.length
+                                    //         ? `Yes\`\n${bannedPlayer
+                                    //               .map(
+                                    //                   (server) =>
+                                    //                       `↳ **${
+                                    //                           server.server
+                                    //                       }**: \`${
+                                    //                           server.data
+                                    //                               .duration === "0"
+                                    //                               ? "Permanent"
+                                    //                               : `${pluralize(
+                                    //                                     "minute",
+                                    //                                     Number(
+                                    //                                         server
+                                    //                                             .data
+                                    //                                             .duration
+                                    //                                     ),
+                                    //                                     true
+                                    //                                 )}, unbanned ${formatDistanceToNow(
+                                    //                                     addMinutes(
+                                    //                                         new Date(),
+                                    //                                         parseInt(
+                                    //                                             server
+                                    //                                                 .data
+                                    //                                                 .duration
+                                    //                                         )
+                                    //                                     ),
+                                    //                                     {
+                                    //                                         addSuffix:
+                                    //                                             true,
+                                    //                                     }
+                                    //                                 )}`
+                                    //                       }\``
+                                    //               )
+                                    //               .join("\n")}`
+                                    //         : "No`"
+                                    // }`,
+                                    // `**Is Muted**: \`${
+                                    //     mutedPlayer.length
+                                    //         ? `Yes\`\n${mutedPlayer
+                                    //               .map(
+                                    //                   (server) =>
+                                    //                       `↳ **${
+                                    //                           server.server
+                                    //                       }**: \`${
+                                    //                           server.data
+                                    //                               .duration === "0"
+                                    //                               ? "Permanent"
+                                    //                               : `${pluralize(
+                                    //                                     "minute",
+                                    //                                     Number(
+                                    //                                         server
+                                    //                                             .data
+                                    //                                             .duration
+                                    //                                     ),
+                                    //                                     true
+                                    //                                 )}, unbanned ${formatDistanceToNow(
+                                    //                                     addMinutes(
+                                    //                                         new Date(),
+                                    //                                         parseInt(
+                                    //                                             server
+                                    //                                                 .data
+                                    //                                                 .duration
+                                    //                                         )
+                                    //                                     ),
+                                    //                                     {
+                                    //                                         addSuffix:
+                                    //                                             true,
+                                    //                                     }
+                                    //                                 )}`
+                                    //                       }\``
+                                    //               )
+                                    //               .join("\n")}`
+                                    //         : "No`"
+                                    // }`,
+                                    `**In A Server**: \`${
+                                        inServer
+                                            ? `Yes in ${inServer.server}`
+                                            : "No"
+                                    }\``,
+                                    `**Total Duration**: \`${pluralize(
+                                        "minute",
+                                        payload.duration,
+                                        true
+                                    )}\`\n`,
+                                ]
+                                    .filter(
+                                        (line) => typeof line !== "undefined"
+                                    )
+                                    .join("\n"),
+                            },
+                            {
+                                name:
+                                    options.type === "player"
+                                        ? `Previous Offenses (${playerHistory.history.length})`
+                                        : `Punishments Given (${playerHistory.history.length})`,
+                                value: pastOffenses,
+                            },
+                        ],
+                        color,
+                        image: {
+                            url: payload.playeravatar,
                         },
-                        // {
-                        //     name: "Archives",
-                        //     value:
-                        //         archives
-                        //             .map(
-                        //                 (archive) =>
-                        //                     `Video URL: [Youtube](${
-                        //                         archive.videoUrl
-                        //                     })\nDate: ${new Date(
-                        //                         archive.createdAt
-                        //                     ).toDateString()}\nAdmin: ${
-                        //                         archive.admin
-                        //                     }\nComment: ${archive.comment}`
-                        //             )
-                        //             .join("\n\n") || "None found",
-                        // },
-                        {
-                            name: "Previous and Current Offenses",
-                            value: pastOffenses,
-                        },
-                    ],
-                    color,
-                    image: {
-                        url: payload.playeravatar,
                     },
-                },
-            ],
-        });
+                ],
+            });
+        } catch (error) {
+            await ctx.send({
+                content: `An error occured while performing the command (${
+                    error.message || error
+                })`,
+            });
+        }
     }
 }
