@@ -83,7 +83,7 @@ export default class Players extends SlashCommand {
                 .join("\n");
 
             if (!message.length)
-                message = "No one players online, what a sad gamer moment.";
+                message = "No players online, what a sad gamer moment.";
             if (message.length > 1023)
                 message = `The output was too long, but was uploaded to [hastebin](${await hastebin(
                     players
