@@ -72,62 +72,66 @@ async function GetPlayFabIDs(ids: string[]) {
 }
 
 export async function LookupPlayer(id: string) {
-    try {
-        const playFabID =
-            parsePlayerID(id).platform === "PlayFab"
-                ? id
-                : (await GetPlayFabIDs([id]))[0].PlayFabId;
+    // Hack if the first fails iterate again
+    for (let i = 0; i < 2; i++) {
+        try {
+            const playFabID =
+                parsePlayerID(id).platform === "PlayFab"
+                    ? id
+                    : (await GetPlayFabIDs([id]))[0].PlayFabId;
 
-        const entityID = (
-            await GetPlayerCombinedInfo({
-                PlayFabID: playFabID,
-                // @ts-ignore
-                InfoRequestParameters: {
-                    GetUserAccountInfo: true,
+            const entityID = (
+                await GetPlayerCombinedInfo({
+                    PlayFabID: playFabID,
+                    // @ts-ignore
+                    InfoRequestParameters: {
+                        GetUserAccountInfo: true,
+                    },
+                })
+            ).data.InfoResultPayload.AccountInfo.TitleInfo.TitlePlayerAccount
+                .Id;
+
+            const playerRequest = {
+                Entity: {
+                    Id: entityID,
+                    Type: "title_player_account",
                 },
-            })
-        ).data.InfoResultPayload.AccountInfo.TitleInfo.TitlePlayerAccount.Id;
+            };
 
-        const playerRequest = {
-            Entity: {
-                Id: entityID,
-                Type: "title_player_account",
-            },
-        };
+            const result = await GetObjects(playerRequest);
 
-        const result = await GetObjects(playerRequest);
+            const player = result.data.Objects.AccountInfo.DataObject;
 
-        const player = result.data.Objects.AccountInfo.DataObject;
+            logger.debug(
+                "PlayFab",
+                `Ran LookupPlayer on ${player.Name} (PlayFabID: ${player.PlayFabId}, SteamID: ${player.PlatformAccountId})`
+            );
 
-        logger.debug(
-            "PlayFab",
-            `Ran LookupPlayer on ${player.Name} (PlayFabID: ${player.PlayFabId}, SteamID: ${player.PlatformAccountId})`
-        );
+            return {
+                ids: {
+                    entityID: player.EntityId,
+                    playFabID: player.PlayFabId,
+                    steamID: player.PlatformAccountId,
+                },
+                id: player.PlayFabId,
+                name: player.Name,
+                platform: {
+                    name: player.Platform,
+                    accountID: player.PlatformAccountId,
+                },
+            };
+        } catch (error) {
+            logger.error(
+                "PlayFab",
+                `Error occurred while running LookupPlayer (Error: ${CompileErrorReport(
+                    error
+                )}, ID: ${id})`
+            );
 
-        return {
-            ids: {
-                entityID: player.EntityId,
-                playFabID: player.PlayFabId,
-                steamID: player.PlatformAccountId,
-            },
-            id: player.PlayFabId,
-            name: player.Name,
-            platform: {
-                name: player.Platform,
-                accountID: player.PlatformAccountId,
-            },
-        };
-    } catch (error) {
-        logger.error(
-            "PlayFab",
-            `Error occurred while running LookupPlayer (Error: ${CompileErrorReport(
-                error
-            )}, ID: ${id})`
-        );
+            const err = await Login();
+            if (err) logger.error("PlayFab", err);
 
-        const err = await Login();
-        if (err) logger.error("PlayFab", err);
-
-        return;
+            return;
+        }
     }
 }
