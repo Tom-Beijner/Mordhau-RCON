@@ -8,6 +8,7 @@ export interface Config {
     adminListSaving: AdminListSaving;
     killstreakMessages: { [key: string]: string };
     automod: Automod;
+    warns: Warns;
     discord: Discord;
     mordhau: Mordhau;
     steam: Steam;
@@ -25,6 +26,11 @@ export interface AutoUpdate {
 
 export interface Automod {
     adminsBypass: boolean;
+    infractionThresholds: { [key: string]: InfractionThreshold };
+}
+
+export interface Warns {
+    resetAfterDuration: number;
     infractionThresholds: { [key: string]: InfractionThreshold };
 }
 
@@ -96,6 +102,7 @@ export interface LogChannels {
     automod: string;
     killstreak: string;
     adminCalls: string;
+    warns: string;
 }
 
 export interface IngameCommands {}
@@ -285,6 +292,9 @@ export default new Conf<Config>({
                                     adminCalls: {
                                         type: "string",
                                     },
+                                    warns: {
+                                        type: "string",
+                                    },
                                 },
                                 required: [
                                     "chat",
@@ -295,6 +305,7 @@ export default new Conf<Config>({
                                     "automod",
                                     "killstreak",
                                     "adminCalls",
+                                    "warns",
                                 ],
                             },
                             ingameCommands: {
@@ -309,6 +320,7 @@ export default new Conf<Config>({
                                         "mute",
                                         "unban",
                                         "unmute",
+                                        "warn",
                                     ],
                                 },
                                 minItems: 1,
@@ -366,7 +378,7 @@ export default new Conf<Config>({
                                 type: {
                                     type: "string",
                                     enum: [
-                                        "warn",
+                                        "message",
                                         "mute",
                                         "kick",
                                         "ban",
@@ -394,6 +406,50 @@ export default new Conf<Config>({
                 },
             },
             required: ["adminsBypass", "infractionThresholds"],
+        },
+        warns: {
+            type: "object",
+            properties: {
+                resetAfterDuration: {
+                    type: "number",
+                },
+                infractionThresholds: {
+                    type: "object",
+                    patternProperties: {
+                        "^(([0-9])+)$": {
+                            type: "object",
+                            properties: {
+                                type: {
+                                    type: "string",
+                                    enum: [
+                                        "message",
+                                        "mute",
+                                        "kick",
+                                        "ban",
+                                        "globalmute",
+                                        "globalban",
+                                    ],
+                                },
+                                message: {
+                                    type: "string",
+                                    minLength: 1,
+                                },
+                                duration: {
+                                    type: "number",
+                                    minimum: 0,
+                                },
+                                reason: {
+                                    type: "string",
+                                    minLength: 1,
+                                },
+                            },
+                            required: ["type", "message"],
+                        },
+                    },
+                    minProperties: 1,
+                },
+            },
+            required: ["resetAfterDuration", "infractionThresholds"],
         },
         discord: {
             type: "object",
@@ -439,6 +495,7 @@ export default new Conf<Config>({
                                         "say",
                                         "unban",
                                         "unmute",
+                                        "warn",
                                         "addadmin",
                                         "removeadmin",
                                         "globaladdadmin",
@@ -544,6 +601,7 @@ export default new Conf<Config>({
                         automod: "",
                         killstreak: "",
                         adminCalls: "",
+                        warns: "",
                     },
                     ingameCommands: [
                         "killstreak",
@@ -554,6 +612,7 @@ export default new Conf<Config>({
                         "mute",
                         "unban",
                         "unmute",
+                        "warn",
                     ],
                 },
             },
@@ -574,7 +633,7 @@ export default new Conf<Config>({
             adminsBypass: true,
             infractionThresholds: {
                 "1": {
-                    type: "warn",
+                    type: "message",
                     message: "{name}, watch your language!",
                 },
                 "2": {
@@ -606,6 +665,48 @@ export default new Conf<Config>({
                 },
             },
         },
+        warns: {
+            resetAfterDuration: 43830,
+            infractionThresholds: {
+                "1": {
+                    type: "message",
+                    message:
+                        "{name} now has {currentWarns}/{maxWarns} warnings!",
+                },
+                "2": {
+                    type: "mute",
+                    message:
+                        "{name} now has {currentWarns}/{maxWarns} warnings and got muted!",
+                    duration: 300,
+                },
+                "3": {
+                    type: "kick",
+                    message:
+                        "{name} now has {currentWarns}/{maxWarns} warnings and got kicked!",
+                    reason: "You reached a warning infraction threshold",
+                },
+                "4": {
+                    type: "ban",
+                    message:
+                        "{name} now has {currentWarns}/{maxWarns} warnings and got banned!",
+                    duration: 300,
+                    reason: "You reached a warning infraction threshold",
+                },
+                "5": {
+                    type: "globalmute",
+                    message:
+                        "{name} now has {currentWarns}/{maxWarns} warnings and got globally muted!",
+                    duration: 300,
+                },
+                "6": {
+                    type: "globalban",
+                    message:
+                        "{name} now has {currentWarns}/{maxWarns} warnings and got globally banned!",
+                    duration: 300,
+                    reason: "You reached a warning infraction threshold",
+                },
+            },
+        },
         discord: {
             guildId: "",
             roles: [
@@ -623,6 +724,7 @@ export default new Conf<Config>({
                         "say",
                         "unban",
                         "unmute",
+                        "warn",
                     ],
                 },
                 {
@@ -642,6 +744,7 @@ export default new Conf<Config>({
                         "say",
                         "unban",
                         "unmute",
+                        "warn",
                     ],
                 },
                 {
@@ -663,6 +766,7 @@ export default new Conf<Config>({
                         "say",
                         "unban",
                         "unmute",
+                        "warn",
                         "addadmin",
                         "removeadmin",
                         "globaladdadmin",
@@ -721,6 +825,30 @@ export default new Conf<Config>({
                     "unban",
                     "unmute",
                 ]);
+            }
+        },
+        "1.8.0": (store) => {
+            for (const infractionsThreshhold in store.get(
+                "automod.infractionThresholds"
+            ) as { [key: string]: InfractionThreshold }) {
+                if (
+                    (
+                        store.get(
+                            `automod.infractionThresholds.${infractionsThreshhold}`
+                        ) as InfractionThreshold
+                    ).type !== "warn"
+                )
+                    continue;
+
+                store.set(
+                    `automod.infractionThresholds.${infractionsThreshhold}`,
+                    {
+                        ...(store.get(
+                            `automod.infractionThresholds.${infractionsThreshhold}`
+                        ) as InfractionThreshold),
+                        type: "message",
+                    }
+                );
             }
         },
     },

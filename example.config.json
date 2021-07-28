@@ -41,7 +41,8 @@
                     "permanent": "",
                     "automod": "",
                     "killstreak": "",
-                    "adminCalls": ""
+                    "adminCalls": "",
+                    "warns": ""
                 },
                 "ingameCommands": [
                     "killstreak",
@@ -72,13 +73,13 @@
         "adminsBypass": true,
         "infractionThresholds": {
             "1": {
-                "type": "warn",
+                "type": "message",
                 "message": "{name}, watch your language!"
             },
             "2": {
                 "type": "mute",
                 "message": "Muted {name} for profane messages!",
-                "duration": 1
+                "duration": 300
             },
             "3": {
                 "type": "kick",
@@ -88,19 +89,55 @@
             "4": {
                 "type": "ban",
                 "message": "Banned {name} for profane messages!",
-                "duration": 1,
+                "duration": 300,
                 "reason": "Sending profane messages (Profane words: {words})"
             },
             "5": {
                 "type": "globalmute",
                 "message": "Globally muted {name} for profane messages!",
-                "duration": 1
+                "duration": 300
             },
             "6": {
                 "type": "globalban",
                 "message": "Globally banned {name} for profane messages!",
-                "duration": 1,
+                "duration": 300,
                 "reason": "Sending profane messages (Profane words: {words})"
+            }
+        }
+    },
+    "warns": {
+        "resetAfterDuration": 43830,
+        "infractionThresholds": {
+            "1": {
+                "type": "message",
+                "message": "{name} now has {currentWarns}/{maxWarns} warnings!"
+            },
+            "2": {
+                "type": "mute",
+                "message": "{name} now has {currentWarns}/{maxWarns} warnings and got muted!",
+                "duration": 300
+            },
+            "3": {
+                "type": "kick",
+                "message": "{name} now has {currentWarns}/{maxWarns} warnings and got kicked!",
+                "reason": "You reached a warning infraction threshold"
+            },
+            "4": {
+                "type": "ban",
+                "message": "{name} now has {currentWarns}/{maxWarns} warnings and got banned!",
+                "duration": 300,
+                "reason": "You reached a warning infraction threshold"
+            },
+            "5": {
+                "type": "globalmute",
+                "message": "{name} now has {currentWarns}/{maxWarns} warnings and got globally muted!",
+                "duration": 300
+            },
+            "6": {
+                "type": "globalban",
+                "message": "{name} now has {currentWarns}/{maxWarns} warnings and got globally banned!",
+                "duration": 300,
+                "reason": "You reached a warning infraction threshold"
             }
         }
     },
@@ -120,7 +157,8 @@
                     "rename",
                     "say",
                     "unban",
-                    "unmute"
+                    "unmute",
+                    "warn"
                 ]
             },
             {
@@ -139,7 +177,8 @@
                     "rename",
                     "say",
                     "unban",
-                    "unmute"
+                    "unmute",
+                    "warn"
                 ]
             },
             {
@@ -161,6 +200,7 @@
                     "say",
                     "unban",
                     "unmute",
+                    "warn",
                     "addadmin",
                     "removeadmin",
                     "globaladdadmin",

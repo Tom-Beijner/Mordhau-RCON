@@ -17,7 +17,7 @@ interface IOptions {
 }
 
 export interface Punishment {
-    type: "warn" | "mute" | "kick" | "ban" | "globalmute" | "globalban";
+    type: "message" | "mute" | "kick" | "ban" | "globalmute" | "globalban";
     message: string;
     duration?: number;
     reason?: string;
@@ -200,7 +200,7 @@ export default class AutoMod {
                     );
 
                 switch (punishment.type) {
-                    case "warn": {
+                    case "message": {
                         await rcon.say(`${this.options.name}: ${message}`);
 
                         break;

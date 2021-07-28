@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2021-07-28
+
+### Added
+
+-   Added a `warn` command for ingame and Discord slash command, it operates using a infractions threshold (like automod), and with a reset after duration which is for when to remove the infraction. Default being reset after 1 month (the duration is in minutes)
+-   Added a webhook logging for `warns`
+
+### Changed
+
+-   Infraction threshold `warn` type has been renamed to `message`
+-   Made admin list saving use pastebin if the admin list is too long
+-   If a punishment is made by a unauthorized admin then it will try to revert it (currently only bans and mutes are reverted)
+
 ## [1.7.0] - 2021-07-09
 
 ### Added

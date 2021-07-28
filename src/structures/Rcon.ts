@@ -7,6 +7,7 @@ import { Rcon as RconClient } from "../rcon";
 import { mentionRole, sendWebhookMessage } from "../services/Discord";
 import { LookupPlayer } from "../services/PlayFab";
 import config, { Role } from "../structures/Config";
+import { hastebin } from "../utils";
 import logger from "../utils/logger";
 import { outputPlayerIDs } from "../utils/PlayerID";
 import KillStreak from "./KillStreak";
@@ -29,7 +30,8 @@ export default class Rcon {
         | "permanent"
         | "automod"
         | "killstreak"
-        | "adminCalls",
+        | "adminCalls"
+        | "warns",
         {
             id: string;
             token: string;
@@ -89,7 +91,8 @@ export default class Rcon {
             name?: string;
         },
         duration: number,
-        reason: string
+        reason: string,
+        shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
             return `Not ${
@@ -119,6 +122,8 @@ export default class Rcon {
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) banned player ${player.id} (Duration: ${duration}, Reason: ${reason})`;
         // const lineDate = new Date();
 
+        if (!shouldSave) return;
+
         this.bot.logHandler.banHandler.execute(
             server,
             new Date(),
@@ -140,7 +145,8 @@ export default class Rcon {
             ids: { playFabID: string; steamID: string };
             id: string;
             name?: string;
-        }
+        },
+        shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
             return `Not ${
@@ -156,6 +162,8 @@ export default class Rcon {
 
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) unbanned player ${player.id}`;
         // const lineDate = new Date();
+
+        if (!shouldSave) return;
 
         this.bot.logHandler.unbanHandler.execute(
             server,
@@ -177,7 +185,8 @@ export default class Rcon {
             id: string;
             name?: string;
         },
-        reason: string
+        reason: string,
+        shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
             return `Not ${
@@ -194,6 +203,8 @@ export default class Rcon {
         // const lineDate = new Date();
 
         // this.bot.logHandler.kickHandler.parse(line, server, lineDate, player);
+
+        if (!shouldSave) return;
 
         this.bot.logHandler.kickHandler.execute(
             server,
@@ -249,14 +260,15 @@ export default class Rcon {
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) muted player ${player.id} (Duration: ${duration})`;
         // const lineDate = new Date();
 
-        if (shouldSave)
-            this.bot.logHandler.muteHandler.execute(
-                server,
-                new Date(),
-                player,
-                admin,
-                duration
-            );
+        if (!shouldSave) return;
+
+        this.bot.logHandler.muteHandler.execute(
+            server,
+            new Date(),
+            player,
+            admin,
+            duration
+        );
     }
 
     async unmuteUser(
@@ -270,7 +282,8 @@ export default class Rcon {
             ids: { playFabID: string; steamID: string };
             id: string;
             name?: string;
-        }
+        },
+        shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
             return `Not ${
@@ -292,6 +305,8 @@ export default class Rcon {
         if (!result.includes("processed successfully")) {
             return result;
         }
+
+        if (!shouldSave) return;
 
         this.bot.logHandler.unmuteHandler.execute(
             server,
@@ -408,17 +423,36 @@ export default class Rcon {
                         (role) => role.receiveMentions
                     ),
                     (role) => role.Ids.map((id) => mentionRole(id))
-                )} Following players: ${affectedPlayers
-                    .map(
-                        (player) =>
-                            `${player.name} (${outputPlayerIDs(
-                                player.ids,
-                                true
-                            )})`
-                    )
-                    .join(
-                        ", "
-                    )} was given admin privileges on without permission${
+                )} Following players: ${
+                    affectedPlayers
+                        .map(
+                            (player) =>
+                                `${player.name} (${outputPlayerIDs(
+                                    player.ids,
+                                    true
+                                )})`
+                        )
+                        .join(", ").length > 900
+                        ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                              affectedPlayers
+                                  .map(
+                                      (player) =>
+                                          `${player.name} (${outputPlayerIDs(
+                                              player.ids
+                                          )})`
+                                  )
+                                  .join(", ")
+                          )})`
+                        : affectedPlayers
+                              .map(
+                                  (player) =>
+                                      `${player.name} (${outputPlayerIDs(
+                                          player.ids,
+                                          true
+                                      )})`
+                              )
+                              .join(", ")
+                } was given admin privileges on without permission${
                     config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been removed"
                         : ""
@@ -440,14 +474,36 @@ export default class Rcon {
 
             logger.warn(
                 "RCON",
-                `Following admins: ${affectedAdmins
-                    .map(
-                        (admin) =>
-                            `${admin.name} (${outputPlayerIDs(admin.ids)})`
-                    )
-                    .join(
-                        ", "
-                    )} had their privileges removed without permission${
+                `Following admins: ${
+                    affectedAdmins
+                        .map(
+                            (admin) =>
+                                `${admin.name} (${outputPlayerIDs(
+                                    admin.ids,
+                                    true
+                                )})`
+                        )
+                        .join(", ").length > 900
+                        ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                              affectedAdmins
+                                  .map(
+                                      (player) =>
+                                          `${player.name} (${outputPlayerIDs(
+                                              player.ids
+                                          )})`
+                                  )
+                                  .join(", ")
+                          )})`
+                        : affectedAdmins
+                              .map(
+                                  (player) =>
+                                      `${player.name} (${outputPlayerIDs(
+                                          player.ids,
+                                          true
+                                      )})`
+                              )
+                              .join(", ")
+                } had their privileges removed without permission${
                     config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been added back"
                         : ""
@@ -922,17 +978,60 @@ export default class Rcon {
 
         // if (process.env.NODE_ENV.trim() === "development") return;
 
-        if (this.options.adminListSaving && !this.admins.has(adminID)) {
-            await this.saveAdmins();
-            return;
-        }
-
         const admin =
             this.bot.cachedPlayers.get(adminID) ||
             (await this.getPlayerToCache(adminID));
         const player =
             this.bot.cachedPlayers.get(playerID) ||
             (await this.getPlayerToCache(playerID));
+
+        if (this.options.adminListSaving && !this.admins.has(adminID)) {
+            await this.saveAdmins();
+
+            sendWebhookMessage(
+                this.webhooks.get("activity"),
+                `Unauthorized admin ${admin.name} (${outputPlayerIDs(
+                    admin.ids,
+                    true
+                )}) ${punishment} ${player.name} (${outputPlayerIDs(
+                    player.ids,
+                    true
+                )})${
+                    ["banned", "muted"].includes(punishment)
+                        ? " and the punishment has beeen reverted"
+                        : ""
+                }`
+            );
+
+            switch (punishment) {
+                case "banned": {
+                    this.unbanUser(
+                        this.options.name,
+                        {
+                            ids: { playFabID: "", steamID: "" },
+                            id: "",
+                            name: "",
+                        },
+                        player,
+                        false
+                    );
+                }
+                case "muted": {
+                    this.unmuteUser(
+                        this.options.name,
+                        {
+                            ids: { playFabID: "", steamID: "" },
+                            id: "",
+                            name: "",
+                        },
+                        player,
+                        false
+                    );
+                }
+            }
+
+            return;
+        }
 
         // console.log(
         //     `An admin ${duration === 0 ? "permanently " : ""}${punishment} ${

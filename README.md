@@ -60,6 +60,7 @@ rename
 say
 unban
 unmute
+warn
 addadmin
 removeadmin
 globaladdadmin
@@ -81,6 +82,7 @@ kick
 mute
 unban
 unmute
+warn
 ```
 
 ### Features
@@ -90,9 +92,10 @@ unmute
 -   Per discord role slash commands access (You can choose which commands are available for each role, multiple roles can have same permissions)
 -   Global punishments (Servers can be set to ignore global punishments)
 -   Killstreaks (You can toggle this feature, as well as a toggle to count bot kills for each server and customize it, for each kill threshold with its message. The available variables are `{name}` and `{kills}`)
--   Automod (Fully customizable, you can also change the profane words list by configuring `bannedWords.json`)
+-   Automod (Fully customizable, you can also change the profane words list by configuring `bannedWords.json`. The available variables are `{name}` and `{words}`)
 -   Admin list saving/rollback (Toggleable feature with notify only mode)
 -   Auto Update (The bot will automatically download and overwrite files though you have to manually configure and build the bot)
+-   Warn system (Acts like automod infraction threshold system with a reset after duration (in minutes, default is 1 month). The available variables are `{name}`, `{currentWarns}` and `{maxWarns}` )
 
 ## Prerequisites
 
@@ -135,6 +138,7 @@ To migrate from the [Mordhau Ban Logger](https://github.com/academy-gaming/mordh
 | Mute    | Mute a player   | mute <player name/id> [--duration/-d number]                     | mute Schweppes --duration 100             |
 | Unban   | Unban a player  | unban <player id>                                                | unban Schweppes                           |
 | Unmute  | Unmute a player | unmute <player name/id>                                          | unmute Schweppes                          |
+| Warn    | Warn a player   | warn <player name/id>                                            | warn Schweppes                            |
 
 ## To Do
 

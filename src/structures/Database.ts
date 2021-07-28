@@ -1,6 +1,7 @@
 import mongoose, { ObjectId } from "mongoose";
 import infractionsSchema from "../models/infractionsSchema";
 import logSchema, { ILog, platforms } from "../models/logSchema";
+import warnsSchema from "../models/warnsSchema";
 import logger from "../utils/logger";
 import { parsePlayerID } from "../utils/PlayerID";
 
@@ -39,6 +40,10 @@ export default class Database {
 
     public get Infractions() {
         return infractionsSchema;
+    }
+
+    public get Warns() {
+        return warnsSchema;
     }
 
     async getPlayerHistory(
