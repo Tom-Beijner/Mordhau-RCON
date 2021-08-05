@@ -51,10 +51,39 @@ export default class Warn extends BaseRCONCommand {
             { new: true, upsert: true }
         );
 
+        const infractionThresholds = config.get("warns.infractionThresholds");
+        const highestInfractionThreshold = parseInt(
+            Object.keys(infractionThresholds).reduce((a, b) =>
+                parseInt(a) > parseInt(b) ? a : b
+            )
+        );
+        const infractionIteration =
+            playerWarns.infractions / highestInfractionThreshold;
+
+        function onlyDecimals(value: number) {
+            value = Math.abs(value);
+            return Number((value - Math.floor(value)).toFixed(3));
+        }
+
+        function compareDecimals(first: number, second: number) {
+            return onlyDecimals(first) === onlyDecimals(second);
+        }
+
+        /* 
+        To be able to make infinity scaling durations I need to calculate the current iteration compared to the highest threshold value.
+        The easiest way is to compare the decimals with the normalization from currentInfractionValue to 0 and 1, doesn't matter what value it is as decimals is used.
+        */
+
         for (const infractionsThreshhold in config.get(
             "warns.infractionThresholds"
         ) as { [key: string]: InfractionThreshold }) {
-            if (parseInt(infractionsThreshhold) === playerWarns.infractions) {
+            if (
+                compareDecimals(
+                    parseInt(infractionsThreshhold) /
+                        highestInfractionThreshold,
+                    infractionIteration
+                )
+            ) {
                 const punishment: Punishment = config.get(
                     `warns.infractionThresholds.${infractionsThreshhold}`
                 );
@@ -72,6 +101,10 @@ export default class Warn extends BaseRCONCommand {
                         ).length.toString()
                     );
                 const reason = punishment.reason;
+                const duration =
+                    infractionIteration > 1
+                        ? punishment.duration * Math.ceil(infractionIteration)
+                        : punishment.duration;
 
                 switch (punishment.type) {
                     case "message": {
@@ -84,7 +117,7 @@ export default class Warn extends BaseRCONCommand {
                             server,
                             admin,
                             cachedPlayer,
-                            punishment.duration
+                            duration
                         );
 
                         if (error) {
@@ -130,7 +163,7 @@ export default class Warn extends BaseRCONCommand {
                             server,
                             admin,
                             cachedPlayer,
-                            punishment.duration,
+                            duration,
                             reason
                         );
 
@@ -153,7 +186,7 @@ export default class Warn extends BaseRCONCommand {
                         const result = await this.bot.rcon.globalMute(
                             admin,
                             cachedPlayer,
-                            punishment.duration
+                            duration
                         );
                         const failedServers = result.filter(
                             (result) => result.data.failed
@@ -186,7 +219,7 @@ export default class Warn extends BaseRCONCommand {
                         const result = await this.bot.rcon.globalBan(
                             admin,
                             cachedPlayer,
-                            punishment.duration,
+                            duration,
                             reason
                         );
                         const failedServers = result.filter(
@@ -238,7 +271,20 @@ export default class Warn extends BaseRCONCommand {
                         true
                     )}) for reaching warn threshold (Server: ${
                         ctx.rcon.options.name
-                    }, Warns: ${playerWarns.infractions})`
+                    }, Admin: ${admin.name} (${outputPlayerIDs(
+                        admin.ids,
+                        true
+                    )})${
+                        duration
+                            ? `, Duration: ${pluralize(
+                                  "minute",
+                                  duration,
+                                  true
+                              )}`
+                            : ""
+                    }, Threshold: ${infractionsThreshhold}, Warnings: ${
+                        playerWarns.infractions
+                    })`
                 );
 
                 logger.info(
@@ -260,12 +306,24 @@ export default class Warn extends BaseRCONCommand {
                         cachedPlayer.ids
                     )}) for reaching warn threshold (Server: ${
                         ctx.rcon.options.name
-                    }, Warns: ${playerWarns.infractions})`
+                    }, Admin: ${admin.name} (${outputPlayerIDs(admin.ids)})${
+                        duration
+                            ? `, Duration: ${pluralize(
+                                  "minute",
+                                  duration,
+                                  true
+                              )}`
+                            : ""
+                    }, Threshold: ${infractionsThreshhold}, Warnings: ${
+                        playerWarns.infractions
+                    })`
                 );
+
+                if (config.get("warns.infiniteDurationScaling")) return;
 
                 if (
                     parseInt(infractionsThreshhold) >=
-                    Object.keys(config.get("warns.infractionThresholds")).length
+                    highestInfractionThreshold
                 ) {
                     await this.bot.database.Warns.deleteOne({
                         id: player.id,

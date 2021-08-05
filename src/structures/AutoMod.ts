@@ -4,11 +4,11 @@ import pluralize from "pluralize";
 import english from "retext-english";
 import factory from "retext-profanities/factory.js";
 import stringify from "retext-stringify";
-import unified from "unified";
+import unified, { Processor, Settings } from "unified";
 import { sendWebhookMessage } from "../services/Discord";
-import config, { InfractionThreshold } from "../structures/Config";
 import logger from "../utils/logger";
 import { outputPlayerIDs } from "../utils/PlayerID";
+import config, { InfractionThreshold } from "./Config";
 import Rcon from "./Rcon";
 import Watchdog from "./Watchdog";
 
@@ -27,7 +27,7 @@ export default class AutoMod {
     private bot: Watchdog;
     public profaneWords: string[];
     public options: IOptions;
-    private stringChecker: unified.Processor<unified.Settings>;
+    private stringChecker: Processor<Settings>;
 
     constructor(bot: Watchdog, options?: IOptions) {
         this.options = options || {
@@ -174,11 +174,33 @@ export default class AutoMod {
             (words) => words
         ).join(", ");
 
-        for (const infractionsThreshhold in config.get(
-            "automod.infractionThresholds"
-        ) as { [key: string]: InfractionThreshold }) {
+        const infractionThresholds = config.get("automod.infractionThresholds");
+        const highestInfractionThreshold = parseInt(
+            Object.keys(infractionThresholds).reduce((a, b) =>
+                parseInt(a) > parseInt(b) ? a : b
+            )
+        );
+        const infractionIteration =
+            playerMessages.infractions / highestInfractionThreshold;
+
+        function onlyDecimals(value: number) {
+            value = Math.abs(value);
+            return Number((value - Math.floor(value)).toFixed(3));
+        }
+
+        function compareDecimals(first: number, second: number) {
+            return onlyDecimals(first) === onlyDecimals(second);
+        }
+
+        for (const infractionsThreshhold in infractionThresholds as {
+            [key: string]: InfractionThreshold;
+        }) {
             if (
-                parseInt(infractionsThreshhold) === playerMessages.infractions
+                compareDecimals(
+                    parseInt(infractionsThreshhold) /
+                        highestInfractionThreshold,
+                    infractionIteration
+                )
             ) {
                 const punishment: Punishment = config.get(
                     `automod.infractionThresholds.${infractionsThreshhold}`
@@ -189,15 +211,16 @@ export default class AutoMod {
                     id: "1337",
                     name: this.options.name,
                 };
-                const message = punishment.message.replace(
-                    /{name}/g,
-                    player.name
-                );
-                const reason =
-                    `${this.options.name}: ${punishment.reason}`.replace(
-                        /{words}/g,
-                        allProfaneWords
-                    );
+                const message = punishment.message
+                    .replace(/{name}/g, player.name)
+                    .replace(/{words}/g, allProfaneWords);
+                const reason = `${this.options.name}: ${punishment.reason}`
+                    .replace(/{name}/g, player.name)
+                    .replace(/{words}/g, allProfaneWords);
+                const duration =
+                    infractionIteration > 1
+                        ? punishment.duration * Math.ceil(infractionIteration)
+                        : punishment.duration;
 
                 switch (punishment.type) {
                     case "message": {
@@ -210,7 +233,7 @@ export default class AutoMod {
                             server,
                             admin,
                             player,
-                            punishment.duration
+                            duration
                         );
 
                         if (error) {
@@ -252,7 +275,7 @@ export default class AutoMod {
                             server,
                             admin,
                             player,
-                            punishment.duration,
+                            duration,
                             reason
                         );
 
@@ -273,7 +296,7 @@ export default class AutoMod {
                         const result = await this.bot.rcon.globalMute(
                             admin,
                             player,
-                            punishment.duration
+                            duration
                         );
                         const failedServers = result.filter(
                             (result) => result.data.failed
@@ -306,7 +329,7 @@ export default class AutoMod {
                         const result = await this.bot.rcon.globalBan(
                             admin,
                             player,
-                            punishment.duration,
+                            duration,
                             reason
                         );
                         const failedServers = result.filter(
@@ -356,9 +379,15 @@ export default class AutoMod {
                     } ${player.name} (${outputPlayerIDs(
                         player.ids,
                         true
-                    )}) for profane message (Server: ${
-                        rcon.options.name
-                    }, Messages: ${
+                    )}) for profane message (Server: ${rcon.options.name}${
+                        duration
+                            ? `, Duration: ${pluralize(
+                                  "minute",
+                                  duration,
+                                  true
+                              )}`
+                            : ""
+                    }, Threshold: ${infractionsThreshhold}, Messages: ${
                         playerMessages.infractions
                     }, Profane words: ${allProfaneWords})`
                 );
@@ -380,17 +409,24 @@ export default class AutoMod {
                             : "d"
                     } ${player.name} (${outputPlayerIDs(
                         player.ids
-                    )}) for profane message (Server: ${
-                        rcon.options.name
-                    }, Messages: ${
+                    )}) for profane message (Server: ${rcon.options.name}${
+                        duration
+                            ? `, Duration: ${pluralize(
+                                  "minute",
+                                  duration,
+                                  true
+                              )}`
+                            : ""
+                    }, Threshold: ${infractionsThreshhold}, Messages: ${
                         playerMessages.infractions
                     }, Profane words: ${allProfaneWords})`
                 );
 
+                if (config.get("automod.infiniteDurationScaling")) return;
+
                 if (
                     parseInt(infractionsThreshhold) >=
-                    Object.keys(config.get("automod.infractionThresholds"))
-                        .length
+                    highestInfractionThreshold
                 ) {
                     await this.bot.database.Infractions.deleteOne({
                         id: player.id,

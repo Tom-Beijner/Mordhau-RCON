@@ -1074,6 +1074,15 @@ export default class Rcon {
                 );
             }
             case "banned": {
+                if (config.get("syncServerPunishments"))
+                    return this.bot.rcon.globalBan(
+                        admin,
+                        player,
+                        duration,
+                        reason,
+                        this.options.name
+                    );
+
                 return this.bot.logHandler.banHandler.execute(
                     this.options.name,
                     date,
@@ -1084,6 +1093,13 @@ export default class Rcon {
                 );
             }
             case "unbanned": {
+                if (config.get("syncServerPunishments"))
+                    return this.bot.rcon.globalUnban(
+                        admin,
+                        player,
+                        this.options.name
+                    );
+
                 return this.bot.logHandler.unbanHandler.execute(
                     this.options.name,
                     date,
@@ -1092,6 +1108,14 @@ export default class Rcon {
                 );
             }
             case "muted": {
+                if (config.get("syncServerPunishments"))
+                    return this.bot.rcon.globalMute(
+                        admin,
+                        player,
+                        duration,
+                        this.options.name
+                    );
+
                 return this.bot.logHandler.muteHandler.execute(
                     this.options.name,
                     date,
@@ -1101,6 +1125,13 @@ export default class Rcon {
                 );
             }
             case "unmuted": {
+                if (config.get("syncServerPunishments"))
+                    return this.bot.rcon.globalUnmute(
+                        admin,
+                        player,
+                        this.options.name
+                    );
+
                 return this.bot.logHandler.unmuteHandler.execute(
                     this.options.name,
                     date,

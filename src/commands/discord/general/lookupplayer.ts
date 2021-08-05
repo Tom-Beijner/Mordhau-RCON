@@ -79,7 +79,7 @@ export default class LookupPlayer extends SlashCommand {
                                 : "No"
                         }`,
                         `PlayFabID: ${player.ids.playFabID}`,
-                        `SteamID: ${player.ids.steamID}`,
+                        `SteamID: [${player.ids.steamID}](<http://steamcommunity.com/profiles/${player.ids.steamID}>)`,
                         `Name: ${player.name}`,
                         `Teamfight MMR/Rank (${
                             teamFightFights ? teamFightFights.Value : 0

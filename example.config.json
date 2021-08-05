@@ -9,6 +9,7 @@
         "publicKey": "",
         "id": ""
     },
+    "syncServerPunishments": false,
     "servers": [
         {
             "name": "Cool Server",
@@ -70,6 +71,7 @@
         "30": "WICKED SICK! {name} has a killstreak of {kills}!"
     },
     "automod": {
+        "infiniteDurationScaling": true,
         "adminsBypass": true,
         "infractionThresholds": {
             "1": {
@@ -106,6 +108,7 @@
         }
     },
     "warns": {
+        "infiniteDurationScaling": true,
         "resetAfterDuration": 43830,
         "infractionThresholds": {
             "1": {
@@ -120,13 +123,13 @@
             "3": {
                 "type": "kick",
                 "message": "{name} now has {currentWarns}/{maxWarns} warnings and got kicked!",
-                "reason": "You reached a warning infraction threshold"
+                "reason": "You reached a warning infraction threshold ({currentWarns}/{maxWarns})"
             },
             "4": {
                 "type": "ban",
                 "message": "{name} now has {currentWarns}/{maxWarns} warnings and got banned!",
                 "duration": 300,
-                "reason": "You reached a warning infraction threshold"
+                "reason": "You reached a warning infraction threshold ({currentWarns}/{maxWarns})"
             },
             "5": {
                 "type": "globalmute",
@@ -137,7 +140,7 @@
                 "type": "globalban",
                 "message": "{name} now has {currentWarns}/{maxWarns} warnings and got globally banned!",
                 "duration": 300,
-                "reason": "You reached a warning infraction threshold"
+                "reason": "You reached a warning infraction threshold ({currentWarns}/{maxWarns})"
             }
         }
     },
@@ -158,8 +161,10 @@
                     "say",
                     "unban",
                     "unmute",
-                    "warn"
-                ]
+                    "warn",
+                    "unwarn"
+                ],
+                "receiveMentions": false
             },
             {
                 "name": "Admins",
@@ -178,8 +183,10 @@
                     "say",
                     "unban",
                     "unmute",
-                    "warn"
-                ]
+                    "warn",
+                    "unwarn"
+                ],
+                "receiveMentions": false
             },
             {
                 "name": "Owner",
@@ -201,6 +208,8 @@
                     "unban",
                     "unmute",
                     "warn",
+                    "unwarn",
+                    "resetwarnings",
                     "addadmin",
                     "removeadmin",
                     "globaladdadmin",

@@ -272,7 +272,8 @@ export default class Watchdog {
                 name?: string;
             },
             duration?: number,
-            reason?: string
+            reason?: string,
+            punishmentServer?: string
         ) => {
             const servers: {
                 name: string;
@@ -374,13 +375,13 @@ export default class Watchdog {
                     servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.banHandler.execute(
-                    "Global",
+                    punishmentServer || "Global",
                     new Date(),
                     player,
                     admin,
                     duration,
                     reason,
-                    true
+                    Boolean(punishmentServer) || true
                 );
             }
 
@@ -397,7 +398,8 @@ export default class Watchdog {
                 id: string;
                 name?: string;
             },
-            duration?: number
+            duration?: number,
+            punishmentServer?: string
         ) => {
             const servers: {
                 name: string;
@@ -497,13 +499,13 @@ export default class Watchdog {
                     servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.muteHandler.execute(
-                    "Global",
+                    punishmentServer || "Global",
                     new Date(),
                     player,
                     admin,
                     duration,
                     null,
-                    true
+                    Boolean(punishmentServer) || true
                 );
             }
 
@@ -519,7 +521,8 @@ export default class Watchdog {
                 ids: { playFabID: string; steamID: string };
                 id: string;
                 name?: string;
-            }
+            },
+            punishmentServer?: string
         ) => {
             const servers: {
                 name: string;
@@ -595,13 +598,13 @@ export default class Watchdog {
                     servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.unbanHandler.execute(
-                    "Global",
+                    punishmentServer || "Global",
                     new Date(),
                     player,
                     admin,
                     null,
                     null,
-                    true
+                    Boolean(punishmentServer) || true
                 );
             }
 
@@ -617,7 +620,8 @@ export default class Watchdog {
                 ids: { playFabID: string; steamID: string };
                 id: string;
                 name?: string;
-            }
+            },
+            punishmentServer?: string
         ) => {
             const servers: {
                 name: string;
@@ -691,13 +695,13 @@ export default class Watchdog {
                     servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.unmuteHandler.execute(
-                    "Global",
+                    punishmentServer || "Global",
                     new Date(),
                     player,
                     admin,
                     null,
                     null,
-                    true
+                    Boolean(punishmentServer) || true
                 );
             }
 

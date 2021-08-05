@@ -4,6 +4,7 @@ export interface Config {
     ingamePrefix: string;
     autoUpdate: AutoUpdate;
     bot: Bot;
+    syncServerPunishments: boolean;
     servers: Server[];
     adminListSaving: AdminListSaving;
     killstreakMessages: { [key: string]: string };
@@ -25,11 +26,13 @@ export interface AutoUpdate {
 }
 
 export interface Automod {
+    infiniteDurationScaling: boolean;
     adminsBypass: boolean;
     infractionThresholds: { [key: string]: InfractionThreshold };
 }
 
 export interface Warns {
+    infiniteDurationScaling: boolean;
     resetAfterDuration: number;
     infractionThresholds: { [key: string]: InfractionThreshold };
 }
@@ -186,6 +189,9 @@ export default new Conf<Config>({
             },
             required: ["token", "publicKey", "id"],
         },
+        syncServerPunishments: {
+            type: "boolean",
+        },
         servers: {
             type: "array",
             items: {
@@ -321,6 +327,7 @@ export default new Conf<Config>({
                                         "unban",
                                         "unmute",
                                         "warn",
+                                        "unwarn",
                                     ],
                                 },
                                 minItems: 1,
@@ -366,6 +373,9 @@ export default new Conf<Config>({
         automod: {
             type: "object",
             properties: {
+                infiniteDurationScaling: {
+                    type: "boolean",
+                },
                 adminsBypass: {
                     type: "boolean",
                 },
@@ -405,11 +415,18 @@ export default new Conf<Config>({
                     minProperties: 1,
                 },
             },
-            required: ["adminsBypass", "infractionThresholds"],
+            required: [
+                "infiniteDurationScaling",
+                "adminsBypass",
+                "infractionThresholds",
+            ],
         },
         warns: {
             type: "object",
             properties: {
+                infiniteDurationScaling: {
+                    type: "boolean",
+                },
                 resetAfterDuration: {
                     type: "number",
                 },
@@ -449,7 +466,11 @@ export default new Conf<Config>({
                     minProperties: 1,
                 },
             },
-            required: ["resetAfterDuration", "infractionThresholds"],
+            required: [
+                "infiniteDurationScaling",
+                "resetAfterDuration",
+                "infractionThresholds",
+            ],
         },
         discord: {
             type: "object",
@@ -496,6 +517,8 @@ export default new Conf<Config>({
                                         "unban",
                                         "unmute",
                                         "warn",
+                                        "unwarn",
+                                        "resetwarnings",
                                         "addadmin",
                                         "removeadmin",
                                         "globaladdadmin",
@@ -568,6 +591,7 @@ export default new Conf<Config>({
             publicKey: "",
             id: "",
         },
+        syncServerPunishments: false,
         servers: [
             {
                 name: "Cool Server",
@@ -613,6 +637,7 @@ export default new Conf<Config>({
                         "unban",
                         "unmute",
                         "warn",
+                        "unwarn",
                     ],
                 },
             },
@@ -630,6 +655,7 @@ export default new Conf<Config>({
             "30": "WICKED SICK! {name} has a killstreak of {kills}!",
         },
         automod: {
+            infiniteDurationScaling: true,
             adminsBypass: true,
             infractionThresholds: {
                 "1": {
@@ -666,6 +692,7 @@ export default new Conf<Config>({
             },
         },
         warns: {
+            infiniteDurationScaling: true,
             resetAfterDuration: 43830,
             infractionThresholds: {
                 "1": {
@@ -725,6 +752,7 @@ export default new Conf<Config>({
                         "unban",
                         "unmute",
                         "warn",
+                        "unwarn",
                     ],
                 },
                 {
@@ -745,6 +773,7 @@ export default new Conf<Config>({
                         "unban",
                         "unmute",
                         "warn",
+                        "unwarn",
                     ],
                 },
                 {
@@ -767,6 +796,8 @@ export default new Conf<Config>({
                         "unban",
                         "unmute",
                         "warn",
+                        "unwarn",
+                        "resetwarnings",
                         "addadmin",
                         "removeadmin",
                         "globaladdadmin",
@@ -850,6 +881,10 @@ export default new Conf<Config>({
                     }
                 );
             }
+        },
+        "1.9.0": (store) => {
+            store.set("automod.infiniteDurationScaling", true);
+            store.set("warns.infiniteDurationScaling", true);
         },
     },
 });

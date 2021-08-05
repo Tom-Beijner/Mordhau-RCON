@@ -111,11 +111,40 @@ export default class Warn extends SlashCommand {
                 { new: true, upsert: true }
             );
 
-            for (const infractionsThreshhold in config.get(
+            const infractionThresholds = config.get(
                 "warns.infractionThresholds"
-            ) as { [key: string]: InfractionThreshold }) {
+            );
+            const highestInfractionThreshold = parseInt(
+                Object.keys(infractionThresholds).reduce((a, b) =>
+                    parseInt(a) > parseInt(b) ? a : b
+                )
+            );
+            const infractionIteration =
+                playerWarns.infractions / highestInfractionThreshold;
+
+            function onlyDecimals(value: number) {
+                value = Math.abs(value);
+                return Number((value - Math.floor(value)).toFixed(3));
+            }
+
+            function compareDecimals(first: number, second: number) {
+                return onlyDecimals(first) === onlyDecimals(second);
+            }
+
+            /* 
+            To be able to make infinity scaling durations I need to calculate the current iteration compared to the highest threshold value.
+            The easiest way is to compare the decimals with the normalization from currentInfractionValue to 0 and 1, doesn't matter what value it is as decimals is used.
+            */
+
+            for (const infractionsThreshhold in infractionThresholds as {
+                [key: string]: InfractionThreshold;
+            }) {
                 if (
-                    parseInt(infractionsThreshhold) === playerWarns.infractions
+                    compareDecimals(
+                        parseInt(infractionsThreshhold) /
+                            highestInfractionThreshold,
+                        infractionIteration
+                    )
                 ) {
                     const admin = {
                         ids: { playFabID: ctx.member.id },
@@ -136,11 +165,14 @@ export default class Warn extends SlashCommand {
                         )
                         .replace(
                             /{maxWarns}/g,
-                            Object.keys(
-                                config.get("warns.infractionThresholds")
-                            ).length.toString()
+                            highestInfractionThreshold.toString()
                         );
                     const reason = punishment.reason;
+                    const duration =
+                        infractionIteration > 1
+                            ? punishment.duration *
+                              Math.ceil(infractionIteration)
+                            : punishment.duration;
 
                     switch (punishment.type) {
                         case "message": {
@@ -153,7 +185,7 @@ export default class Warn extends SlashCommand {
                                 serverName,
                                 admin,
                                 player,
-                                punishment.duration
+                                duration
                             );
 
                             if (error) {
@@ -199,7 +231,7 @@ export default class Warn extends SlashCommand {
                                 serverName,
                                 admin,
                                 player,
-                                punishment.duration,
+                                duration,
                                 reason
                             );
 
@@ -222,7 +254,7 @@ export default class Warn extends SlashCommand {
                             const result = await this.bot.rcon.globalMute(
                                 admin,
                                 player,
-                                punishment.duration
+                                duration
                             );
                             const failedServers = result.filter(
                                 (result) => result.data.failed
@@ -255,7 +287,7 @@ export default class Warn extends SlashCommand {
                             const result = await this.bot.rcon.globalBan(
                                 admin,
                                 player,
-                                punishment.duration,
+                                duration,
                                 reason
                             );
                             const failedServers = result.filter(
@@ -307,7 +339,19 @@ export default class Warn extends SlashCommand {
                             true
                         )}) for reaching warn threshold (Server: ${
                             server.rcon.options.name
-                        }, Warns: ${playerWarns.infractions})`
+                        }, Admin: ${ctx.member.displayName}#${
+                            ctx.member.user.discriminator
+                        } (${ctx.member.id})${
+                            duration
+                                ? `, Duration: ${pluralize(
+                                      "minute",
+                                      duration,
+                                      true
+                                  )}`
+                                : ""
+                        }, Threshold: ${infractionsThreshhold}, Warnings: ${
+                            playerWarns.infractions
+                        })`
                     );
 
                     logger.info(
@@ -329,12 +373,24 @@ export default class Warn extends SlashCommand {
                             player.ids
                         )}) for reaching warn threshold (Server: ${
                             server.rcon.options.name
-                        }, Warns: ${playerWarns.infractions})`
+                        }, Admin: ${ctx.member.displayName}#${
+                            ctx.member.user.discriminator
+                        } (${ctx.member.id})${
+                            duration
+                                ? `, Duration: ${pluralize(
+                                      "minute",
+                                      duration,
+                                      true
+                                  )}`
+                                : ""
+                        }, Threshold: ${infractionsThreshhold}, Warnings: ${
+                            playerWarns.infractions
+                        })`
                     );
 
                     logger.info(
                         "Command",
-                        `${ctx.member.displayName}#${ctx.member.user.discriminator} warned ${player.name} (${player.id}) (Server: ${server.rcon.options.name}, Warns: ${playerWarns.infractions})`
+                        `${ctx.member.displayName}#${ctx.member.user.discriminator} warned ${player.name} (${player.id}) (Server: ${server.rcon.options.name}, Threshold: ${infractionsThreshhold}, Warnings: ${playerWarns.infractions})`
                     );
 
                     await ctx.send({
@@ -358,18 +414,32 @@ export default class Warn extends SlashCommand {
                                         ? "ed"
                                         : "d"
                                 } ${player.name} (${outputPlayerIDs(
-                                    player.ids
+                                    player.ids,
+                                    true
                                 )}) for reaching warn threshold (Server: ${
                                     server.rcon.options.name
-                                }, Warns: ${playerWarns.infractions})`,
+                                }, Admin: ${ctx.member.displayName}#${
+                                    ctx.member.user.discriminator
+                                } (${ctx.member.id})${
+                                    duration
+                                        ? `, Duration: ${pluralize(
+                                              "minute",
+                                              duration,
+                                              true
+                                          )}`
+                                        : ""
+                                }, Threshold: ${infractionsThreshhold}, Warnings: ${
+                                    playerWarns.infractions
+                                })`,
                             },
                         ],
                     });
 
+                    if (config.get("warns.infiniteDurationScaling")) return;
+
                     if (
                         parseInt(infractionsThreshhold) >=
-                        Object.keys(config.get("warns.infractionThresholds"))
-                            .length
+                        highestInfractionThreshold
                     ) {
                         await this.bot.database.Warns.deleteOne({
                             id: player.id,

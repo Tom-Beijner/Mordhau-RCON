@@ -1,9 +1,16 @@
 import fetch from "node-fetch";
-import { ButtonStyle, ComponentType, MessageOptions } from "slash-create";
-import CommandContext, {
-    ComponentRegisterCallback,
-} from "slash-create/lib/structures/interfaces/context";
+import {
+    ButtonStyle,
+    ComponentContext,
+    ComponentType,
+    MessageInteractionContext,
+    MessageOptions,
+} from "slash-create";
+import {} from "slash-create/lib/creator";
 import { Embed } from "../structures/DiscordEmbed";
+
+// Cant get type from slash-create so made a hack
+type ComponentRegisterCallback = (ctx: ComponentContext) => void;
 
 export async function sendWebhookMessage(
     webhookCredentials: { id: string; token: string },
@@ -49,7 +56,7 @@ export function mentionRole(id: string) {
 }
 
 export async function ComponentConfirmation(
-    ctx: CommandContext,
+    ctx: MessageInteractionContext,
     message: MessageOptions,
     confirm: ComponentRegisterCallback,
     cancel?: ComponentRegisterCallback

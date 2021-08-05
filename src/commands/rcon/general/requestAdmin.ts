@@ -24,13 +24,13 @@ export default class RequestAdmin extends BaseRCONCommand {
             `${player.name} (${outputPlayerIDs(
                 player.ids,
                 true
-            )}) has requested for admins${
+            )}) requested admins${
                 ctx.args.length
                     ? ` with the message \`${ctx.args.join(" ")}\``
                     : ""
             } (Server: ${player.server})`
         );
 
-        await ctx.say("Admins has been requested");
+        await ctx.say("Requested admins");
     }
 }

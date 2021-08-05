@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2021-08-05
+
+### Added
+
+-   Added infinite threshold duration scaling (will not reset warnings after reaching highest threshold, `infiniteDurationScaling` in config for automod and warnings, default: true)
+-   Added sync server punishments config setting (`syncServerPunishments` in config, default: false)
+-   Added `unwarn` command
+-   Added `resetwarnnings` command (removes all warnings of a specified player, **only available in Discord**)
+
+### Changed
+
+-   Updated almost all packes
+-   Made the automod variables `{name}` and `{words}` available for message and reason
+-   Fixed request admin response grammar
+-   Steam ID in `lookupplayer` command is now clickable
+
+### Fixed
+
+-   Fixed `ComponentRegisterCallback` import error
+
 ## [1.8.0] - 2021-07-28
 
 ### Added

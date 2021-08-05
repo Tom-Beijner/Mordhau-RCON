@@ -88,6 +88,7 @@ warn
 ### Features
 
 -   Per-server punishments saving (You can customize each server to save specific punishment types or just disable it altogether)
+-   Sync server punishments (Default: false)
 -   Per-server ingame commands specification (You can choose which commands are available ingame)
 -   Per discord role slash commands access (You can choose which commands are available for each role, multiple roles can have same permissions)
 -   Global punishments (Servers can be set to ignore global punishments)
