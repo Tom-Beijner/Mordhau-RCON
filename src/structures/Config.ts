@@ -169,7 +169,6 @@ export default new Conf<Config>({
                     exclusiveMinimum: 0,
                 },
             },
-            required: ["enabled", "checkInterval"],
         },
         bot: {
             type: "object",
@@ -230,7 +229,6 @@ export default new Conf<Config>({
                                         type: "boolean",
                                     },
                                 },
-                                required: ["enabled", "countBotKills"],
                             },
                             automod: {
                                 type: "boolean",
@@ -260,16 +258,8 @@ export default new Conf<Config>({
                                                 type: "boolean",
                                             },
                                         },
-                                        required: [
-                                            "kicks",
-                                            "bans",
-                                            "unbans",
-                                            "mutes",
-                                            "unmutes",
-                                        ],
                                     },
                                 },
-                                required: ["shouldSave", "types"],
                             },
                             logChannels: {
                                 type: "object",
@@ -302,17 +292,6 @@ export default new Conf<Config>({
                                         type: "string",
                                     },
                                 },
-                                required: [
-                                    "chat",
-                                    "punishments",
-                                    "activity",
-                                    "wanted",
-                                    "permanent",
-                                    "automod",
-                                    "killstreak",
-                                    "adminCalls",
-                                    "warns",
-                                ],
                             },
                             ingameCommands: {
                                 type: "array",
@@ -334,17 +313,7 @@ export default new Conf<Config>({
                                 uniqueItems: true,
                             },
                         },
-                        required: [
-                            "host",
-                            "port",
-                            "password",
-                            "adminListSaving",
-                            "killstreaks",
-                            "automod",
-                            "punishments",
-                            "logChannels",
-                            "ingameCommands",
-                        ],
+                        required: ["host", "port", "password"],
                     },
                 },
                 required: ["name", "rcon"],
@@ -358,7 +327,6 @@ export default new Conf<Config>({
                     type: "boolean",
                 },
             },
-            required: ["rollbackAdmins"],
         },
         killstreakMessages: {
             type: "object",
@@ -415,11 +383,6 @@ export default new Conf<Config>({
                     minProperties: 1,
                 },
             },
-            required: [
-                "infiniteDurationScaling",
-                "adminsBypass",
-                "infractionThresholds",
-            ],
         },
         warns: {
             type: "object",
@@ -466,11 +429,6 @@ export default new Conf<Config>({
                     minProperties: 1,
                 },
             },
-            required: [
-                "infiniteDurationScaling",
-                "resetAfterDuration",
-                "infractionThresholds",
-            ],
         },
         discord: {
             type: "object",
@@ -823,65 +781,65 @@ export default new Conf<Config>({
         },
     },
     migrations: {
-        "1.4.0": (store) => {
-            const servers = store.get("servers");
+        // "1.4.0": (store) => {
+        //     const servers = store.get("servers");
 
-            for (let i = 0; i < servers.length; i++) {
-                store.set(`servers.${i}.rcon.ignoreGlobalPunishments`, false);
-                store.set(`servers.${i}.rcon.logChannels`, {
-                    chat: "",
-                    punishments: "",
-                    activity: "",
-                    wanted: "",
-                    permanent: "",
-                    automod: "",
-                    killstreak: "",
-                    adminCalls: "",
-                });
-                // @ts-ignore
-                store.delete("discord.webhookEndpoints");
-            }
-        },
-        "1.7.0": (store) => {
-            const servers = store.get("servers");
+        //     for (let i = 0; i < servers.length; i++) {
+        //         store.set(`servers.${i}.rcon.ignoreGlobalPunishments`, false);
+        //         store.set(`servers.${i}.rcon.logChannels`, {
+        //             chat: "",
+        //             punishments: "",
+        //             activity: "",
+        //             wanted: "",
+        //             permanent: "",
+        //             automod: "",
+        //             killstreak: "",
+        //             adminCalls: "",
+        //         });
+        //         // @ts-ignore
+        //         store.delete("discord.webhookEndpoints");
+        //     }
+        // },
+        // "1.7.0": (store) => {
+        //     const servers = store.get("servers");
 
-            for (let i = 0; i < servers.length; i++) {
-                store.set(`servers.${i}.rcon.ingameCommands`, [
-                    "killstreak",
-                    "requestadmin",
-                    "topkillstreak",
-                    "ban",
-                    "kick",
-                    "mute",
-                    "unban",
-                    "unmute",
-                ]);
-            }
-        },
-        "1.8.0": (store) => {
-            for (const infractionsThreshhold in store.get(
-                "automod.infractionThresholds"
-            ) as { [key: string]: InfractionThreshold }) {
-                if (
-                    (
-                        store.get(
-                            `automod.infractionThresholds.${infractionsThreshhold}`
-                        ) as InfractionThreshold
-                    ).type !== "warn"
-                )
-                    continue;
+        //     for (let i = 0; i < servers.length; i++) {
+        //         store.set(`servers.${i}.rcon.ingameCommands`, [
+        //             "killstreak",
+        //             "requestadmin",
+        //             "topkillstreak",
+        //             "ban",
+        //             "kick",
+        //             "mute",
+        //             "unban",
+        //             "unmute",
+        //         ]);
+        //     }
+        // },
+        // "1.8.0": (store) => {
+        //     for (const infractionsThreshhold in store.get(
+        //         "automod.infractionThresholds"
+        //     ) as { [key: string]: InfractionThreshold }) {
+        //         if (
+        //             (
+        //                 store.get(
+        //                     `automod.infractionThresholds.${infractionsThreshhold}`
+        //                 ) as InfractionThreshold
+        //             ).type !== "warn"
+        //         )
+        //             continue;
 
-                store.set(
-                    `automod.infractionThresholds.${infractionsThreshhold}`,
-                    {
-                        ...(store.get(
-                            `automod.infractionThresholds.${infractionsThreshhold}`
-                        ) as InfractionThreshold),
-                        type: "message",
-                    }
-                );
-            }
-        },
+        //         store.set(
+        //             `automod.infractionThresholds.${infractionsThreshhold}`,
+        //             {
+        //                 ...(store.get(
+        //                     `automod.infractionThresholds.${infractionsThreshhold}`
+        //                 ) as InfractionThreshold),
+        //                 type: "message",
+        //             }
+        //         );
+        //     }
+        // },
         "1.9.0": (store) => {
             store.set("automod.infiniteDurationScaling", true);
             store.set("warns.infiniteDurationScaling", true);
