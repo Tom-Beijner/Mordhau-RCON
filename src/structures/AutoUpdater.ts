@@ -215,8 +215,7 @@ export default class AutoUpdater {
                     "Auto Updater",
                     `Bot was updated to ${this.readLocalVersion()}, restart the bot`
                 );
-                300000;
-            });
+            }, 300000);
 
             return { success: true, error: null };
         } catch (error) {
