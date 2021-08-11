@@ -2,6 +2,7 @@ import flatMap from "array.prototype.flatmap";
 import { compareArrayVals } from "crud-object-diff";
 import { addSeconds, formatDistanceToNow } from "date-fns";
 import deepClean from "deep-cleaner";
+import { matchSorter } from "match-sorter";
 import pluralize from "pluralize";
 import { Rcon as RconClient } from "../rcon";
 import { mentionRole, sendWebhookMessage } from "../services/Discord";
@@ -595,17 +596,21 @@ export default class Rcon {
     }
 
     async getIngamePlayer(id: string) {
-        return (await this.getIngamePlayers()).find((player) => {
-            const name = player.name.toLowerCase();
-            const searchNameSplit = id.split(" ");
+        return matchSorter(await this.getIngamePlayers(), id, {
+            keys: ["id", "name"],
+        })[0];
 
-            return (
-                player.id === id ||
-                name.includes(id.toLowerCase()) ||
-                searchNameSplit.filter((s) => name.includes(s)).length ===
-                    searchNameSplit.length
-            );
-        });
+        // return (await this.getIngamePlayers()).find((player) => {
+        //     const name = player.name.toLowerCase();
+        //     const searchNameSplit = id.split(" ");
+
+        //     return (
+        //         player.id === id ||
+        //         name.includes(id.toLowerCase()) ||
+        //         searchNameSplit.filter((s) => name.includes(s)).length ===
+        //             searchNameSplit.length
+        //     );
+        // });
     }
 
     async killPlayer(player: {

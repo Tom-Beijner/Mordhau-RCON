@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
@@ -104,42 +105,98 @@ export default class Ban extends SlashCommand {
         const reason = options.reason;
 
         try {
-            const error = await server.rcon.banUser(
-                player.server,
-                {
-                    ids: { playFabID: ctx.member.id },
-                    id: ctx.member.id,
-                    name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                },
-                player,
-                duration,
-                reason
-            );
+            if (config.get("syncServerPunishments")) {
+                const result = await this.bot.rcon.globalBan(
+                    {
+                        ids: { playFabID: ctx.member.id },
+                        id: ctx.member.id,
+                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                    },
+                    player,
+                    duration,
+                    reason,
+                    options.server
+                );
 
-            if (error) {
-                return (await ctx.send(error)) as Message;
+                const failedServers = result.filter(
+                    (result) => result.data.failed
+                );
+
+                const allServersFailed =
+                    this.bot.servers.size === failedServers.length;
+
+                await ctx.send({
+                    embeds: [
+                        {
+                            description: [
+                                `${
+                                    allServersFailed ? "Tried to ban" : "Banned"
+                                } ${player.name} (${outputPlayerIDs(
+                                    player.ids,
+                                    true
+                                )})\n`,
+                                `Duration: ${
+                                    pluralize(
+                                        "minute",
+                                        options.duration,
+                                        true
+                                    ) || "PERMANENT"
+                                }`,
+                                `Reason: ${reason || "None given"}\n`,
+                            ].join("\n"),
+                            ...(failedServers.length && {
+                                fields: [
+                                    {
+                                        name: "Failed servers",
+                                        value: failedServers
+                                            .map(
+                                                (server) =>
+                                                    `${server.name} (${server.data.result})`
+                                            )
+                                            .join("\n"),
+                                    },
+                                ],
+                            }),
+                        },
+                    ],
+                });
+            } else {
+                const error = await server.rcon.banUser(
+                    options.server,
+                    {
+                        ids: { playFabID: ctx.member.id },
+                        id: ctx.member.id,
+                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                    },
+                    player,
+                    duration,
+                    reason
+                );
+
+                if (error) {
+                    return (await ctx.send(error)) as Message;
+                }
+
+                await ctx.send({
+                    embeds: [
+                        {
+                            description: [
+                                `Banned player ${
+                                    player.name
+                                } (${outputPlayerIDs(player.ids, true)})\n`,
+                                `Server: ${server.name}`,
+                                `Duration: ${duration}`,
+                                `Reason: ${reason}`,
+                            ].join("\n"),
+                        },
+                    ],
+                });
             }
 
             logger.info(
                 "Command",
                 `${ctx.member.displayName}#${ctx.member.user.discriminator} banned ${player.name} (${player.id}) (Duration: ${duration}, Reason: ${reason})`
             );
-
-            await ctx.send({
-                embeds: [
-                    {
-                        description: [
-                            `Banned player ${player.name} (${outputPlayerIDs(
-                                player.ids,
-                                true
-                            )})\n`,
-                            `Server: ${server.name}`,
-                            `Duration: ${duration}`,
-                            `Reason: ${reason}`,
-                        ].join("\n"),
-                    },
-                ],
-            });
         } catch (error) {
             await ctx.send({
                 content: `An error occured while performing the command (${

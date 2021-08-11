@@ -50,7 +50,7 @@ export default abstract class BasePunishment {
         if (global) {
             this.savePayload({
                 player: fetchedPlayer,
-                server: "Global",
+                server,
                 date,
                 duration,
                 reason,
@@ -273,16 +273,27 @@ export default abstract class BasePunishment {
         if (!data.duration) {
             duration = "PERMANENT";
 
-            if (["BAN", "GLOBAL BAN"].includes(data.type))
-                sendWebhookMessage(
-                    this.bot.servers
-                        .get(data.server)
-                        .rcon.webhooks.get("permanent"),
-                    `${data.player.name} (${outputPlayerIDs(
-                        data.player.ids,
-                        true
-                    )}) ${data.global ? "globally" : `in ${data.server}`}`
-                );
+            if (["BAN", "GLOBAL BAN"].includes(data.type)) {
+                const server = this.bot.servers.get(data.server);
+                const payload = `${data.player.name} (${outputPlayerIDs(
+                    data.player.ids,
+                    true
+                )}) ${data.global ? "globally" : `in ${data.server}`}`;
+
+                if (server) {
+                    sendWebhookMessage(
+                        server.rcon.webhooks.get("permanent"),
+                        payload
+                    );
+                } else {
+                    for (const [serverName, server] of this.bot.servers) {
+                        sendWebhookMessage(
+                            server.rcon.webhooks.get("permanent"),
+                            payload
+                        );
+                    }
+                }
+            }
         } else duration += ` ${pluralize("minute", data.duration)}`;
 
         let pastOffenses: string;
@@ -410,42 +421,51 @@ export default abstract class BasePunishment {
             color = data.type === "UNBAN" ? 3066993 : 2067276;
         }
 
-        sendWebhookEmbed(
-            this.bot.servers.get(data.server).rcon.webhooks.get("punishments"),
-            {
-                title: `${data.type} REPORT`,
-                description: message.join("\n"),
-                fields: [
-                    {
-                        name: "Player",
-                        value: [
-                            `**Name**: \`${data.player.name}\``,
-                            `**PlayFabID**: \`${data.player.ids.playFabID}\``,
-                            `**SteamID**: [${data.player.ids.steamID}](<http://steamcommunity.com/profiles/${data.player.ids.steamID}>)`,
-                            `**Previous Names**: \`${
-                                data.previousNames.length
-                                    ? data.previousNames
-                                    : "None"
-                            }\``,
-                            `**Total Duration**: \`${pluralize(
-                                "minute",
-                                totalDuration,
-                                true
-                            )}\``,
-                        ].join("\n"),
-                    },
-                    {
-                        name: `Previous Offenses (${data.history.length})`,
-                        value: pastOffenses,
-                    },
-                ],
-                color,
-                image: {
-                    url: data.playeravatar,
+        const server = this.bot.servers.get(data.server);
+        const payload = {
+            title: `${data.type} REPORT`,
+            description: message.join("\n"),
+            fields: [
+                {
+                    name: "Player",
+                    value: [
+                        `**Name**: \`${data.player.name}\``,
+                        `**PlayFabID**: \`${data.player.ids.playFabID}\``,
+                        `**SteamID**: [${data.player.ids.steamID}](<http://steamcommunity.com/profiles/${data.player.ids.steamID}>)`,
+                        `**Previous Names**: \`${
+                            data.previousNames.length
+                                ? data.previousNames
+                                : "None"
+                        }\``,
+                        `**Total Duration**: \`${pluralize(
+                            "minute",
+                            totalDuration,
+                            true
+                        )}\``,
+                    ].join("\n"),
                 },
-                timestamp: new Date(data.date).toISOString(),
+                {
+                    name: `Previous Offenses (${data.history.length})`,
+                    value: pastOffenses,
+                },
+            ],
+            color,
+            image: {
+                url: data.playeravatar,
+            },
+            timestamp: new Date(data.date).toISOString(),
+        };
+
+        if (server) {
+            sendWebhookEmbed(server.rcon.webhooks.get("punishments"), payload);
+        } else {
+            for (const [serverName, server] of this.bot.servers) {
+                sendWebhookEmbed(
+                    server.rcon.webhooks.get("punishments"),
+                    payload
+                );
             }
-        );
+        }
 
         logger.debug("Bot", "Message sent.");
     }

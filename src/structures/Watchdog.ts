@@ -344,7 +344,9 @@ export default class Watchdog {
                 // }
 
                 let result = await server.rcon.send(
-                    `ban ${player.id} ${duration || 0} ${reason}`
+                    `ban ${player.id} ${duration || 0} ${
+                        reason || "None given"
+                    }`
                 );
                 result = result.split("\n")[0].trim();
 
@@ -381,7 +383,7 @@ export default class Watchdog {
                     admin,
                     duration,
                     reason,
-                    Boolean(punishmentServer) || true
+                    true
                 );
             }
 
@@ -505,7 +507,7 @@ export default class Watchdog {
                     admin,
                     duration,
                     null,
-                    Boolean(punishmentServer) || true
+                    true
                 );
             }
 
@@ -604,7 +606,7 @@ export default class Watchdog {
                     admin,
                     null,
                     null,
-                    Boolean(punishmentServer) || true
+                    true
                 );
             }
 
@@ -701,7 +703,7 @@ export default class Watchdog {
                     admin,
                     null,
                     null,
-                    Boolean(punishmentServer) || true
+                    true
                 );
             }
 

@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
@@ -96,40 +97,95 @@ export default class Mute extends SlashCommand {
         }
 
         try {
-            const error = await server.rcon.muteUser(
-                player.server,
-                {
-                    ids: { playFabID: ctx.member.id },
-                    id: ctx.member.id,
-                    name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                },
-                player,
-                duration
-            );
+            if (config.get("syncServerPunishments")) {
+                const result = await this.bot.rcon.globalMute(
+                    {
+                        ids: { playFabID: ctx.member.id },
+                        id: ctx.member.id,
+                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                    },
+                    player,
+                    duration,
+                    options.server
+                );
 
-            if (error) {
-                return (await ctx.send(error)) as Message;
+                const failedServers = result.filter(
+                    (result) => result.data.failed
+                );
+
+                const allServersFailed =
+                    this.bot.servers.size === failedServers.length;
+
+                await ctx.send({
+                    embeds: [
+                        {
+                            description: [
+                                `${
+                                    allServersFailed ? "Tried to mute" : "Muted"
+                                } ${player.name} (${outputPlayerIDs(
+                                    player.ids,
+                                    true
+                                )})\n`,
+                                `Duration: ${
+                                    pluralize(
+                                        "minute",
+                                        options.duration,
+                                        true
+                                    ) || "PERMANENT"
+                                }`,
+                            ].join("\n"),
+                            ...(failedServers.length && {
+                                fields: [
+                                    {
+                                        name: "Failed servers",
+                                        value: failedServers
+                                            .map(
+                                                (server) =>
+                                                    `${server.name} (${server.data.result})`
+                                            )
+                                            .join("\n"),
+                                    },
+                                ],
+                            }),
+                        },
+                    ],
+                });
+            } else {
+                const error = await server.rcon.muteUser(
+                    player.server,
+                    {
+                        ids: { playFabID: ctx.member.id },
+                        id: ctx.member.id,
+                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                    },
+                    player,
+                    duration
+                );
+
+                if (error) {
+                    return (await ctx.send(error)) as Message;
+                }
+
+                await ctx.send({
+                    embeds: [
+                        {
+                            description: [
+                                `Muted player ${player.name} (${outputPlayerIDs(
+                                    player.ids,
+                                    true
+                                )})\n`,
+                                `Server: ${server.name}`,
+                                `Duration: ${duration}`,
+                            ].join("\n"),
+                        },
+                    ],
+                });
             }
 
             logger.info(
                 "Command",
                 `${ctx.member.displayName}#${ctx.member.user.discriminator} muted ${player.name} (${player.id}) (Duration: ${duration})`
             );
-
-            await ctx.send({
-                embeds: [
-                    {
-                        description: [
-                            `Muted player ${player.name} (${outputPlayerIDs(
-                                player.ids,
-                                true
-                            )})\n`,
-                            `Server: ${server.name}`,
-                            `Duration: ${duration}`,
-                        ].join("\n"),
-                    },
-                ],
-            });
         } catch (error) {
             await ctx.send({
                 content: `An error occured while performing the command (${

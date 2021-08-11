@@ -88,38 +88,86 @@ export default class Unmute extends SlashCommand {
         }
 
         try {
-            const error = await server.rcon.unmuteUser(
-                player.server,
-                {
-                    ids: { playFabID: ctx.member.id },
-                    id: ctx.member.id,
-                    name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                },
-                player
-            );
+            if (config.get("syncServerPunishments")) {
+                const result = await this.bot.rcon.globalUnmute(
+                    {
+                        ids: { playFabID: ctx.member.id },
+                        id: ctx.member.id,
+                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                    },
+                    player,
+                    options.server
+                );
 
-            if (error) {
-                return (await ctx.send(error)) as Message;
+                const failedServers = result.filter(
+                    (result) => result.data.failed
+                );
+
+                const allServersFailed =
+                    this.bot.servers.size === failedServers.length;
+
+                await ctx.send({
+                    embeds: [
+                        {
+                            description: [
+                                `${
+                                    allServersFailed
+                                        ? "Tried to unmute"
+                                        : "Unmuted"
+                                } ${player.name} (${outputPlayerIDs(
+                                    player.ids,
+                                    true
+                                )})\n`,
+                            ].join("\n"),
+                            ...(failedServers.length && {
+                                fields: [
+                                    {
+                                        name: "Failed servers",
+                                        value: failedServers
+                                            .map(
+                                                (server) =>
+                                                    `${server.name} (${server.data.result})`
+                                            )
+                                            .join("\n"),
+                                    },
+                                ],
+                            }),
+                        },
+                    ],
+                });
+            } else {
+                const error = await server.rcon.unmuteUser(
+                    player.server,
+                    {
+                        ids: { playFabID: ctx.member.id },
+                        id: ctx.member.id,
+                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                    },
+                    player
+                );
+
+                if (error) {
+                    return (await ctx.send(error)) as Message;
+                }
+
+                await ctx.send({
+                    embeds: [
+                        {
+                            description: [
+                                `Unmuted player ${
+                                    player.name
+                                } (${outputPlayerIDs(player.ids, true)})\n`,
+                                `Server: ${server.name}`,
+                            ].join("\n"),
+                        },
+                    ],
+                });
             }
 
             logger.info(
                 "Command",
                 `${ctx.member.displayName}#${ctx.member.user.discriminator} unmuted ${player.name} (${player.id})`
             );
-
-            await ctx.send({
-                embeds: [
-                    {
-                        description: [
-                            `Unmuted player ${player.name} (${outputPlayerIDs(
-                                player.ids,
-                                true
-                            )})\n`,
-                            `Server: ${server.name}`,
-                        ].join("\n"),
-                    },
-                ],
-            });
         } catch (error) {
             await ctx.send({
                 content: `An error occured while performing the command (${
