@@ -170,7 +170,7 @@ export default class Warn extends BaseRCONCommand {
                         if (error) {
                             logger.error(
                                 "Warn",
-                                `Error occurred while muting ${
+                                `Error occurred while banning ${
                                     player.name
                                 } (${outputPlayerIDs(
                                     cachedPlayer.ids

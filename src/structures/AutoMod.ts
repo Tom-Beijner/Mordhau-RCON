@@ -282,7 +282,7 @@ export default class AutoMod {
                         if (error) {
                             logger.error(
                                 this.options.name,
-                                `Error occurred while muting ${
+                                `Error occurred while banning ${
                                     player.name
                                 } (${outputPlayerIDs(player.ids)}) (${error})`
                             );

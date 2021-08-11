@@ -220,6 +220,7 @@ export default abstract class BasePunishment {
 
         if (
             !payload.global &&
+            punishments &&
             (!punishments.shouldSave ||
                 !punishments.types[`${this.type.toLocaleLowerCase()}s`])
         )

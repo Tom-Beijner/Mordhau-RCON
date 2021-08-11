@@ -238,7 +238,7 @@ export default class Warn extends SlashCommand {
                             if (error) {
                                 logger.error(
                                     "Warn",
-                                    `Error occurred while muting ${
+                                    `Error occurred while banning ${
                                         player.name
                                     } (${outputPlayerIDs(
                                         player.ids
