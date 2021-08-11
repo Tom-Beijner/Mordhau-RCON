@@ -13,12 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   Now using [match-sorter](https://www.npmjs.com/package/match-sorter) package to search ingame players (hopefully fixes instances where the bot uses wrong player, though this new package has not been extensively tested)
+-   Now using [match-sorter](https://www.npmjs.com/package/match-sorter) package to search in-game players (hopefully fixes instances where the bot uses the wrong player, though this new package has not been extensively tested)
 -   `syncServerPunishments` and `global` punishments will fallback to sending a punishment message to every punishment webhook (and permanent) if the server is not found in the bot (should be rare)
 
 ### Fixed
 
--   Fixed `syncServerPunishments` causing bot to crash when a punishment is made
+-   Fixed `syncServerPunishments` causing the bot to crash when punishment is made
 
 ## [1.9.1] - 2021-08-08
 
