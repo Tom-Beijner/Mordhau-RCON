@@ -61,8 +61,6 @@ export async function ComponentConfirmation(
     confirm: ComponentRegisterCallback,
     cancel?: ComponentRegisterCallback
 ) {
-    await ctx.defer();
-
     await ctx.send({
         ...message,
         components: [
@@ -97,6 +95,8 @@ export async function ComponentConfirmation(
         cancel
             ? cancel
             : async (btnCtx) => {
+                  if (ctx.user.id !== btnCtx.user.id) return;
+
                   await btnCtx.editParent({
                       content: "Cancelled!",
                       embeds: [],

@@ -1,6 +1,6 @@
 {
   "name": "mordhau-rcon",
-  "version": "1.10.2",
+  "version": "1.11.0",
   "description": "Discord bot that utilizes RCON for Mordhau server and logs punishments with extra features.",
   "repository": {
     "type": "git",
@@ -44,6 +44,7 @@
     "node-fetch": "^2.6.1",
     "playfab-sdk": "^2.71.210802",
     "pluralize": "^8.0.0",
+    "pm2": "^5.1.1",
     "remove-markdown": "^0.3.0",
     "retext-english": "^3.0.4",
     "retext-profanities": "^6.1.0",

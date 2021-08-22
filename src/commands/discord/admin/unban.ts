@@ -54,6 +54,7 @@ export default class Unban extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const options = {
             player: ctx.options.player as string,
             server: ctx.options.server as string,

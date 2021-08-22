@@ -11,6 +11,7 @@ export default class Ping extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const startedAt = Date.now();
         await ctx.send(":ping_pong: Calculating ping");
 

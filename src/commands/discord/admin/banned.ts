@@ -42,6 +42,7 @@ export default class Banned extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         try {
             const id = ctx.options.player as string;
             const servers = await this.bot.rcon.getBannedPlayer(id);

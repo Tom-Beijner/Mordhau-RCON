@@ -40,6 +40,7 @@ export default class Update extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const options = {
             forceUpdate: ctx.options.forceupdate as boolean,
         };

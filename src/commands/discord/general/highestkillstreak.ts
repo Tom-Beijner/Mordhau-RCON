@@ -11,6 +11,7 @@ export default class HighestKillstreak extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const servers = this.bot.rcon.getHighestKillstreaks();
         const fields: { name: string; value: string }[] = [];
 

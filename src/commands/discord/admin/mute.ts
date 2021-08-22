@@ -61,6 +61,7 @@ export default class Mute extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const options = {
             server: ctx.options.server as string,
             player: ctx.options.player as string,

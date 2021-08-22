@@ -63,6 +63,7 @@ export default class DeleteHistory extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const options = {
             type: ctx.options.type.toLowerCase() as "player" | "admin",
             player: ctx.options.player as string,

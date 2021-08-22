@@ -54,6 +54,7 @@ export default class Chatlog extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const options = {
             server: ctx.options.server as string,
             messages: ctx.options.messages as number,

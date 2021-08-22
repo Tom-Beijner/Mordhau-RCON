@@ -13,6 +13,7 @@ export default class Killstreaks extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const killstreaks = this.bot.rcon.getKillstreaks();
         const onlinePlayers = await this.bot.rcon.getIngamePlayers();
         const players: {

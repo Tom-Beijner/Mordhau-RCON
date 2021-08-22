@@ -13,6 +13,7 @@ export default class Players extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         // const players = await this.bot.rcon.getIngamePlayers();
         // const playersData = this.bot.cachedPlayers;
 

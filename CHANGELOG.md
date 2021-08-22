@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2021-08-22
+
+### Added
+
+-   Added auto restarter to the auto updater system
+
+### Fixed
+
+-   Fixed interactions failing by deferring every command (the reason for interactions failing are probably related to some commands taking too long to respond to the interaction. PS: Mystic rekt! 😁)
+-   Fixed cancel button not checking who pressed the bot (causing the action being canceled)
+
 ## [1.10.2] - 2021-08-11
 
 ### Fixed

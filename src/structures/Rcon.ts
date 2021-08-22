@@ -1564,7 +1564,7 @@ export default class Rcon {
         clearInterval(this.keepAlive);
 
         this.keepAlive = setInterval(() => {
-            this.saveAdmins()
+            this.send("alive")
                 .then(() => {
                     // if (admins.includes("Not connected"))
                     //     throw new Error("Not connected");
@@ -1583,7 +1583,8 @@ export default class Rcon {
                     );
 
                     await this.reconnect();
-                });
+                })
+                .finally(() => this.saveAdmins());
         }, 30000);
 
         try {

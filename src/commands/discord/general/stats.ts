@@ -13,6 +13,7 @@ export default class Stats extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         {
             const embed = new DiscordEmbed();
 

@@ -26,6 +26,7 @@ export default class LookupPlayer extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const id = ctx.options.player as string;
 
         const ingamePlayer = await this.bot.rcon.getIngamePlayer(

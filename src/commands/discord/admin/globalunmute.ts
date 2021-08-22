@@ -44,6 +44,7 @@ export default class GlobalUnmute extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const options = {
             player: ctx.options.player as string,
         };

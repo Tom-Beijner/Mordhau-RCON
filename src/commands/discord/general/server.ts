@@ -11,6 +11,7 @@ export default class Server extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         try {
             const servers = await this.bot.rcon.getServersInfo();
             const fields: { name: string; value: string }[] = [];

@@ -4,10 +4,14 @@ import download from "download-git-repo";
 import fs from "fs-extra";
 import fetch from "node-fetch";
 import path from "path";
+import pm2 from "pm2";
 import removeMarkdown from "remove-markdown";
 import { promisify } from "util";
 import logger from "../utils/logger";
 
+const pm2ListPromise = promisify(pm2.list);
+const pm2DescribePromise = promisify(pm2.describe);
+const pm2RestartPromise = promisify(pm2.restart);
 const downloadPromise = promisify(download);
 const execPromise = promisify(exec);
 
@@ -210,12 +214,46 @@ export default class AutoUpdater {
                 "Carefully read through the changelog and make any necessary changes"
             );
 
-            setInterval(() => {
-                logger.warn(
-                    "Auto Updater",
-                    `Bot was updated to ${this.readLocalVersion()}, restart the bot`
-                );
-            }, 300000);
+            try {
+                await new Promise<void>((resolve, reject) => {
+                    pm2.list((err, list) => {
+                        if (err) return reject(err);
+
+                        const pm2ID = list.find(
+                            (project) =>
+                                project.pid && project.pid === process.pid
+                        )?.pm_id;
+
+                        if (typeof pm2ID === "undefined") {
+                            return reject(
+                                new Error(
+                                    "Process not running as a PM2 instance"
+                                )
+                            );
+                        }
+
+                        pm2.restart(pm2ID, (err) => {
+                            if (err) return reject(err);
+                            pm2.disconnect();
+
+                            return resolve();
+                        });
+                    });
+                });
+            } catch (err) {
+                if (!(err instanceof Error)) {
+                    throw err;
+                } else if (
+                    err.message === "Process not running as a PM2 instance"
+                ) {
+                    setInterval(() => {
+                        logger.warn(
+                            "Auto Updater",
+                            `Bot was updated to ${this.readLocalVersion()}, restart the bot`
+                        );
+                    }, 300000);
+                }
+            }
 
             return { success: true, error: null };
         } catch (error) {

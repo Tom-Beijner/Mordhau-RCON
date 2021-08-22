@@ -44,6 +44,7 @@ export default class GlobalBan extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const options = {
             player: ctx.options.player as string,
             duration: ctx.options.duration as number,

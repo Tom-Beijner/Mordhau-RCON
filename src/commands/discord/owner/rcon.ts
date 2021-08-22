@@ -53,6 +53,7 @@ export default class Rcon extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const options = {
             server: ctx.options.server as string,
             command: ctx.options.command as string,

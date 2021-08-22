@@ -70,6 +70,7 @@ export default class DeletePunishment extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const options = {
             type: ctx.options.type.toLowerCase() as string,
             player: ctx.options.player as string,

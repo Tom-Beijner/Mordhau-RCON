@@ -13,6 +13,7 @@ export default class Info extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         {
             const servers: boolean[] = [];
 

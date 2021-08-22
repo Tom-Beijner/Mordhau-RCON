@@ -52,6 +52,7 @@ export default class Say extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
+        await ctx.defer();
         const server = this.bot.servers.get(ctx.options.server as string);
         if (!server) {
             return (await ctx.send(
