@@ -4,5 +4,5 @@
  * @returns {string}
  */
 export default function removeMentions(str: string): string {
-    return str.replace(/@/g, "@\u200b");
+    return str ? str.replace(/@/g, "@\u200b") : str;
 }
