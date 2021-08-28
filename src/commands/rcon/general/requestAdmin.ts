@@ -3,6 +3,7 @@ import BaseRCONCommand from "../../../structures/BaseRCONCommands";
 import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
+import removeMentions from "../../../utils/RemoveMentions";
 
 export default class RequestAdmin extends BaseRCONCommand {
     constructor(bot: Watchdog, commandName: string) {
@@ -21,7 +22,7 @@ export default class RequestAdmin extends BaseRCONCommand {
 
         sendWebhookMessage(
             ctx.rcon.webhooks.get("adminCalls"),
-            `${player.name} (${outputPlayerIDs(
+            `${removeMentions(player.name)} (${outputPlayerIDs(
                 player.ids,
                 true
             )}) requested admins${

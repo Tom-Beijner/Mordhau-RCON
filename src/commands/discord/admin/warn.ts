@@ -15,6 +15,7 @@ import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import logger from "../../../utils/logger";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
+import removeMentions from "../../../utils/RemoveMentions";
 
 export default class Warn extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -335,7 +336,7 @@ export default class Warn extends SlashCommand {
                                 : ["warn", "kick"].includes(punishment.type)
                                 ? "ed"
                                 : "d"
-                        } ${player.name} (${outputPlayerIDs(
+                        } ${removeMentions(player.name)} (${outputPlayerIDs(
                             player.ids,
                             true
                         )}) for reaching warn threshold (Server: ${

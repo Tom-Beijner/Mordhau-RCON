@@ -3,6 +3,7 @@ import BaseRCONCommand from "../../../structures/BaseRCONCommands";
 import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
+import removeMentions from "../../../utils/RemoveMentions";
 
 export default class Unwarn extends BaseRCONCommand {
     constructor(bot: Watchdog, commandName: string) {
@@ -50,9 +51,12 @@ export default class Unwarn extends BaseRCONCommand {
 
         sendWebhookMessage(
             ctx.rcon.webhooks.get("warns"),
-            `${admin.name} (${outputPlayerIDs(admin.ids, true)}) unwarned ${
+            `${removeMentions(admin.name)} (${outputPlayerIDs(
+                admin.ids,
+                true
+            )}) unwarned ${removeMentions(
                 cachedPlayer.name
-            } (${outputPlayerIDs(cachedPlayer.ids, true)}) (Warnings: ${
+            )} (${outputPlayerIDs(cachedPlayer.ids, true)}) (Warnings: ${
                 playerWarns.infractions - 1
             })`
         );

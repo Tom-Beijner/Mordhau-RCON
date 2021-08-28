@@ -11,6 +11,7 @@ import config, { Role } from "../structures/Config";
 import { hastebin } from "../utils";
 import logger from "../utils/logger";
 import { outputPlayerIDs } from "../utils/PlayerID";
+import removeMentions from "../utils/RemoveMentions";
 import KillStreak from "./KillStreak";
 import RCONCommandContext from "./RCONCommandContext";
 import Watchdog from "./Watchdog";
@@ -405,12 +406,34 @@ export default class Rcon {
 
             logger.warn(
                 "RCON",
-                `Following players: ${affectedPlayers
-                    .map(
-                        (player) =>
-                            `${player.name} (${outputPlayerIDs(player.ids)})`
-                    )
-                    .join(", ")} was given privileges without permission${
+                `Following players: ${
+                    affectedPlayers
+                        .map(
+                            (player) =>
+                                `${player.name} (${outputPlayerIDs(
+                                    player.ids
+                                )})`
+                        )
+                        .join(", ").length > 900
+                        ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                              affectedPlayers
+                                  .map(
+                                      (player) =>
+                                          `${player.name} (${outputPlayerIDs(
+                                              player.ids
+                                          )})`
+                                  )
+                                  .join(", ")
+                          )})`
+                        : affectedPlayers
+                              .map(
+                                  (player) =>
+                                      `${player.name} (${outputPlayerIDs(
+                                          player.ids
+                                      )})`
+                              )
+                              .join(", ")
+                } was given privileges without permission${
                     config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been removed"
                         : ""
@@ -444,15 +467,17 @@ export default class Rcon {
                                   )
                                   .join(", ")
                           )})`
-                        : affectedPlayers
-                              .map(
-                                  (player) =>
-                                      `${player.name} (${outputPlayerIDs(
-                                          player.ids,
-                                          true
-                                      )})`
-                              )
-                              .join(", ")
+                        : removeMentions(
+                              affectedPlayers
+                                  .map(
+                                      (player) =>
+                                          `${player.name} (${outputPlayerIDs(
+                                              player.ids,
+                                              true
+                                          )})`
+                                  )
+                                  .join(", ")
+                          )
                 } was given admin privileges on without permission${
                     config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been removed"
@@ -479,10 +504,7 @@ export default class Rcon {
                     affectedAdmins
                         .map(
                             (admin) =>
-                                `${admin.name} (${outputPlayerIDs(
-                                    admin.ids,
-                                    true
-                                )})`
+                                `${admin.name} (${outputPlayerIDs(admin.ids)})`
                         )
                         .join(", ").length > 900
                         ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
@@ -499,8 +521,7 @@ export default class Rcon {
                               .map(
                                   (player) =>
                                       `${player.name} (${outputPlayerIDs(
-                                          player.ids,
-                                          true
+                                          player.ids
                                       )})`
                               )
                               .join(", ")
@@ -518,14 +539,38 @@ export default class Rcon {
                         (role) => role.receiveMentions
                     ),
                     (role) => role.Ids.map((id) => mentionRole(id))
-                )} Following admins: ${affectedAdmins
-                    .map(
-                        (admin) =>
-                            `${admin.name} (${outputPlayerIDs(admin.ids)})`
-                    )
-                    .join(
-                        ", "
-                    )} had their privileges removed without permission${
+                )} Following admins: ${
+                    affectedAdmins
+                        .map(
+                            (admin) =>
+                                `${admin.name} (${outputPlayerIDs(
+                                    admin.ids,
+                                    true
+                                )})`
+                        )
+                        .join(", ").length > 900
+                        ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                              affectedAdmins
+                                  .map(
+                                      (admin) =>
+                                          `${admin.name} (${outputPlayerIDs(
+                                              admin.ids
+                                          )})`
+                                  )
+                                  .join(", ")
+                          )})`
+                        : removeMentions(
+                              affectedAdmins
+                                  .map(
+                                      (admin) =>
+                                          `${admin.name} (${outputPlayerIDs(
+                                              admin.ids,
+                                              true
+                                          )})`
+                                  )
+                                  .join(", ")
+                          )
+                }  had their privileges removed without permission${
                     config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been added back"
                         : ""
@@ -799,9 +844,9 @@ export default class Rcon {
         if (process.env.NODE_ENV.trim() === "production")
             sendWebhookMessage(
                 this.webhooks.get("activity"),
-                `${admin ? "Admin" : "Player"} ${
+                `${admin ? "Admin" : "Player"} ${removeMentions(
                     player.name
-                } (${outputPlayerIDs(
+                )} (${outputPlayerIDs(
                     player.ids,
                     true
                 )}) has joined the server (Server: ${server}${
@@ -841,9 +886,9 @@ export default class Rcon {
         if (process.env.NODE_ENV.trim() === "production")
             sendWebhookMessage(
                 this.webhooks.get("wanted"),
-                `Naughty ${admin ? "admin" : "player"} ${
+                `Naughty ${admin ? "admin" : "player"} ${removeMentions(
                     player.name
-                } (${outputPlayerIDs(
+                )} (${outputPlayerIDs(
                     player.ids,
                     true
                 )}) has joined with ${bans} bans a total duration of ${pluralize(
@@ -880,9 +925,9 @@ export default class Rcon {
             if (process.env.NODE_ENV.trim() === "production") {
                 sendWebhookMessage(
                     this.webhooks.get("activity"),
-                    `${admin ? "Admin" : "Player"} ${
+                    `${admin ? "Admin" : "Player"} ${removeMentions(
                         player.name
-                    } (${outputPlayerIDs(
+                    )} (${outputPlayerIDs(
                         player.ids,
                         true
                     )}) has been punished (Type: ${
@@ -906,9 +951,9 @@ export default class Rcon {
             if (process.env.NODE_ENV.trim() === "production") {
                 sendWebhookMessage(
                     this.webhooks.get("activity"),
-                    `${admin ? "Admin" : "Player"} ${
+                    `${admin ? "Admin" : "Player"} ${removeMentions(
                         player.name
-                    } (${outputPlayerIDs(
+                    )} (${outputPlayerIDs(
                         player.ids,
                         true
                     )}) has left the server (Server: ${server})`
@@ -932,9 +977,9 @@ export default class Rcon {
 
                     sendWebhookMessage(
                         this.webhooks.get("wanted"),
-                        `Naughty ${admin ? "admin" : "player"} ${
+                        `Naughty ${admin ? "admin" : "player"} ${removeMentions(
                             player.name
-                        } (${outputPlayerIDs(
+                        )} (${outputPlayerIDs(
                             player.ids,
                             true
                         )}) left the server (Server: ${server})`
@@ -955,16 +1000,16 @@ export default class Rcon {
 
                     sendWebhookMessage(
                         this.webhooks.get("wanted"),
-                        `Naughty ${admin ? "admin" : "player"} ${
+                        `Naughty ${admin ? "admin" : "player"} ${removeMentions(
                             player.name
-                        } (${outputPlayerIDs(
+                        )} (${outputPlayerIDs(
                             player.ids,
                             true
                         )}) has been punished (Type: ${
                             punishedPlayer.punishment
-                        }, Admin: ${
+                        }, Admin: ${removeMentions(
                             punishedPlayer.admin.name
-                        }, Server: ${server})`
+                        )}, Server: ${server})`
                     );
                 }
             }
@@ -995,13 +1040,14 @@ export default class Rcon {
 
             sendWebhookMessage(
                 this.webhooks.get("activity"),
-                `Unauthorized admin ${admin.name} (${outputPlayerIDs(
+                `Unauthorized admin ${removeMentions(
+                    admin.name
+                )} (${outputPlayerIDs(
                     admin.ids,
                     true
-                )}) ${punishment} ${player.name} (${outputPlayerIDs(
-                    player.ids,
-                    true
-                )})${
+                )}) ${punishment} ${removeMentions(
+                    player.name
+                )} (${outputPlayerIDs(player.ids, true)})${
                     ["banned", "muted"].includes(punishment)
                         ? " and the punishment has beeen reverted"
                         : ""
@@ -1398,9 +1444,9 @@ export default class Rcon {
 
                 await sendWebhookMessage(
                     this.webhooks.get("chat"),
-                    `${admin ? "Admin" : "Player"} ${
+                    `${admin ? "Admin" : "Player"} ${removeMentions(
                         player.name
-                    } (${outputPlayerIDs(
+                    )} (${outputPlayerIDs(
                         player.ids,
                         true
                     )}): \`${message}\` (Server: ${this.options.name})`

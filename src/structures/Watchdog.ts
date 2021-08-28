@@ -12,6 +12,7 @@ import config, { Role } from "../structures/Config";
 import logger from "../utils/logger";
 import MordhauAPI from "../utils/MordhauAPI";
 import { outputPlayerIDs } from "../utils/PlayerID";
+import removeMentions from "../utils/RemoveMentions";
 import AntiSlur from "./AutoMod";
 import AutoUpdater from "./AutoUpdater";
 import BaseRCONCommand from "./BaseRCONCommands";
@@ -766,7 +767,7 @@ export default class Watchdog {
                             (role) => role.receiveMentions
                         ),
                         (role) => role.Ids.map((id) => mentionRole(id))
-                    )} ${player.name} (${outputPlayerIDs(
+                    )} ${removeMentions(player.name)} (${outputPlayerIDs(
                         player.ids,
                         true
                     )})) was given admin privileges (Reason: Global Add Admin)`
@@ -839,7 +840,7 @@ export default class Watchdog {
                             (role) => role.receiveMentions
                         ),
                         (role) => role.Ids.map((id) => mentionRole(id))
-                    )} ${player.name} (${outputPlayerIDs(
+                    )} ${removeMentions(player.name)} (${outputPlayerIDs(
                         player.ids,
                         true
                     )})) had their admin privileges removed (Reason: Global Remove Admin)`
@@ -1079,6 +1080,7 @@ export default class Watchdog {
             applicationID: config.get("bot.id"),
             publicKey: config.get("bot.publicKey"),
             token: this.token,
+            allowedMentions: { everyone: false, users: false },
         })
             .withServer(
                 new GatewayServer((handler) =>

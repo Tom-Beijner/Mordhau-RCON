@@ -16,6 +16,7 @@ import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import logger from "../../../utils/logger";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
+import removeMentions from "../../../utils/RemoveMentions";
 
 export default class Unwarn extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -132,9 +133,9 @@ export default class Unwarn extends SlashCommand {
                         server.rcon.webhooks.get("warns"),
                         `${ctx.member.displayName}#${
                             ctx.member.user.discriminator
-                        } (${ctx.member.id}) unwarned ${
+                        } (${ctx.member.id}) unwarned ${removeMentions(
                             player.name
-                        } (${outputPlayerIDs(player.ids, true)}) (Warnings: ${
+                        )} (${outputPlayerIDs(player.ids, true)}) (Warnings: ${
                             playerWarns.infractions - 1
                         })`
                     );

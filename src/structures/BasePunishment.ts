@@ -8,6 +8,7 @@ import config from "../structures/Config";
 import { hastebin } from "../utils/Hastebin";
 import logger from "../utils/logger";
 import { outputPlayerIDs, parsePlayerID } from "../utils/PlayerID";
+import removeMentions from "../utils/RemoveMentions";
 import Watchdog from "./Watchdog";
 
 type Types = "MUTE" | "UNMUTE" | "KICK" | "BAN" | "UNBAN";
@@ -276,10 +277,11 @@ export default abstract class BasePunishment {
 
             if (["BAN", "GLOBAL BAN"].includes(data.type)) {
                 const server = this.bot.servers.get(data.server);
-                const payload = `${data.player.name} (${outputPlayerIDs(
-                    data.player.ids,
-                    true
-                )}) ${data.global ? "globally" : `in ${data.server}`}`;
+                const payload = `${removeMentions(
+                    data.player.name
+                )} (${outputPlayerIDs(data.player.ids, true)}) ${
+                    data.global ? "globally" : `in ${data.server}`
+                }`;
 
                 if (server) {
                     sendWebhookMessage(
