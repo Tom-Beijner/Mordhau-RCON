@@ -19,7 +19,7 @@
                 "password": "password",
                 "adminListSaving": true,
                 "ignoreGlobalPunishments": false,
-                "teleportSystem": true,
+                "teleportSystem": false,
                 "killstreaks": {
                     "enabled": true,
                     "countBotKills": false
