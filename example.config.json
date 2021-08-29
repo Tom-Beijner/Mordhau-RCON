@@ -19,6 +19,7 @@
                 "password": "password",
                 "adminListSaving": true,
                 "ignoreGlobalPunishments": false,
+                "teleportSystem": true,
                 "killstreaks": {
                     "enabled": true,
                     "countBotKills": false
@@ -192,6 +193,9 @@
                 "name": "Owner",
                 "Ids": [""],
                 "commands": [
+                    "teleportadd",
+                    "teleportremove",
+                    "teleportedit",
                     "ban",
                     "banned",
                     "deletehistory",

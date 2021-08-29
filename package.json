@@ -1,6 +1,6 @@
 {
   "name": "mordhau-rcon",
-  "version": "1.12.1",
+  "version": "1.13.0",
   "description": "Discord bot that utilizes RCON for Mordhau server and logs punishments with extra features.",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
   "license": "MIT",
   "scripts": {
     "start": "cross-env NODE_ENV=production node dist",
-    "start:dev": "cross-env NODE_ENV=development LOG_LEVEL=debug nodemon --ignore .autoUpdater/ dist",
+    "start:dev": "cross-env NODE_ENV=development LOG_LEVEL=debug nodemon --ignore .autoUpdater/ --ignore teleportLocations.json dist",
     "prepublishOnly": "yarn build",
     "build": "tsc --skipLibCheck",
     "build:watch": "tsc --skipLibCheck --watch --preserveWatchOutput",

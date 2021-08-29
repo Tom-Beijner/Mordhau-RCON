@@ -84,6 +84,7 @@ export interface Rcon {
     password: string;
     adminListSaving: boolean;
     ignoreGlobalPunishments: boolean;
+    teleportSystem: boolean;
     killstreaks: Killstreaks;
     automod: boolean;
     punishments: Punishments;
@@ -219,6 +220,9 @@ export default new Conf<Config>({
                             ignoreGlobalPunishments: {
                                 type: "boolean",
                             },
+                            teleportSystem: {
+                                type: "boolean",
+                            },
                             killstreaks: {
                                 type: "object",
                                 properties: {
@@ -309,7 +313,6 @@ export default new Conf<Config>({
                                         "unwarn",
                                     ],
                                 },
-                                minItems: 1,
                                 uniqueItems: true,
                             },
                         },
@@ -461,6 +464,9 @@ export default new Conf<Config>({
                                         "ban",
                                         "banned",
                                         "chatlog",
+                                        "teleportadd",
+                                        "teleportremove",
+                                        "teleportedit",
                                         "deletehistory",
                                         "deletepunishment",
                                         "globalban",
@@ -559,6 +565,7 @@ export default new Conf<Config>({
                     password: "password",
                     adminListSaving: true,
                     ignoreGlobalPunishments: false,
+                    teleportSystem: false,
                     killstreaks: {
                         enabled: true,
                         countBotKills: false,
@@ -738,6 +745,9 @@ export default new Conf<Config>({
                     name: "Owner",
                     Ids: [""],
                     commands: [
+                        "teleportadd",
+                        "teleportremove",
+                        "teleportedit",
                         "ban",
                         "banned",
                         "deletehistory",

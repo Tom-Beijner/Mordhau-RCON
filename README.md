@@ -37,6 +37,8 @@ Invite your bot using the link (replace "\<bot ID\>" with your bot ID): https://
 
 The auto-updater will download, install all dependencies, build and migrate configs automatically when there's an update available, the only thing you should do is make sure the settings in the `config` files fit your preferences.
 
+To see your coordinates then use `ShowDebug PHYSICS` and look at the left side where it says location and to disable the view use `ShowDebug`
+
 #### Commands
 
 ##### Discord
@@ -44,6 +46,9 @@ The auto-updater will download, install all dependencies, build and migrate conf
 For setting discord role commands access
 
 ```
+teleportadd
+teleportremove
+teleportedit
 ban
 banned
 chatlog
@@ -99,6 +104,7 @@ unwarn
 -   Admin list saving/rollback (Toggleable feature with notifying only mode)
 -   Auto Update (The bot will automatically download and overwrite files as well as auto restart the bot, it's a good idea to check out the patch notes and change `config.json` to match the structure of `example.config.json` (not a requirement as the bot has own config system that has values to fall back to))
 -   Warn system (Acts like automod infraction threshold system with a reset after duration (in minutes, default is 1 month). The available variables are `{name}`, `{currentWarns}` and `{maxWarns}` )
+-   Teleport system (Dynamically add/remove/edit teleport locations, default: no locations provided)
 
 ## Prerequisites
 

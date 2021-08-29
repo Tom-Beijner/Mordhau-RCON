@@ -133,3 +133,4 @@ dist
 config.json
 save
 .autoUpdater
+teleportLocations.json

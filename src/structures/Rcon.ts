@@ -55,6 +55,7 @@ export default class Rcon {
     };
     killStreak: KillStreak;
     currentGamemode: string;
+    currentMap: string;
 
     constructor(
         bot: Watchdog,
@@ -332,6 +333,9 @@ export default class Rcon {
         )
             .split("\n")
             .map((stat) => stat.split(": ")[1]);
+
+        this.currentGamemode = gamemode.toLowerCase();
+        this.currentMap = currentMap.toLowerCase();
 
         return { name, version, gamemode, currentMap };
     }
@@ -656,6 +660,19 @@ export default class Rcon {
         //             searchNameSplit.length
         //     );
         // });
+    }
+
+    async teleportPlayer(
+        id: string,
+        coords: { x: number; y: number; z: number }
+    ) {
+        try {
+            await this.rcon.send(
+                `teleportplayer ${id} x=${coords.x},y=${coords.y},z=${coords.z}`
+            );
+        } catch (error) {
+            return error;
+        }
     }
 
     async killPlayer(player: {
@@ -1279,6 +1296,8 @@ export default class Rcon {
             await this.rcon.send("listen login");
             await this.rcon.send("listen punishment");
 
+            await this.getServerInfo();
+
             // const { gamemode } = await this.getServerInfo();
             // this.currentGamemode = gamemode;
             // // To make horde killstreak work
@@ -1475,7 +1494,12 @@ export default class Rcon {
                     !config
                         .get("servers")
                         .find((server) => server.name === this.options.name)
-                        .rcon.ingameCommands.includes(command.meta.name)
+                        .rcon.ingameCommands.includes(command.meta.name) &&
+                    command.meta.name === "teleport" &&
+                    !config
+                        .get("servers")
+                        .find((server) => server.name === this.options.name)
+                        .rcon.teleportSystem
                 )
                     return;
 
@@ -1611,26 +1635,27 @@ export default class Rcon {
 
         this.keepAlive = setInterval(() => {
             this.send("alive")
-                .then(() => {
-                    // if (admins.includes("Not connected"))
-                    //     throw new Error("Not connected");
+                .then((response) => {
+                    if (response === "Not connected")
+                        throw new Error("Not connected");
 
                     logger.debug(
                         "RCON",
                         `Keepalive success (Server: ${this.options.name})`
                     );
+
+                    this.saveAdmins();
                 })
                 .catch(async (err) => {
                     logger.error(
                         "RCON",
                         `Keepalive failed (Error: ${
-                            err.stack || err
+                            err.message || err
                         }, Server: ${this.options.name})`
                     );
 
                     await this.reconnect();
-                })
-                .finally(() => this.saveAdmins());
+                });
         }, 30000);
 
         try {
