@@ -44,7 +44,10 @@ export default class Teleport extends BaseRCONCommand {
             if (name === ctx.args.join(" ")) {
                 foundWithName = true;
                 return true;
-            } else if (location.aliases.includes(ctx.args.join(" ")))
+            } else if (
+                location.aliases &&
+                location.aliases.includes(ctx.args.join(" "))
+            )
                 return true;
         });
         if (location) {

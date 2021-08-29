@@ -97,13 +97,11 @@ export default class TeleportAdd extends SlashCommand {
                 Object.values<Location>(
                     TeleportConfig.get(`maps.${options.map}.locations`, {})
                 ).some((location) =>
-                    location?.aliases?.some((alias) => {
-                        console.log(location.aliases, alias, options.name);
-                        return (
+                    location?.aliases?.some(
+                        (alias) =>
                             location.aliases.includes(alias) ||
                             location.aliases.includes(options.name)
-                        );
-                    })
+                    )
                 )
             )
                 return "A location is already using the name or alias";
