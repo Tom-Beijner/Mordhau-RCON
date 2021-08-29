@@ -66,7 +66,7 @@ export default class Teleport extends BaseRCONCommand {
         }
 
         let player: { id: any; name?: string };
-        if (ctx.args.length > 3) {
+        if (ctx.args.length > 3 && ctx.rcon.admins.has(ctx.player.id)) {
             const name = ctx.args
                 .slice(
                     0,
@@ -77,7 +77,6 @@ export default class Teleport extends BaseRCONCommand {
                 .join(" ");
             player = await ctx.rcon.getIngamePlayer(name);
             if (!player) return await ctx.say("Player not found");
-            console.log(player);
         }
 
         // X coordinate
