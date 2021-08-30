@@ -33,7 +33,7 @@ export default class Teleport extends BaseRCONCommand {
             return await ctx.say(
                 locationsMessage.length
                     ? locationsMessage
-                    : "No teleport locations has been added"
+                    : "No teleport locations for this has been added"
             );
         }
 

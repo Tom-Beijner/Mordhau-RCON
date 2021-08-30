@@ -37,6 +37,22 @@ export default class TeleportLocations extends SlashCommand {
             };
         } = TeleportConfig.get(`maps.${options.map}.locations`);
 
+        if (!locations) {
+            let message: string;
+
+            const maps = TeleportConfig.get("maps");
+            if (!maps) message = "No maps with teleport locations found";
+            else {
+                message =
+                    "Maps: " +
+                    Object.keys(maps)
+                        .map((map) => map)
+                        .join(", ");
+            }
+
+            return message;
+        }
+
         try {
             const locationsMessage =
                 `Map: \`${options.map}\`\n\n` +

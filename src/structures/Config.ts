@@ -301,6 +301,7 @@ export default new Conf<Config>({
                                 type: "array",
                                 items: {
                                     enum: [
+                                        "timeleft",
                                         "killstreak",
                                         "requestadmin",
                                         "topkillstreak",
@@ -593,6 +594,7 @@ export default new Conf<Config>({
                         warns: "",
                     },
                     ingameCommands: [
+                        "timeleft",
                         "killstreak",
                         "requestadmin",
                         "topkillstreak",

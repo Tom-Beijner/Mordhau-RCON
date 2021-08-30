@@ -47,6 +47,7 @@
                     "warns": ""
                 },
                 "ingameCommands": [
+                    "timeleft",
                     "killstreak",
                     "requestadmin",
                     "topkillstreak",

@@ -99,7 +99,7 @@ export default class TeleportEdit extends SlashCommand {
                 Object.entries<Location>(
                     TeleportConfig.get(`maps.${options.map}.locations`, {})
                 ).some(([name, location]) =>
-                    location.aliases.some(
+                    location?.aliases?.some(
                         (alias) =>
                             name !== options.name &&
                             (location.aliases.includes(alias) ||
