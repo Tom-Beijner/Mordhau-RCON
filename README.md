@@ -80,6 +80,7 @@ update
 Which commands are available in-game
 
 ```
+timeleft
 killstreak
 requestadmin
 topkillstreak
