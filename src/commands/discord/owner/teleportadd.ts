@@ -108,15 +108,15 @@ export default class TeleportAdd extends SlashCommand {
 
             if (options.coordinates.x > Number.MAX_VALUE)
                 return "X coordinate is too large";
-            if (options.coordinates.x < Number.MIN_VALUE)
+            if (options.coordinates.x < Number.MIN_SAFE_INTEGER)
                 return "X coordinate is too low";
             if (options.coordinates.y > Number.MAX_VALUE)
                 return "Y coordinate is too large";
-            if (options.coordinates.y < Number.MIN_VALUE)
+            if (options.coordinates.y < Number.MIN_SAFE_INTEGER)
                 return "Y coordinate is too low";
             if (options.coordinates.z > Number.MAX_VALUE)
                 return "Z coordinate is too large";
-            if (options.coordinates.z < Number.MIN_VALUE)
+            if (options.coordinates.z < Number.MIN_SAFE_INTEGER)
                 return "Z coordinate is too low";
 
             TeleportConfig.set(location, {
