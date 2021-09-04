@@ -1106,9 +1106,9 @@ export default class Watchdog {
             })
             .on("debug", (message) => logger.debug("Bot", message));
 
-        this.loadDiscordCommands();
+        await this.loadDiscordCommands();
 
-        this.loadRCONCommands();
+        await this.loadRCONCommands();
 
         for (const [name, server] of this.servers) {
             server.rcon.initialize();
@@ -1120,55 +1120,59 @@ export default class Watchdog {
     private loadDiscordCommands() {
         const walker = walk(path.join(__dirname, "../commands/discord"));
 
-        walker.on("files", (root, files, next) => {
-            const module = path.basename(root);
+        return new Promise<void>((resolve, reject) => {
+            walker.on("files", (root, files, next) => {
+                const module = path.basename(root);
 
-            logger.info(
-                "Bot",
-                `Found ${files.length} discord commands in module ${module}`
-            );
+                logger.info(
+                    "Bot",
+                    `Found ${files.length} discord commands in module ${module}`
+                );
 
-            let loadedCommands = 0;
+                let loadedCommands = 0;
 
-            files.forEach((fileStats) => {
-                try {
-                    const props = require(`${res(root)}/${fileStats.name}`);
-                    if (props) {
-                        const Command = props.default;
-                        this.slashCreator.registerCommand(
-                            new Command(
-                                this.slashCreator,
-                                this,
-                                fileStats.name.slice(0, -3).toLowerCase()
-                            )
+                files.forEach((fileStats) => {
+                    try {
+                        const props = require(`${res(root)}/${fileStats.name}`);
+                        if (props) {
+                            const Command = props.default;
+                            this.slashCreator.registerCommand(
+                                new Command(
+                                    this.slashCreator,
+                                    this,
+                                    fileStats.name.slice(0, -3).toLowerCase()
+                                )
+                            );
+
+                            loadedCommands++;
+                        }
+                    } catch (err) {
+                        logger.error(
+                            "Bot",
+                            `Error occurred while loading discord command (${
+                                err.message || err
+                            })`
                         );
-
-                        loadedCommands++;
                     }
-                } catch (err) {
-                    logger.error(
-                        "Bot",
-                        `Error occurred while loading discord command (${
-                            err.message || err
-                        })`
-                    );
-                }
+                });
+
+                logger.info(
+                    "Bot",
+                    `Loaded ${loadedCommands} discord commands from module ${module}`
+                );
+
+                next();
             });
 
-            logger.info(
-                "Bot",
-                `Loaded ${loadedCommands} discord commands from module ${module}`
-            );
+            walker.on("end", () => {
+                this.slashCreator.syncCommands({
+                    deleteCommands: true,
+                    syncPermissions: true,
+                    syncGuilds: true,
+                    // skipGuildErrors: true,
+                });
 
-            next();
-        });
-
-        walker.on("end", () => {
-            this.slashCreator.syncCommands({
-                deleteCommands: true,
-                syncPermissions: true,
-                syncGuilds: true,
-                // skipGuildErrors: true,
+                resolve();
             });
         });
     }
@@ -1176,46 +1180,52 @@ export default class Watchdog {
     private loadRCONCommands() {
         const walker = walk(path.join(__dirname, "../commands/rcon"));
 
-        walker.on("files", (root, files, next) => {
-            const module = path.basename(root);
+        return new Promise<void>((resolve, reject) => {
+            walker.on("files", (root, files, next) => {
+                const module = path.basename(root);
 
-            logger.info(
-                "Bot",
-                `Found ${files.length} RCON commands in module ${module}`
-            );
+                logger.info(
+                    "Bot",
+                    `Found ${files.length} RCON commands in module ${module}`
+                );
 
-            let loadedCommands = 0;
+                let loadedCommands = 0;
 
-            files.forEach((fileStats) => {
-                try {
-                    const props = require(`${res(root)}/${fileStats.name}`);
-                    if (props) {
-                        const Command = props.default;
-                        const command: BaseRCONCommand = new Command(
-                            this,
-                            fileStats.name.slice(0, -3).toLowerCase()
+                files.forEach((fileStats) => {
+                    try {
+                        const props = require(`${res(root)}/${fileStats.name}`);
+                        if (props) {
+                            const Command = props.default;
+                            const command: BaseRCONCommand = new Command(
+                                this,
+                                fileStats.name.slice(0, -3).toLowerCase()
+                            );
+
+                            this.RCONCommands.push(command);
+
+                            loadedCommands++;
+                        }
+                    } catch (err) {
+                        logger.error(
+                            "Bot",
+                            `Error occurred while loading RCON command (${
+                                err.message || err
+                            })`
                         );
-
-                        this.RCONCommands.push(command);
-
-                        loadedCommands++;
                     }
-                } catch (err) {
-                    logger.error(
-                        "Bot",
-                        `Error occurred while loading RCON command (${
-                            err.message || err
-                        })`
-                    );
-                }
+                });
+
+                logger.info(
+                    "Bot",
+                    `Loaded ${loadedCommands} RCON commands from module ${module}`
+                );
+
+                next();
             });
 
-            logger.info(
-                "Bot",
-                `Loaded ${loadedCommands} RCON commands from module ${module}`
-            );
-
-            next();
+            walker.on("end", () => {
+                resolve();
+            });
         });
     }
 }

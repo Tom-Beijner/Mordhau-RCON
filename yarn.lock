@@ -39,7 +39,7 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@discordjs/collection@^0.2.0":
+"@discordjs/collection@^0.2.1":
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/@discordjs/collection/-/collection-0.2.1.tgz#ea4bc7b41b7b7b6daa82e439141222ec95c469b2"
   integrity sha512-vhxqzzM8gkomw0TYRF3tgx7SwElzUlXT/Aa41O7mOcyN6wIJfj5JmDWaO5XGKsGSsNx7F3i5oIlrucCCWV1Nog==
@@ -3427,12 +3427,12 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
-slash-create@^3.4.1:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/slash-create/-/slash-create-3.4.1.tgz#3e2e5f178244c21b5cc74b3847556355420ba47e"
-  integrity sha512-Il9PdW1WyHGJ/ZmVBm9RzRWRiCwy31BvuAi05h+wic4hDHTrGvFpdLx24GpxG1/LjXcKPQG2h1UzKIoY42rnBA==
+slash-create@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/slash-create/-/slash-create-4.0.1.tgz#a89e1a6b70e776a4a548b065bea393d19c5db0f2"
+  integrity sha512-UdQBbLLubYJiH7Zm1asyFL7/iENMCDmrKHQPNyzWp/Iv5ywSB7kIB/Jhszt1sYKMtLbVggx4bcmAkLz5VPFanA==
   dependencies:
-    "@discordjs/collection" "^0.2.0"
+    "@discordjs/collection" "^0.2.1"
     eventemitter3 "^4.0.7"
     lodash.isequal "^4.5.0"
     lodash.uniq "^4.5.0"
