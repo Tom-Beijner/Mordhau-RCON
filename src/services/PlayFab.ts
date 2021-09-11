@@ -11,6 +11,7 @@ const GetPlayFabIDsFromSteamIDs = promisify(
 );
 const GetPlayerCombinedInfo = promisify(PlayFabClient.GetPlayerCombinedInfo);
 const GetObjects = promisify(PlayFabData.GetObjects);
+const GetServerList = promisify(PlayFabClient.GetCurrentGames);
 
 export const titleId = "12D56";
 
@@ -133,5 +134,44 @@ export async function LookupPlayer(id: string) {
 
             return;
         }
+    }
+}
+
+export async function getServerInfo(server: {
+    name: string;
+    host: string;
+    port: number;
+}) {
+    try {
+        const result = await GetServerList({
+            TagFilter: {
+                Includes: [
+                    {
+                        Data: {
+                            ServerName: server.name,
+                        },
+                    },
+                ],
+            },
+        });
+
+        const data = result.data.Games.find(
+            (s) => s.ServerIPV4Address === server.host
+            //  && s.ServerPort === server.port
+        );
+
+        return data;
+    } catch (error) {
+        logger.error(
+            "PlayFab",
+            `Error occurred while running getServerInfo (Error: ${CompileErrorReport(
+                error
+            )}, Server: ${server.name})`
+        );
+
+        const err = await Login();
+        if (err) logger.error("PlayFab", err);
+
+        return;
     }
 }

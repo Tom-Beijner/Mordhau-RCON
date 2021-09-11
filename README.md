@@ -106,6 +106,7 @@ unwarn
 -   Auto Update (The bot will automatically download and overwrite files as well as auto restart the bot, it's a good idea to check out the patch notes and change `config.json` to match the structure of `example.config.json` (not a requirement as the bot has own config system that has values to fall back to))
 -   Warn system (Acts like automod infraction threshold system with a reset after duration (in minutes, default is 1 month). The available variables are `{name}`, `{currentWarns}` and `{maxWarns}` )
 -   Teleport system (Dynamically add/remove/edit teleport locations, default: no locations provided)
+-   Server status (You do not have to enable `bAdvertiseServerViaSteam` to show server stats, if you use DiscordGSM you have to enable it)
 
 ## Prerequisites
 

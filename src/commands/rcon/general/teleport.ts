@@ -50,15 +50,16 @@ export default class Teleport extends BaseRCONCommand {
             )
                 return true;
         });
+
+        const name = ctx.args
+            .slice(
+                0,
+                ctx.args.length -
+                    (foundWithName ? location[0] : ctx.args.join(" ")).length
+            )
+            .join(" ");
+
         if (location) {
-            const name = ctx.args
-                .slice(
-                    0,
-                    ctx.args.length -
-                        (foundWithName ? location[0] : ctx.args.join(" "))
-                            .length
-                )
-                .join(" ");
             const player = await ctx.rcon.getIngamePlayer(name);
             if (!player) return await ctx.say("Player not found");
 
@@ -69,17 +70,17 @@ export default class Teleport extends BaseRCONCommand {
         }
 
         let player: { id: any; name?: string };
-        if (ctx.args.length > 3 && ctx.rcon.admins.has(ctx.player.id)) {
-            const name = ctx.args
-                .slice(
-                    0,
-                    ctx.args.length -
-                        (foundWithName ? location[0] : ctx.args.join(" "))
-                            .length
-                )
-                .join(" ");
-            player = await ctx.rcon.getIngamePlayer(name);
-            if (!player) return await ctx.say("Player not found");
+        if (ctx.args.length > 2) {
+            if (ctx.rcon.admins.has(ctx.player.id)) {
+                player = await ctx.rcon.getIngamePlayer(name);
+                if (!player) return await ctx.say("Player not found");
+                if (location) {
+                    return await ctx.rcon.teleportPlayer(
+                        ctx.player.id,
+                        location[1].coordinates
+                    );
+                }
+            } else return await ctx.say("Permission denied");
         }
 
         // X coordinate

@@ -35,6 +35,12 @@
                         "unmutes": false
                     }
                 },
+                "status": {
+                    "updateInterval": 5,
+                    "channel": "",
+                    "showPlayerList": false,
+                    "hideIPPort": false
+                },
                 "logChannels": {
                     "chat": "",
                     "punishments": "",

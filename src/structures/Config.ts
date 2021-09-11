@@ -88,8 +88,16 @@ export interface Rcon {
     killstreaks: Killstreaks;
     automod: boolean;
     punishments: Punishments;
+    status: ServerStatus;
     logChannels: LogChannels;
     ingameCommands: string[];
+}
+
+export interface ServerStatus {
+    updateInterval: number;
+    channel: string;
+    showPlayerList: boolean;
+    hideIPPort: boolean;
 }
 
 export interface Killstreaks {
@@ -158,16 +166,19 @@ export default new Conf<Config>({
         ingamePrefix: {
             type: "string",
             minLength: 1,
+            default: "/",
         },
         autoUpdate: {
             type: "object",
             properties: {
                 enabled: {
                     type: "boolean",
+                    default: true,
                 },
                 checkInterval: {
                     type: "number",
                     exclusiveMinimum: 0,
+                    default: 30,
                 },
             },
         },
@@ -177,20 +188,24 @@ export default new Conf<Config>({
                 token: {
                     type: "string",
                     minLength: 1,
+                    default: "",
                 },
                 publicKey: {
                     type: "string",
                     minLength: 1,
+                    default: "",
                 },
                 id: {
                     type: "string",
                     minLength: 1,
+                    default: "",
                 },
             },
             required: ["token", "publicKey", "id"],
         },
         syncServerPunishments: {
             type: "boolean",
+            default: false,
         },
         servers: {
             type: "array",
@@ -200,6 +215,7 @@ export default new Conf<Config>({
                     name: {
                         type: "string",
                         minLength: 1,
+                        default: "Cool Server",
                     },
                     rcon: {
                         type: "object",
@@ -207,61 +223,97 @@ export default new Conf<Config>({
                             host: {
                                 type: "string",
                                 minLength: 1,
+                                default: "123.123.123.123",
                             },
                             port: {
                                 type: "number",
+                                default: 1234,
                             },
                             password: {
                                 type: "string",
+                                default: "password",
                             },
                             adminListSaving: {
                                 type: "boolean",
+                                default: true,
                             },
                             ignoreGlobalPunishments: {
                                 type: "boolean",
+                                default: false,
                             },
                             teleportSystem: {
                                 type: "boolean",
+                                default: false,
                             },
                             killstreaks: {
                                 type: "object",
                                 properties: {
                                     enabled: {
                                         type: "boolean",
+                                        default: true,
                                     },
                                     countBotKills: {
                                         type: "boolean",
+                                        default: false,
                                     },
                                 },
                             },
                             automod: {
                                 type: "boolean",
+                                default: true,
                             },
                             punishments: {
                                 type: "object",
                                 properties: {
                                     shouldSave: {
                                         type: "boolean",
+                                        default: true,
                                     },
                                     types: {
                                         type: "object",
                                         properties: {
                                             kicks: {
                                                 type: "boolean",
+                                                default: true,
                                             },
                                             bans: {
                                                 type: "boolean",
+                                                default: true,
                                             },
                                             unbans: {
                                                 type: "boolean",
+                                                default: true,
                                             },
                                             mutes: {
                                                 type: "boolean",
+                                                default: true,
                                             },
                                             unmutes: {
                                                 type: "boolean",
+                                                default: true,
                                             },
                                         },
+                                    },
+                                },
+                            },
+                            status: {
+                                type: "object",
+                                properties: {
+                                    updateInterval: {
+                                        type: "number",
+                                        default: 5,
+                                    },
+                                    channel: {
+                                        type: "string",
+                                        default: "",
+                                    },
+                                    showPlayerList: {
+                                        type: "boolean",
+                                        default: false,
+                                    },
+                                    hideIPPort: {
+                                        type: "boolean",
+                                        default: false,
                                     },
                                 },
                             },
@@ -270,30 +322,39 @@ export default new Conf<Config>({
                                 properties: {
                                     chat: {
                                         type: "string",
+                                        default: "",
                                     },
                                     punishments: {
                                         type: "string",
+                                        default: "",
                                     },
                                     activity: {
                                         type: "string",
+                                        default: "",
                                     },
                                     wanted: {
                                         type: "string",
+                                        default: "",
                                     },
                                     permanent: {
                                         type: "string",
+                                        default: "",
                                     },
                                     automod: {
                                         type: "string",
+                                        default: "",
                                     },
                                     killstreak: {
                                         type: "string",
+                                        default: "",
                                     },
                                     adminCalls: {
                                         type: "string",
+                                        default: "",
                                     },
                                     warns: {
                                         type: "string",
+                                        default: "",
                                     },
                                 },
                             },
@@ -301,6 +362,19 @@ export default new Conf<Config>({
                                 type: "array",
                                 items: {
                                     enum: [
+                                        "timeleft",
+                                        "killstreak",
+                                        "requestadmin",
+                                        "topkillstreak",
+                                        "ban",
+                                        "kick",
+                                        "mute",
+                                        "unban",
+                                        "unmute",
+                                        "warn",
+                                        "unwarn",
+                                    ],
+                                    default: [
                                         "timeleft",
                                         "killstreak",
                                         "requestadmin",
@@ -329,6 +403,7 @@ export default new Conf<Config>({
             properties: {
                 rollbackAdmins: {
                     type: "boolean",
+                    default: true,
                 },
             },
         },
@@ -340,6 +415,15 @@ export default new Conf<Config>({
                     minLength: 1,
                 },
             },
+            default: {
+                "1": "{name} got first blood!",
+                "5": "KILLING SPREE! {name} has a killstreak of {kills}!",
+                "10": "RAMPAGE! {name} has a killstreak of {kills}!",
+                "15": "DOMINATING! {name} has a killstreak of {kills}!",
+                "20": "UNSTOPPABLE! {name} has a killstreak of {kills}!",
+                "25": "GODLIKE! {name} has a killstreak of {kills}!",
+                "30": "WICKED SICK! {name} has a killstreak of {kills}!",
+            },
             minProperties: 1,
         },
         automod: {
@@ -347,9 +431,11 @@ export default new Conf<Config>({
             properties: {
                 infiniteDurationScaling: {
                     type: "boolean",
+                    default: true,
                 },
                 adminsBypass: {
                     type: "boolean",
+                    default: true,
                 },
                 infractionThresholds: {
                     type: "object",
@@ -384,6 +470,41 @@ export default new Conf<Config>({
                             required: ["type", "message"],
                         },
                     },
+                    default: {
+                        "1": {
+                            type: "message",
+                            message: "{name}, watch your language!",
+                        },
+                        "2": {
+                            type: "mute",
+                            message: "Muted {name} for profane messages!",
+                            duration: 1,
+                        },
+                        "3": {
+                            type: "kick",
+                            message: "Kicked {name} for profane messages!",
+                            reason: "Sending profane messages (Profane words: {words})",
+                        },
+                        "4": {
+                            type: "ban",
+                            message: "Banned {name} for profane messages!",
+                            duration: 1,
+                            reason: "Sending profane messages (Profane words: {words})",
+                        },
+                        "5": {
+                            type: "globalmute",
+                            message:
+                                "Globally muted {name} for profane messages!",
+                            duration: 1,
+                        },
+                        "6": {
+                            type: "globalban",
+                            message:
+                                "Globally banned {name} for profane messages!",
+                            duration: 1,
+                            reason: "Sending profane messages (Profane words: {words})",
+                        },
+                    },
                     minProperties: 1,
                 },
             },
@@ -393,9 +514,11 @@ export default new Conf<Config>({
             properties: {
                 infiniteDurationScaling: {
                     type: "boolean",
+                    default: true,
                 },
                 resetAfterDuration: {
                     type: "number",
+                    default: 43830,
                 },
                 infractionThresholds: {
                     type: "object",
@@ -428,6 +551,45 @@ export default new Conf<Config>({
                                 },
                             },
                             required: ["type", "message"],
+                        },
+                    },
+                    default: {
+                        "1": {
+                            type: "message",
+                            message:
+                                "{name} now has {currentWarns}/{maxWarns} warnings!",
+                        },
+                        "2": {
+                            type: "mute",
+                            message:
+                                "{name} now has {currentWarns}/{maxWarns} warnings and got muted!",
+                            duration: 300,
+                        },
+                        "3": {
+                            type: "kick",
+                            message:
+                                "{name} now has {currentWarns}/{maxWarns} warnings and got kicked!",
+                            reason: "You reached a warning infraction threshold",
+                        },
+                        "4": {
+                            type: "ban",
+                            message:
+                                "{name} now has {currentWarns}/{maxWarns} warnings and got banned!",
+                            duration: 300,
+                            reason: "You reached a warning infraction threshold",
+                        },
+                        "5": {
+                            type: "globalmute",
+                            message:
+                                "{name} now has {currentWarns}/{maxWarns} warnings and got globally muted!",
+                            duration: 300,
+                        },
+                        "6": {
+                            type: "globalban",
+                            message:
+                                "{name} now has {currentWarns}/{maxWarns} warnings and got globally banned!",
+                            duration: 300,
+                            reason: "You reached a warning infraction threshold",
                         },
                     },
                     minProperties: 1,
@@ -440,6 +602,7 @@ export default new Conf<Config>({
                 guildId: {
                     type: "string",
                     minLength: 1,
+                    default: "",
                 },
                 roles: {
                     type: "array",
@@ -498,6 +661,81 @@ export default new Conf<Config>({
                         },
                         required: ["name", "Ids", "commands"],
                     },
+                    default: [
+                        {
+                            name: "Mods",
+                            Ids: [""],
+                            commands: [
+                                "ban",
+                                "banned",
+                                "chatlog",
+                                "history",
+                                "kick",
+                                "mute",
+                                "rename",
+                                "say",
+                                "unban",
+                                "unmute",
+                                "warn",
+                                "unwarn",
+                            ],
+                        },
+                        {
+                            name: "Admins",
+                            Ids: [""],
+                            commands: [
+                                "ban",
+                                "banned",
+                                "globalban",
+                                "globalmute",
+                                "globalunban",
+                                "globalunmute",
+                                "history",
+                                "kick",
+                                "mute",
+                                "rename",
+                                "say",
+                                "unban",
+                                "unmute",
+                                "warn",
+                                "unwarn",
+                            ],
+                        },
+                        {
+                            name: "Owner",
+                            Ids: [""],
+                            commands: [
+                                "teleportadd",
+                                "teleportremove",
+                                "teleportedit",
+                                "ban",
+                                "banned",
+                                "deletehistory",
+                                "deletepunishment",
+                                "globalban",
+                                "globalmute",
+                                "globalunban",
+                                "globalunmute",
+                                "history",
+                                "kick",
+                                "mute",
+                                "rename",
+                                "say",
+                                "unban",
+                                "unmute",
+                                "warn",
+                                "unwarn",
+                                "resetwarnings",
+                                "addadmin",
+                                "removeadmin",
+                                "globaladdadmin",
+                                "globalremoveadmin",
+                                "rcon",
+                                "update",
+                            ],
+                            receiveMentions: true,
+                        },
+                    ],
                     minItems: 1,
                 },
             },
@@ -509,6 +747,7 @@ export default new Conf<Config>({
                 accountId: {
                     type: "string",
                     minLength: 1,
+                    default: "",
                 },
             },
             required: ["accountId"],
@@ -519,6 +758,7 @@ export default new Conf<Config>({
                 key: {
                     type: "string",
                     minLength: 1,
+                    default: "",
                 },
             },
             required: ["key"],
@@ -529,17 +769,21 @@ export default new Conf<Config>({
                 host: {
                     type: "string",
                     minLength: 1,
+                    default: "",
                 },
                 database: {
                     type: "string",
                     minLength: 1,
+                    default: "",
                 },
                 username: {
                     type: "string",
                     minLength: 1,
+                    default: "",
                 },
                 password: {
                     type: "string",
+                    default: "",
                 },
             },
             required: ["host", "database", "username", "password"],
@@ -581,6 +825,12 @@ export default new Conf<Config>({
                             mutes: true,
                             unmutes: false,
                         },
+                    },
+                    status: {
+                        updateInterval: 5,
+                        channel: "",
+                        showPlayerList: false,
+                        hideIPPort: false,
                     },
                     logChannels: {
                         chat: "",

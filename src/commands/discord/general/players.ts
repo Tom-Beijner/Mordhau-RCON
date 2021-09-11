@@ -101,7 +101,7 @@ export default class Players extends SlashCommand {
                 )})`;
 
             fields.push({
-                name: server.name,
+                name: `${server.name} (${players.length})`,
                 value: message,
             });
         }

@@ -54,8 +54,12 @@ export default class Rcon {
         password?: string;
     };
     killStreak: KillStreak;
+    country: string;
+    currentName: string;
     currentGamemode: string;
     currentMap: string;
+    maxPlayerCount: number;
+    statusMessageID: string;
 
     constructor(
         bot: Watchdog,
@@ -334,10 +338,17 @@ export default class Rcon {
             .split("\n")
             .map((stat) => stat.split(": ")[1]);
 
-        this.currentGamemode = gamemode.toLowerCase();
-        this.currentMap = currentMap.toLowerCase();
+        this.currentName = name?.toLowerCase();
+        this.currentGamemode = gamemode?.toLowerCase();
+        this.currentMap = currentMap?.toLowerCase();
 
-        return { name, version, gamemode, currentMap };
+        return {
+            online: typeof _ !== "undefined",
+            name,
+            version,
+            gamemode,
+            currentMap,
+        };
     }
 
     async getLeftMatchDuration() {

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.0] - 2021-09-11
+
+### Added
+
+-   Added server status (check the `example.config.json`)
+
+### Changed
+
+-   With the `players` command each server now has a playercount
+-   Each config setting now has a default value
+
 ## [1.15.0] - 2021-09-04
 
 ### Changed
