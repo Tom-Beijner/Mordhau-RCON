@@ -364,7 +364,7 @@ export default abstract class BasePunishment {
         }
 
         if (pastOffenses.length > 1024)
-            pastOffenses = `The output was too long, but was uploaded to [hastebin](${await hastebin(
+            pastOffenses = `The output was too long, but was uploaded to [paste.gg](${await hastebin(
                 pastOffenses
             )})`;
 

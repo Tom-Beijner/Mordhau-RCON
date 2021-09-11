@@ -12,6 +12,7 @@ import LogHandler from "../handlers/logHandler";
 import { mentionRole, sendWebhookMessage } from "../services/Discord";
 import { CreateAccount, getServerInfo, Login } from "../services/PlayFab";
 import config, { Role, Server } from "../structures/Config";
+import { hastebin } from "../utils/Hastebin";
 import logger from "../utils/logger";
 import MordhauAPI from "../utils/MordhauAPI";
 import { outputPlayerIDs } from "../utils/PlayerID";
@@ -142,6 +143,9 @@ export default class Watchdog {
                 ? serverInfo.Tags.Players.split(",").filter((p) => p.length)
                       .length
                 : 0;
+            const playerList =
+                players.map((p) => `${p.id} - ${p.name}`).join("\n") ||
+                "No players online";
             const passwordProtected = serverInfo
                 ? serverInfo.Tags.IsPasswordProtected === "true"
                 : false;
@@ -185,6 +189,15 @@ export default class Watchdog {
                         name
                             ? `${passwordProtected ? ":lock: " : ""}\`${name}\``
                             : baseEmbed?.title || "Unknown"
+                    )
+                    .setColor(
+                        online
+                            ? currentPlayerCount >= maxPlayerCount
+                                ? 15158332
+                                : currentPlayerCount * 2 >= maxPlayerCount
+                                ? 16426522
+                                : 4437377
+                            : 0
                     )
                     .addField(
                         "Status",
@@ -237,11 +250,9 @@ export default class Watchdog {
                         }`,
                         !configServer.rcon.status.showPlayerList
                             ? `${currentPlayerCount}/${maxPlayerCount}`
-                            : `\`\`\`${
-                                  players
-                                      .map((p) => `${p.id} - ${p.name}`)
-                                      .join("\n") || "No players online"
-                              }\`\`\``,
+                            : playerList.length > 1024
+                            ? `[paste.gg](${await hastebin(playerList)})`
+                            : `\`\`\`${playerList}\`\`\``,
                         !configServer.rcon.status.showPlayerList ? true : false
                     )
                     .setFooter(

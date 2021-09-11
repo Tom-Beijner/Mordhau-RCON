@@ -430,7 +430,7 @@ export default class Rcon {
                                 )})`
                         )
                         .join(", ").length > 900
-                        ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                        ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
                               affectedPlayers
                                   .map(
                                       (player) =>
@@ -472,7 +472,7 @@ export default class Rcon {
                                 )})`
                         )
                         .join(", ").length > 900
-                        ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                        ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
                               affectedPlayers
                                   .map(
                                       (player) =>
@@ -522,7 +522,7 @@ export default class Rcon {
                                 `${admin.name} (${outputPlayerIDs(admin.ids)})`
                         )
                         .join(", ").length > 900
-                        ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                        ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
                               affectedAdmins
                                   .map(
                                       (player) =>
@@ -564,7 +564,7 @@ export default class Rcon {
                                 )})`
                         )
                         .join(", ").length > 900
-                        ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                        ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
                               affectedAdmins
                                   .map(
                                       (admin) =>

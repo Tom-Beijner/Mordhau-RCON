@@ -202,7 +202,7 @@ export default class History extends SlashCommand {
             }
 
             if (pastOffenses.length > 1024)
-                pastOffenses = `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                pastOffenses = `The output was too long, but was uploaded to [paste.gg](${await hastebin(
                     pastOffenses
                 )})`;
             let message = "";

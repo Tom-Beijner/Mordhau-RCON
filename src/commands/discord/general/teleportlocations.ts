@@ -81,7 +81,7 @@ export default class TeleportLocations extends SlashCommand {
                     {
                         description:
                             locationsMessage.length > 900
-                                ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                                ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
                                       locationsMessage
                                   )})`
                                 : locationsMessage,

@@ -121,7 +121,7 @@ export default class Chatlog extends SlashCommand {
                                 true
                             )})\n`,
                             response.length > 2047
-                                ? `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                                ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
                                       response
                                   )})`
                                 : response,

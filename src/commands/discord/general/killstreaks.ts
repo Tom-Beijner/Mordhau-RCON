@@ -42,7 +42,7 @@ export default class Killstreaks extends SlashCommand {
             if (!message.length)
                 message = "No one has any kills, what a sad gamer moment.";
             if (message.length > 1023)
-                message = `The output was too long, but was uploaded to [hastebin](${await hastebin(
+                message = `The output was too long, but was uploaded to [paste.gg](${await hastebin(
                     message
                 )})`;
 
