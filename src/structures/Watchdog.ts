@@ -1,7 +1,7 @@
 import flatMap from "array.prototype.flatmap";
 import { addMinutes, formatDistanceToNow } from "date-fns";
 import { format } from "date-fns-tz";
-import Eris, { Client, Embed } from "eris";
+import Eris, { Client, Constants, Embed, GuildTextableChannel } from "eris";
 import LRU from "lru-cache";
 import fetch from "node-fetch";
 import path, { resolve as res } from "path";
@@ -49,15 +49,15 @@ export default class Watchdog {
     public mordhau = MordhauAPI;
     public antiSlur: AntiSlur;
 
-    public requestingPlayers: LRU<
-        string,
-        {
-            server: string;
-            ids: Iids;
-            id: string;
-            name: string;
-        }
-    >;
+    // public requestingPlayers: LRU<
+    //     string,
+    //     {
+    //         server: string;
+    //         ids: Iids;
+    //         id: string;
+    //         name: string;
+    //     }
+    // >;
 
     // Basically a lagged current players list
     public cachedPlayers: LRU<
@@ -85,8 +85,91 @@ export default class Watchdog {
         }
     >;
     public logHandler: LogHandler;
+    private statusMessageErrorCount: number = 0;
 
-    async sendOrUpdateStatuses(server: { name: string; rcon: Rcon }) {
+    async setStatusesChannelPermissions() {
+        const servers = config
+            .get("servers")
+            .filter((s) => s.rcon.status.channel);
+        const permissions =
+            Constants.Permissions.sendMessages &
+            Constants.Permissions.readMessageHistory &
+            Constants.Permissions.viewChannel;
+
+        for (let i = 0; i < servers.length; i++) {
+            const server = servers[i];
+            const statusChannelID = server.rcon.status.channel;
+
+            try {
+                const channel = this.client.getChannel(
+                    statusChannelID
+                ) as GuildTextableChannel;
+                if (
+                    channel.permissionsOf(this.client.user.id).allow &
+                    permissions
+                )
+                    continue;
+
+                await this.client.editChannelPermission(
+                    statusChannelID,
+                    this.client.user.id,
+                    permissions,
+                    0,
+                    "member",
+                    "Display servers embed"
+                );
+
+                logger.info(
+                    "Server Status",
+                    `Set status channel permissions for ${server.name}`
+                );
+            } catch (error) {
+                logger.error(
+                    "Server Status",
+                    `Setting status channel permissions failed for ${
+                        server.name
+                    } (Error: ${error.message || error})`
+                );
+            }
+        }
+    }
+
+    async refreshStatuses() {
+        const channelIDs = config
+            .get("servers")
+            .filter((s) => s.rcon.status.channel.length)
+            .map((s) => s.rcon.status.channel);
+        for (let i = 0; i < channelIDs.length; i++) {
+            const channelID = channelIDs[i];
+            const messageIDs = (await this.client.getMessages(channelID))
+                ?.filter((m) => m.author.id === this.client.user.id)
+                .map((m) => m.id);
+
+            await this.client.deleteMessages(channelID, messageIDs);
+        }
+
+        for (const [serverName, server] of this.servers) {
+            const configServer = config
+                .get("servers")
+                .find((s) => s.name === server.name);
+            const channelID = configServer.rcon.status.channel;
+            if (!channelID) {
+                return logger.debug(
+                    "Server Status",
+                    `Skipping ${server.name} status message`
+                );
+            }
+
+            logger.debug(
+                "Server Status",
+                `Refreshing ${server.name} status message`
+            );
+
+            await this.sendOrUpdateStatus(server);
+        }
+    }
+
+    async sendOrUpdateStatus(server: { name: string; rcon: Rcon }) {
         try {
             const configServer = config
                 .get("servers")
@@ -139,13 +222,11 @@ export default class Watchdog {
                 (serverInfo
                     ? parseInt(serverInfo.Tags.MaxPlayers)
                     : server.rcon.maxPlayerCount) || 0;
-            const currentPlayerCount = serverInfo
-                ? serverInfo.Tags.Players.split(",").filter((p) => p.length)
-                      .length
-                : 0;
-            const playerList =
-                players.map((p) => `${p.id} - ${p.name}`).join("\n") ||
-                "No players online";
+            const currentPlayerCount = serverInfo ? players.length : 0;
+            const playerList = online
+                ? players.map((p) => `${p.id} - ${p.name}`).join("\n") ||
+                  "No players online"
+                : "Server offline";
             const passwordProtected = serverInfo
                 ? serverInfo.Tags.IsPasswordProtected === "true"
                 : false;
@@ -153,31 +234,10 @@ export default class Watchdog {
             let message: Eris.Message<Eris.TextableChannel>;
 
             try {
-                message = server.rcon.statusMessageID
-                    ? await this.client.getMessage(
-                          channelID,
-                          server.rcon.statusMessageID
-                      )
-                    : (await this.client.getMessages(channelID))?.find((m) => {
-                          const footer = m.embeds[0].footer.text.split(" | ");
-                          return m.author.id === this.client.user.id &&
-                              !configServer.rcon.status.hideIPPort
-                              ? m.embeds[0]?.fields.some(
-                                    (f) =>
-                                        f.name === "Address:Port" &&
-                                        f.value === `\`${adress}\``
-                                )
-                              : parseInt(footer[footer.length - 1]) - 1 ===
-                                    config
-                                        .get("servers")
-                                        .findIndex(
-                                            (s: Server) =>
-                                                s.rcon.host ===
-                                                    configServer.rcon.host &&
-                                                s.rcon.port ===
-                                                    configServer.rcon.port
-                                        );
-                      });
+                message = await this.client.getMessage(
+                    channelID,
+                    server.rcon.statusMessageID
+                );
             } catch {}
 
             async function generateStatusMessage(baseEmbed?: Embed) {
@@ -298,23 +358,36 @@ export default class Watchdog {
                     const field = messageEmbed.fields[i];
                     baseEmbed.addField(field.name, field.value, field.inline);
                 }
-
                 const embed = await generateStatusMessage(messageEmbed);
 
-                this.client.editMessage(
-                    channelID,
-                    server.rcon.statusMessageID,
-                    {
-                        embed: embed.getEmbed(),
+                try {
+                    await this.client.editMessage(
+                        channelID,
+                        server.rcon.statusMessageID,
+                        {
+                            embed: embed.getEmbed(),
+                        }
+                    );
+                } catch (error) {
+                    this.statusMessageErrorCount++;
+
+                    if (this.statusMessageErrorCount >= 20) {
+                        logger.info(
+                            "Server Status",
+                            "Message error count limit reached, refreshing embed statuses"
+                        );
+
+                        this.statusMessageErrorCount = 0;
+                        await this.refreshStatuses();
                     }
-                );
+                }
             }
         } catch (error) {
             logger.error(
                 "Server Status",
                 `Error occurred while updating ${server.name} status (Error: ${
                     error.message || error
-                })`
+                }, Message error Count: ${this.statusMessageErrorCount})`
             );
         }
     }
@@ -1129,7 +1202,7 @@ export default class Watchdog {
     }
 
     public setCacheMaxSize(servers: number) {
-        this.requestingPlayers.max = 70 * servers;
+        // this.requestingPlayers.max = 70 * servers;
         this.cachedPlayers.max = 70 * servers;
         this.naughtyPlayers.max = 40 * servers;
         this.punishedPlayers.max = 40 * servers;
@@ -1150,9 +1223,9 @@ export default class Watchdog {
 
         this.logHandler = new LogHandler(this);
 
-        this.requestingPlayers = new LRU({
-            updateAgeOnGet: true,
-        });
+        // this.requestingPlayers = new LRU({
+        //     updateAgeOnGet: true,
+        // });
         this.cachedPlayers = new LRU({
             updateAgeOnGet: true,
         });
@@ -1293,6 +1366,10 @@ export default class Watchdog {
                     }
                 }
             }
+
+            await this.setStatusesChannelPermissions();
+
+            await this.refreshStatuses();
         });
 
         await this.client.connect();
@@ -1356,7 +1433,7 @@ export default class Watchdog {
             server.rcon.initialize();
 
             setInterval(
-                () => this.sendOrUpdateStatuses(server),
+                () => this.sendOrUpdateStatus(server),
                 s.rcon.status.updateInterval * 60 * 1000
             );
         }

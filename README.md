@@ -33,7 +33,7 @@ A Discord bot that utilizes RCON for the Mordhau server and logs punishments wit
 
 You can only have a maximum of 25 servers (not that you will have that many) as this is a limitation of Discord\'s Slash Commands.
 
-Invite your bot using the link (replace "\<bot ID\>" with your bot ID): https://discord.com/api/oauth2/authorize?client_id=<bot ID\>&permissions=536870912&scope=applications.commands%20bot
+Invite your bot using the link (replace "\<bot ID\>" with your bot ID): https://discord.com/api/oauth2/authorize?client_id=\<bot ID\>&permissions=536939536&scope=bot%20applications.commands
 
 The auto-updater will download, install all dependencies, build and migrate configs automatically when there's an update available, the only thing you should do is make sure the settings in the `config` files fit your preferences.
 

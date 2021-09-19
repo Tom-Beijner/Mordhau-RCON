@@ -775,10 +775,8 @@ export default class Rcon {
     async onJoin(id: string) {
         const server = this.options.name;
 
-        const player = this.bot.requestingPlayers.get(id) || {
-            server,
-            ...(await this.getPlayerToCache(id)),
-        };
+        const player =
+            this.bot.cachedPlayers.get(id) || (await this.getPlayerToCache(id));
 
         const admin = this.admins.has(player.id);
 
