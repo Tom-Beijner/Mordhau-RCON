@@ -5,11 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.3] - 2021-09-20
+
+### Changed
+
+-   Different approach when sending a new status message (to avoid duplication)
+-   Only fetch the location with the API when the server config IP doesn't match the PlayFab API fetched server IP
+-   Might have optimized when the bot should fetch new country data for the status message
+
 ## [1.16.2] - 2021-09-19
 
 ### Added
 
--   Added status channel permission set (requires the bot to have manage channel permission)
+-   Added status channel permission set (requires the bot to have the manage channel permission)
 
 ### Changed
 

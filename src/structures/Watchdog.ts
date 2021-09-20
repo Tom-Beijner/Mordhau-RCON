@@ -90,7 +90,9 @@ export default class Watchdog {
     async setStatusesChannelPermissions() {
         const servers = config
             .get("servers")
-            .filter((s) => s.rcon.status.channel);
+            .filter(
+                (s) => s.rcon.status.channel && s.rcon.status.channel.length
+            );
         const permissions =
             Constants.Permissions.sendMessages &
             Constants.Permissions.readMessageHistory &
@@ -135,10 +137,18 @@ export default class Watchdog {
     }
 
     async refreshStatuses() {
-        const channelIDs = config
-            .get("servers")
-            .filter((s) => s.rcon.status.channel.length)
-            .map((s) => s.rcon.status.channel);
+        const channelIDs = [
+            ...new Set(
+                config
+                    .get("servers")
+                    .filter(
+                        (s) =>
+                            s.rcon.status.channel &&
+                            s.rcon.status.channel.length
+                    )
+                    .map((s) => s.rcon.status.channel)
+            ),
+        ];
         for (let i = 0; i < channelIDs.length; i++) {
             const channelID = channelIDs[i];
             const messageIDs = (await this.client.getMessages(channelID))
@@ -165,11 +175,14 @@ export default class Watchdog {
                 `Refreshing ${server.name} status message`
             );
 
-            await this.sendOrUpdateStatus(server);
+            await this.sendOrUpdateStatus(server, true);
         }
     }
 
-    async sendOrUpdateStatus(server: { name: string; rcon: Rcon }) {
+    async sendOrUpdateStatus(
+        server: { name: string; rcon: Rcon },
+        sendMessage: boolean = false
+    ) {
         try {
             const configServer = config
                 .get("servers")
@@ -213,11 +226,6 @@ export default class Watchdog {
                 port: server.rcon.options.port,
             });
             const adress = `${server.rcon.options.host}:${serverInfo.ServerPort}`;
-            const country = await (
-                await fetch(
-                    `https://ipinfo.io/${server.rcon.options.host}/country`
-                )
-            ).text();
             const maxPlayerCount =
                 (serverInfo
                     ? parseInt(serverInfo.Tags.MaxPlayers)
@@ -231,18 +239,22 @@ export default class Watchdog {
                 ? serverInfo.Tags.IsPasswordProtected === "true"
                 : false;
 
-            let message: Eris.Message<Eris.TextableChannel>;
-
-            try {
-                message = await this.client.getMessage(
-                    channelID,
-                    server.rcon.statusMessageID
-                );
-            } catch {}
-
             async function generateStatusMessage(baseEmbed?: Embed) {
                 const embed = new DiscordEmbed();
                 const date = new Date();
+                const country =
+                    baseEmbed?.fields
+                        ?.find((f) => f.name === "Address:Port")
+                        ?.value?.split(":")[0] ===
+                    `\`${server.rcon.options.host}`
+                        ? baseEmbed?.fields
+                              ?.find((f) => f.name === "Location")
+                              ?.value?.split(" ")[1] || false
+                        : await (
+                              await fetch(
+                                  `https://ipinfo.io/${server.rcon.options.host}/country`
+                              )
+                          ).text();
 
                 embed
                     .setTitle(
@@ -279,9 +291,7 @@ export default class Watchdog {
                             ? `:flag_${country
                                   .toLowerCase()
                                   .trim()}: ${country}`
-                            : baseEmbed?.fields?.find(
-                                  (f) => f.name === "Location"
-                              )?.value || ":united_nations: Unknown",
+                            : ":united_nations: Unknown",
                         true
                     )
                     .addField(
@@ -339,28 +349,35 @@ export default class Watchdog {
                 return embed;
             }
 
-            if (!message) {
+            if (sendMessage) {
                 const embed = await generateStatusMessage();
 
                 const m = await this.client.createMessage(channelID, {
                     embed: embed.getEmbed(),
                 });
+
                 server.rcon.statusMessageID = m.id;
             } else {
-                server.rcon.statusMessageID = message.id;
-
-                const messageEmbed = message.embeds[0];
-                const baseEmbed = new DiscordEmbed()
-                    .setTitle(messageEmbed.title)
-                    .setDescription(messageEmbed.description);
-
-                for (let i = 0; i < messageEmbed.fields.length; i++) {
-                    const field = messageEmbed.fields[i];
-                    baseEmbed.addField(field.name, field.value, field.inline);
-                }
-                const embed = await generateStatusMessage(messageEmbed);
-
                 try {
+                    const message = await this.client.getMessage(
+                        channelID,
+                        server.rcon.statusMessageID
+                    );
+                    const messageEmbed = message.embeds[0];
+                    const baseEmbed = new DiscordEmbed()
+                        .setTitle(messageEmbed.title)
+                        .setDescription(messageEmbed.description);
+
+                    for (let i = 0; i < messageEmbed.fields.length; i++) {
+                        const field = messageEmbed.fields[i];
+                        baseEmbed.addField(
+                            field.name,
+                            field.value,
+                            field.inline
+                        );
+                    }
+                    const embed = await generateStatusMessage(messageEmbed);
+
                     await this.client.editMessage(
                         channelID,
                         server.rcon.statusMessageID,
@@ -371,7 +388,18 @@ export default class Watchdog {
                 } catch (error) {
                     this.statusMessageErrorCount++;
 
-                    if (this.statusMessageErrorCount >= 20) {
+                    logger.error(
+                        "Server Status",
+                        `Error occurred while updating ${
+                            server.name
+                        } status (Error: ${
+                            error.message || error
+                        }, Message error Count: ${
+                            this.statusMessageErrorCount
+                        })`
+                    );
+
+                    if (this.statusMessageErrorCount >= 5) {
                         logger.info(
                             "Server Status",
                             "Message error count limit reached, refreshing embed statuses"
