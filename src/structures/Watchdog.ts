@@ -293,7 +293,9 @@ export default class Watchdog {
                         "Location",
                         typeof country === "string"
                             ? `:flag_${
-                                  country === "Unknown" ? "unknown" : country
+                                  country === "Unknown"
+                                      ? "unknown"
+                                      : country.toLowerCase()
                               }: ${country}`
                             : ":united_nations: Unknown",
                         true
