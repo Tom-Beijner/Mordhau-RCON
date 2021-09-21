@@ -292,7 +292,9 @@ export default class Watchdog {
                     .addField(
                         "Location",
                         typeof country === "string"
-                            ? `:flag_${country.toLowerCase()}: ${country}`
+                            ? `:flag_${
+                                  country === "Unknown" ? "unknown" : country
+                              }: ${country}`
                             : ":united_nations: Unknown",
                         true
                     )
@@ -331,11 +333,20 @@ export default class Watchdog {
                         `Mordhau RCON | Last Update: ${format(
                             addMinutes(date, date.getTimezoneOffset()),
                             "yyyy-MM-dd HH:mm:ss"
-                        )} UTC\nNext Update: ${pluralize(
-                            "minute",
-                            configServer.rcon.status.updateInterval,
-                            true
-                        )}`
+                        )} UTC\nNext Update: ${format(
+                            addMinutes(
+                                date,
+                                date.getTimezoneOffset() +
+                                    configServer.rcon.status.updateInterval
+                            ),
+                            "yyyy-MM-dd HH:mm:ss"
+                        )} UTC (${formatDistanceToNow(
+                            addMinutes(
+                                date,
+                                configServer.rcon.status.updateInterval
+                            ),
+                            { addSuffix: true }
+                        )})`
                     );
 
                 return embed;
