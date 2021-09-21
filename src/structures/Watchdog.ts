@@ -11,7 +11,7 @@ import { walk } from "walk";
 import LogHandler from "../handlers/logHandler";
 import { mentionRole, sendWebhookMessage } from "../services/Discord";
 import { CreateAccount, getServerInfo, Login } from "../services/PlayFab";
-import config, { Role, Server } from "../structures/Config";
+import config, { Role } from "../structures/Config";
 import { hastebin } from "../utils/Hastebin";
 import logger from "../utils/logger";
 import MordhauAPI from "../utils/MordhauAPI";
@@ -208,7 +208,7 @@ export default class Watchdog {
                 )})`
             );
 
-            const { online, currentMap, gamemode, name } =
+            const { online, hostname, currentMap, gamemode, name } =
                 await server.rcon.getServerInfo();
             const players = await server.rcon.getIngamePlayers();
             // const players = await Promise.all(
@@ -242,19 +242,23 @@ export default class Watchdog {
             async function generateStatusMessage(baseEmbed?: Embed) {
                 const embed = new DiscordEmbed();
                 const date = new Date();
-                const country =
-                    baseEmbed?.fields
-                        ?.find((f) => f.name === "Address:Port")
-                        ?.value?.split(":")[0] ===
-                    `\`${server.rcon.options.host}`
-                        ? baseEmbed?.fields
-                              ?.find((f) => f.name === "Location")
-                              ?.value?.split(" ")[1] || false
-                        : await (
-                              await fetch(
-                                  `https://ipinfo.io/${server.rcon.options.host}/country`
-                              )
-                          ).text();
+                let country: string | boolean;
+
+                if (server.rcon.hostname === hostname) {
+                    country =
+                        baseEmbed?.fields
+                            ?.find((f) => f.name === "Location")
+                            ?.value?.split(" ")[1] || false;
+                } else {
+                    server.rcon.hostname = hostname;
+
+                    const res = await fetch(
+                        `https://ipinfo.io/${server.rcon.options.host}/country`
+                    );
+
+                    if (res.status === 200) country = (await res.text()).trim();
+                    else country = false;
+                }
 
                 embed
                     .setTitle(
@@ -287,10 +291,8 @@ export default class Watchdog {
                 embed
                     .addField(
                         "Location",
-                        country
-                            ? `:flag_${country
-                                  .toLowerCase()
-                                  .trim()}: ${country}`
+                        typeof country === "string"
+                            ? `:flag_${country.toLowerCase()}: ${country}`
                             : ":united_nations: Unknown",
                         true
                     )
@@ -329,21 +331,13 @@ export default class Watchdog {
                         `Mordhau RCON | Last Update: ${format(
                             addMinutes(date, date.getTimezoneOffset()),
                             "yyyy-MM-dd HH:mm:ss"
-                        )} UTC${
-                            configServer.rcon.status.hideIPPort
-                                ? ` | ${
-                                      config
-                                          .get("servers")
-                                          .findIndex(
-                                              (s: Server) =>
-                                                  s.rcon.host ===
-                                                      configServer.rcon.host &&
-                                                  s.rcon.port ===
-                                                      configServer.rcon.port
-                                          ) + 1
-                                  }`
-                                : ""
-                        }`
+                        )} UTC\nNext Update: ${
+                            configServer.rcon.status.updateInterval
+                        }${pluralize(
+                            "minute",
+                            configServer.rcon.status.updateInterval,
+                            true
+                        )}`
                     );
 
                 return embed;

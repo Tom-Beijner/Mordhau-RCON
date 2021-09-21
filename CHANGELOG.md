@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.4] - 2021-09-21
+
+### Fixed
+
+-   Using server hostname to determine if the server is the same (fixes the optimization that only worked if the status config was on show IP-PORT mode)
+-   Display correct location (to not show a rate-limited message)
+-   Some grammar issues in changelog (no I will not update the releases' descriptions)
+
 ## [1.16.3] - 2021-09-20
 
 ### Changed
@@ -35,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   Fixed server status player list being too long, it's now going to be sent to paste.gg
+-   Fixed server-status player list is too long, it's now going to be sent to paste.gg
 
 ## [1.16.0] - 2021-09-11
 
@@ -45,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   With the `players` command each server now has a playercount
+-   With the `players` command each server now has a player count
 -   Each config setting now has a default value
 
 ## [1.15.0] - 2021-09-04
@@ -59,13 +67,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   Fixed teleport location minimum value check using wrong variable (used MIN_VALUE but documentation explicitly says "Number.MIN_VALUE is the smallest positive number" (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_VALUE#description), now using Number.MIN_SAFE_INTEGER (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER))
+-   Fixed teleport location minimum value check using a wrong variable (used MIN_VALUE but documentation explicitly says "Number.MIN_VALUE is the smallest positive number" (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_VALUE#description), now using Number.MIN_SAFE_INTEGER (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER))
 
 ## [1.14.0] - 2021-08-30
 
 ### Added
 
--   Added all maps message if you didnt provide a existing map name (reponse for `teleportlocations` discord command)
+-   Added all maps message if you didn't provide an existing map name (response for `teleportlocations` discord command)
 -   Added `timeleft` in-game command
 
 ### Fixed
@@ -76,7 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   If teleport location didnt have alias then there would be a thrown error
+-   If teleport location didn't have an alias then there would be a thrown error
 
 ## [1.13.2] - 2021-08-29
 
@@ -99,8 +107,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   Made ingame commands array could be empty (essentially disabling ingame commands)
--   Moved save admin list to run when keepalive succeeds instead of also running after keepalive error
+-   Made in-game commands array could be empty (essentially disabling in-game commands)
+-   Made save admin list function to run when keepalive succeeds instead of also running after keepalive error
 
 ## [1.12.1] - 2021-08-28
 
@@ -118,7 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   Added auto restarter to the auto updater system
+-   Added auto restarter to the auto-updater system
 
 ### Fixed
 
@@ -130,13 +138,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 -   Fixed shouldSave error (rare error?)
--   Fixed threshold bans using mute as console log instead of ban (minor issue)
+-   Fixed threshold bans using mute as console log instead of a ban (minor issue)
 
 ## [1.10.1] - 2021-08-11
 
 ### Fixed
 
--   Fixed auto update spamming console
+-   Fixed auto-update spamming console
 
 ## [1.10.0] - 2021-08-11
 
@@ -163,7 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   Added infinite threshold duration scaling (will not reset warnings after reaching highest threshold, `infiniteDurationScaling` in config for automod and warnings, default: true)
+-   Added infinite threshold duration scaling (will not reset warnings after reaching the highest threshold, `infiniteDurationScaling` in the config for automod and warnings, default: true)
 -   Added sync server punishments config setting (currently will not retry to sync if it fails, `syncServerPunishments` in config, default: false)
 -   Added `unwarn` command
 -   Added `resetwarnnings` command (removes all warnings of a specified player, **only available in Discord**)
@@ -183,20 +191,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   Added a `warn` command for ingame and Discord slash command, it operates using a infractions threshold (like automod), and with a reset after duration which is for when to remove the infraction. Default being reset after 1 month (the duration is in minutes)
+-   Added a `warn` command for in-game and Discord slash command, it operates using an infractions threshold (like automod), and with a reset after duration which is for when to remove the infraction. The default being reset after 1 month (the duration is in minutes)
 -   Added a webhook logging for `warns`
 
 ### Changed
 
 -   Infraction threshold `warn` type has been renamed to `message`
--   Made admin list saving use pastebin if the admin list is too long
--   If a punishment is made by a unauthorized admin then it will try to revert it (currently only bans and mutes are reverted)
+-   Made admin list saving use Pastebin if the admin list is too long
+-   If punishment is made by an unauthorized admin then it will try to revert it (currently only bans and mutes are reverted)
 
 ## [1.7.0] - 2021-07-09
 
 ### Added
 
--   You can now toggle ingame (RCON) commands
+-   You can now toggle in-game (RCON) commands
 
 ### Changed
 
@@ -205,13 +213,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 -   Fixed old typo on the `players` command
--   Fixed typo on history when an global ban was issued, it would say unmuted instead of unbanned
+-   Fixed typo on history when a global ban was issued, it would say unmuted instead of unbanned
 
 ## [1.6.3] - 2021-07-09
 
 ### Fixed
 
--   Fixed duplicate webhook creation while having multiple servers using same channel, webhooks were fetched once and creating one webhook didnt update the fetched webhooks list leading to duplicate webhook creations
+-   Fixed duplicate webhook creation while having multiple servers using the same channel, webhooks were fetched once, and creating one webhook didn't update the fetched webhooks list leading to duplicate webhook creations
 
 ## [1.6.2] - 2021-07-06
 
@@ -222,13 +230,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   Fixed killstreak check not working, before it would cause crashes
+-   Fixed killstreak check not working before it would cause crashes
 
 ## [1.6.1] - 2021-07-03
 
 ### Fixed
 
--   Fixed auto updater trying to remove non-existing `bannedWords.json` file (so it doesn't override user version)
+-   Fixed auto-updater trying to remove non-existing `bannedWords.json` file (so it doesn't override user version)
 
 ## [1.6.0] - 2021-07-02
 
@@ -269,7 +277,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   `deletepunishment` now has the ability to delete multiple punishments at once
+-   `deletepunishment` now can delete multiple punishments at once
 -   `history` and logged punishments will show ObjectID instead of index ID
 
 ### Fixed
@@ -286,9 +294,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   Added auto update
+-   Added auto-update
 -   Added update command (which has force update para1meter)
--   Added auto update configuration with an interval in minutes
+-   Added auto-update configuration with an interval in minutes
 
 ## [1.1.1] - 2021-06-25
 
@@ -301,7 +309,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   Automod is now fully customizable as well as infractions gets saved to the database (restarting the bot wont reset infractions)
+-   Automod is now fully customizable as well as infractions get saved to the database (restarting the bot won't reset infractions)
 -   Added `deletehistory` and `deletepunishment` commands
 
 ### Changed

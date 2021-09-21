@@ -54,6 +54,7 @@ export default class Rcon {
         password?: string;
     };
     killStreak: KillStreak;
+    hostname: string;
     country: string;
     currentName: string;
     currentGamemode: string;
@@ -332,7 +333,7 @@ export default class Rcon {
     }
 
     async getServerInfo() {
-        const [_, name, version, gamemode, currentMap] = (
+        const [hostname, name, version, gamemode, currentMap] = (
             await this.rcon.send("info")
         )
             .split("\n")
@@ -343,7 +344,8 @@ export default class Rcon {
         this.currentMap = currentMap?.toLowerCase();
 
         return {
-            online: typeof _ !== "undefined",
+            online: typeof hostname !== "undefined",
+            hostname,
             name,
             version,
             gamemode,
