@@ -331,9 +331,7 @@ export default class Watchdog {
                         `Mordhau RCON | Last Update: ${format(
                             addMinutes(date, date.getTimezoneOffset()),
                             "yyyy-MM-dd HH:mm:ss"
-                        )} UTC\nNext Update: ${
-                            configServer.rcon.status.updateInterval
-                        }${pluralize(
+                        )} UTC\nNext Update: ${pluralize(
                             "minute",
                             configServer.rcon.status.updateInterval,
                             true
