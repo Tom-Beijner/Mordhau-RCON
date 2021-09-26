@@ -105,6 +105,7 @@ export interface FallbackValues {
     serverName?: string;
     serverPort?: number;
     maxPlayerCount: number;
+    passwordProtected: boolean;
 }
 export interface Killstreaks {
     enabled: boolean;
@@ -352,11 +353,16 @@ export default new Conf<Config>({
                                                 type: "number",
                                                 default: 0,
                                             },
+                                            passwordProtected: {
+                                                type: "boolean",
+                                                default: false,
+                                            },
                                         },
                                         default: {
                                             serverName: "",
                                             serverPort: 0,
                                             maxPlayerCount: 0,
+                                            passwordProtected: false,
                                         },
                                     },
                                 },
@@ -369,6 +375,7 @@ export default new Conf<Config>({
                                         serverName: "",
                                         serverPort: 0,
                                         maxPlayerCount: 0,
+                                        passwordProtected: false,
                                     },
                                 },
                             },
@@ -488,6 +495,7 @@ export default new Conf<Config>({
                                     serverName: "",
                                     serverPort: 0,
                                     maxPlayerCount: 0,
+                                    passwordProtected: false,
                                 },
                             },
                             logChannels: {
@@ -551,6 +559,7 @@ export default new Conf<Config>({
                                 serverName: "",
                                 serverPort: 0,
                                 maxPlayerCount: 0,
+                                passwordProtected: false,
                             },
                         },
                         logChannels: {
@@ -1193,6 +1202,7 @@ export default new Conf<Config>({
                             serverName: "",
                             serverPort: 0,
                             maxPlayerCount: 0,
+                            passwordProtected: false,
                         },
                     },
                     logChannels: {
@@ -1469,15 +1479,25 @@ export default new Conf<Config>({
         //     store.set("automod.infiniteDurationScaling", true);
         //     store.set("warns.infiniteDurationScaling", true);
         // },
-        "1.16.8": (store) => {
+        // "1.16.8": (store) => {
+        //     const servers = store.get("servers");
+
+        //     for (let i = 0; i < servers.length; i++) {
+        //         store.set(`servers.${i}.rcon.status.fallbackValues`, {
+        //             serverName: "",
+        //             serverPort: 0,
+        //             maxPlayerCount: 0,
+        //         });
+        //     }
+        // },
+        "1.16.9": (store) => {
             const servers = store.get("servers");
 
             for (let i = 0; i < servers.length; i++) {
-                store.set(`servers.${i}.rcon.status.fallbackValues`, {
-                    serverName: "",
-                    serverPort: 0,
-                    maxPlayerCount: 0,
-                });
+                store.set(
+                    `servers.${i}.rcon.status.fallbackValues.passwordProtected`,
+                    false
+                );
             }
         },
     },

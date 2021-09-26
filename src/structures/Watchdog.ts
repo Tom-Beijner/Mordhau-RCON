@@ -246,7 +246,7 @@ export default class Watchdog {
                 : "Server offline";
             const passwordProtected = serverInfo
                 ? serverInfo.Tags.IsPasswordProtected === "true"
-                : false;
+                : configServer.rcon.status.fallbackValues.passwordProtected;
 
             async function generateStatusMessage(baseEmbed?: Embed) {
                 const embed = new DiscordEmbed();
@@ -268,17 +268,17 @@ export default class Watchdog {
                     if (res.status === 200) country = (await res.text()).trim();
                     else country = false;
                 }
-
                 embed
                     .setTitle(
-                        name
-                            ? `${passwordProtected ? ":lock: " : ""}\`${
-                                  serverInfo
-                                      ? serverInfo.Tags.ServerName
-                                      : configServer.rcon.status.fallbackValues
-                                            .serverName || name
-                              }\``
-                            : baseEmbed?.title || "Unknown"
+                        `${passwordProtected ? ":lock: " : ""}\`${
+                            serverInfo
+                                ? serverInfo.Tags.ServerName
+                                : configServer.rcon.status.fallbackValues
+                                      .serverName ||
+                                  name ||
+                                  baseEmbed?.title ||
+                                  "Unknown"
+                        }\``
                     )
                     .setColor(
                         online

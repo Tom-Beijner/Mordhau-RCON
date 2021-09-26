@@ -43,7 +43,8 @@
                     "fallbackValues": {
                         "serverName": "",
                         "serverPort": 0,
-                        "maxPlayerCount": 0
+                        "maxPlayerCount": 0,
+                        "passwordProtected": false
                     }
                 },
                 "logChannels": {
