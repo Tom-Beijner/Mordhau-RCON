@@ -39,7 +39,12 @@
                     "updateInterval": 5,
                     "channel": "",
                     "showPlayerList": false,
-                    "hideIPPort": false
+                    "hideIPPort": false,
+                    "fallbackValues": {
+                        "serverName": "",
+                        "serverPort": 0,
+                        "maxPlayerCount": 0
+                    }
                 },
                 "logChannels": {
                     "chat": "",

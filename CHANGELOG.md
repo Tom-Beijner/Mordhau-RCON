@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.8] - 2021-09-26
+
+### Added
+
+-   Added fallback values for the server name (this does allow for all characters to be used), server port (game port), and max player count (check the `example.config.json` file for the structure). These are only used when the server can't be found because of the server name having a symbol or just offline (Note: the worst-case scenario is when the server is offline and the embed status just got generated, then only the location data will be correct, the rest will show "Unknown")
+
+### Changed
+
+-   If RCON connection can't be made to the server, the bot will not make a request to the PlayFab API (saves computing resources)
+
+### Fixed
+
+-   Fixed status embed erroring when the server has a symbol in the name (uses fallback values instead, if they're provided)
+-   Fixed location falling back to wrong value (supposed to fallback to United Nations flag but fell back to Unknown)
+
 ## [1.16.7] - 2021-09-21
 
 ### Fixed

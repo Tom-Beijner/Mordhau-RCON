@@ -98,8 +98,14 @@ export interface ServerStatus {
     channel: string;
     showPlayerList: boolean;
     hideIPPort: boolean;
+    fallbackValues: FallbackValues;
 }
 
+export interface FallbackValues {
+    serverName?: string;
+    serverPort?: number;
+    maxPlayerCount: number;
+}
 export interface Killstreaks {
     enabled: boolean;
     countBotKills: boolean;
@@ -165,7 +171,6 @@ export default new Conf<Config>({
         // },
         ingamePrefix: {
             type: "string",
-            minLength: 1,
             default: "/",
         },
         autoUpdate: {
@@ -274,7 +279,7 @@ export default new Conf<Config>({
                                         properties: {
                                             kicks: {
                                                 type: "boolean",
-                                                default: true,
+                                                default: false,
                                             },
                                             bans: {
                                                 type: "boolean",
@@ -290,9 +295,26 @@ export default new Conf<Config>({
                                             },
                                             unmutes: {
                                                 type: "boolean",
-                                                default: true,
+                                                default: false,
                                             },
                                         },
+                                        default: {
+                                            kicks: false,
+                                            bans: true,
+                                            unbans: true,
+                                            mutes: true,
+                                            unmutes: false,
+                                        },
+                                    },
+                                },
+                                default: {
+                                    shouldSave: true,
+                                    types: {
+                                        kicks: false,
+                                        bans: true,
+                                        unbans: true,
+                                        mutes: true,
+                                        unmutes: false,
                                     },
                                 },
                             },
@@ -314,6 +336,39 @@ export default new Conf<Config>({
                                     hideIPPort: {
                                         type: "boolean",
                                         default: false,
+                                    },
+                                    fallbackValues: {
+                                        type: "object",
+                                        properties: {
+                                            serverName: {
+                                                type: "string",
+                                                default: "",
+                                            },
+                                            serverPort: {
+                                                type: "number",
+                                                default: 0,
+                                            },
+                                            maxPlayerCount: {
+                                                type: "number",
+                                                default: 0,
+                                            },
+                                        },
+                                        default: {
+                                            serverName: "",
+                                            serverPort: 0,
+                                            maxPlayerCount: 0,
+                                        },
+                                    },
+                                },
+                                default: {
+                                    updateInverval: 5,
+                                    channel: "",
+                                    showPlayerList: false,
+                                    hideIPPort: false,
+                                    fallbackValues: {
+                                        serverName: "",
+                                        serverPort: 0,
+                                        maxPlayerCount: 0,
                                     },
                                 },
                             },
@@ -357,6 +412,17 @@ export default new Conf<Config>({
                                         default: "",
                                     },
                                 },
+                                default: {
+                                    chat: "",
+                                    punishments: "",
+                                    activity: "",
+                                    wanted: "",
+                                    permanent: "",
+                                    automod: "",
+                                    killstreak: "",
+                                    adminCalls: "",
+                                    warns: "",
+                                },
                             },
                             ingameCommands: {
                                 type: "array",
@@ -391,7 +457,126 @@ export default new Conf<Config>({
                                 uniqueItems: true,
                             },
                         },
+                        default: {
+                            host: "123.123.123.123",
+                            port: 1234,
+                            password: "password",
+                            adminListSaving: true,
+                            ignoreGlobalPunishments: false,
+                            teleportSystem: false,
+                            killstreaks: {
+                                enabled: true,
+                                countBotKills: false,
+                            },
+                            automod: true,
+                            punishments: {
+                                shouldSave: true,
+                                types: {
+                                    kicks: false,
+                                    bans: true,
+                                    unbans: true,
+                                    mutes: true,
+                                    unmutes: false,
+                                },
+                            },
+                            status: {
+                                updateInterval: 5,
+                                channel: "",
+                                showPlayerList: false,
+                                hideIPPort: false,
+                                fallbackValues: {
+                                    serverName: "",
+                                    serverPort: 0,
+                                    maxPlayerCount: 0,
+                                },
+                            },
+                            logChannels: {
+                                chat: "",
+                                punishments: "",
+                                activity: "",
+                                wanted: "",
+                                permanent: "",
+                                automod: "",
+                                killstreak: "",
+                                adminCalls: "",
+                                warns: "",
+                            },
+                            ingameCommands: [
+                                "timeleft",
+                                "killstreak",
+                                "requestadmin",
+                                "topkillstreak",
+                                "ban",
+                                "kick",
+                                "mute",
+                                "unban",
+                                "unmute",
+                                "warn",
+                                "unwarn",
+                            ],
+                        },
                         required: ["host", "port", "password"],
+                    },
+                },
+                default: {
+                    name: "Cool Server",
+                    rcon: {
+                        host: "123.123.123.123",
+                        port: 1234,
+                        password: "password",
+                        adminListSaving: true,
+                        ignoreGlobalPunishments: false,
+                        teleportSystem: false,
+                        killstreaks: {
+                            enabled: true,
+                            countBotKills: false,
+                        },
+                        automod: true,
+                        punishments: {
+                            shouldSave: true,
+                            types: {
+                                kicks: false,
+                                bans: true,
+                                unbans: true,
+                                mutes: true,
+                                unmutes: false,
+                            },
+                        },
+                        status: {
+                            updateInterval: 5,
+                            channel: "",
+                            showPlayerList: false,
+                            hideIPPort: false,
+                            fallbackValues: {
+                                serverName: "",
+                                serverPort: 0,
+                                maxPlayerCount: 0,
+                            },
+                        },
+                        logChannels: {
+                            chat: "",
+                            punishments: "",
+                            activity: "",
+                            wanted: "",
+                            permanent: "",
+                            automod: "",
+                            killstreak: "",
+                            adminCalls: "",
+                            warns: "",
+                        },
+                        ingameCommands: [
+                            "timeleft",
+                            "killstreak",
+                            "requestadmin",
+                            "topkillstreak",
+                            "ban",
+                            "kick",
+                            "mute",
+                            "unban",
+                            "unmute",
+                            "warn",
+                            "unwarn",
+                        ],
                     },
                 },
                 required: ["name", "rcon"],
@@ -405,6 +590,9 @@ export default new Conf<Config>({
                     type: "boolean",
                     default: true,
                 },
+            },
+            default: {
+                rollbackAdmins: true,
             },
         },
         killstreakMessages: {
@@ -508,6 +696,43 @@ export default new Conf<Config>({
                     minProperties: 1,
                 },
             },
+            default: {
+                infiniteDurationScaling: true,
+                adminsBypass: true,
+                infractionThresholds: {
+                    "1": {
+                        type: "message",
+                        message: "{name}, watch your language!",
+                    },
+                    "2": {
+                        type: "mute",
+                        message: "Muted {name} for profane messages!",
+                        duration: 1,
+                    },
+                    "3": {
+                        type: "kick",
+                        message: "Kicked {name} for profane messages!",
+                        reason: "Sending profane messages (Profane words: {words})",
+                    },
+                    "4": {
+                        type: "ban",
+                        message: "Banned {name} for profane messages!",
+                        duration: 1,
+                        reason: "Sending profane messages (Profane words: {words})",
+                    },
+                    "5": {
+                        type: "globalmute",
+                        message: "Globally muted {name} for profane messages!",
+                        duration: 1,
+                    },
+                    "6": {
+                        type: "globalban",
+                        message: "Globally banned {name} for profane messages!",
+                        duration: 1,
+                        reason: "Sending profane messages (Profane words: {words})",
+                    },
+                },
+            },
         },
         warns: {
             type: "object",
@@ -593,6 +818,49 @@ export default new Conf<Config>({
                         },
                     },
                     minProperties: 1,
+                },
+            },
+            default: {
+                infiniteDurationScaling: true,
+                resetAfterDuration: 43830,
+                infractionThresholds: {
+                    "1": {
+                        type: "message",
+                        message:
+                            "{name} now has {currentWarns}/{maxWarns} warnings!",
+                    },
+                    "2": {
+                        type: "mute",
+                        message:
+                            "{name} now has {currentWarns}/{maxWarns} warnings and got muted!",
+                        duration: 300,
+                    },
+                    "3": {
+                        type: "kick",
+                        message:
+                            "{name} now has {currentWarns}/{maxWarns} warnings and got kicked!",
+                        reason: "You reached a warning infraction threshold",
+                    },
+                    "4": {
+                        type: "ban",
+                        message:
+                            "{name} now has {currentWarns}/{maxWarns} warnings and got banned!",
+                        duration: 300,
+                        reason: "You reached a warning infraction threshold",
+                    },
+                    "5": {
+                        type: "globalmute",
+                        message:
+                            "{name} now has {currentWarns}/{maxWarns} warnings and got globally muted!",
+                        duration: 300,
+                    },
+                    "6": {
+                        type: "globalban",
+                        message:
+                            "{name} now has {currentWarns}/{maxWarns} warnings and got globally banned!",
+                        duration: 300,
+                        reason: "You reached a warning infraction threshold",
+                    },
                 },
             },
         },
@@ -739,6 +1007,84 @@ export default new Conf<Config>({
                     minItems: 1,
                 },
             },
+            default: {
+                guildId: "",
+                roles: [
+                    {
+                        name: "Mods",
+                        Ids: [""],
+                        commands: [
+                            "ban",
+                            "banned",
+                            "chatlog",
+                            "history",
+                            "kick",
+                            "mute",
+                            "rename",
+                            "say",
+                            "unban",
+                            "unmute",
+                            "warn",
+                            "unwarn",
+                        ],
+                    },
+                    {
+                        name: "Admins",
+                        Ids: [""],
+                        commands: [
+                            "ban",
+                            "banned",
+                            "globalban",
+                            "globalmute",
+                            "globalunban",
+                            "globalunmute",
+                            "history",
+                            "kick",
+                            "mute",
+                            "rename",
+                            "say",
+                            "unban",
+                            "unmute",
+                            "warn",
+                            "unwarn",
+                        ],
+                    },
+                    {
+                        name: "Owner",
+                        Ids: [""],
+                        commands: [
+                            "teleportadd",
+                            "teleportremove",
+                            "teleportedit",
+                            "ban",
+                            "banned",
+                            "deletehistory",
+                            "deletepunishment",
+                            "globalban",
+                            "globalmute",
+                            "globalunban",
+                            "globalunmute",
+                            "history",
+                            "kick",
+                            "mute",
+                            "rename",
+                            "say",
+                            "unban",
+                            "unmute",
+                            "warn",
+                            "unwarn",
+                            "resetwarnings",
+                            "addadmin",
+                            "removeadmin",
+                            "globaladdadmin",
+                            "globalremoveadmin",
+                            "rcon",
+                            "update",
+                        ],
+                        receiveMentions: true,
+                    },
+                ],
+            },
             required: ["guildId", "roles"],
         },
         mordhau: {
@@ -750,6 +1096,9 @@ export default new Conf<Config>({
                     default: "",
                 },
             },
+            default: {
+                accountId: "",
+            },
             required: ["accountId"],
         },
         steam: {
@@ -760,6 +1109,9 @@ export default new Conf<Config>({
                     minLength: 1,
                     default: "",
                 },
+            },
+            default: {
+                key: "",
             },
             required: ["key"],
         },
@@ -785,6 +1137,12 @@ export default new Conf<Config>({
                     type: "string",
                     default: "",
                 },
+            },
+            default: {
+                host: "",
+                database: "",
+                username: "",
+                password: "",
             },
             required: ["host", "database", "username", "password"],
         },
@@ -831,6 +1189,11 @@ export default new Conf<Config>({
                         channel: "",
                         showPlayerList: false,
                         hideIPPort: false,
+                        fallbackValues: {
+                            serverName: "",
+                            serverPort: 0,
+                            maxPlayerCount: 0,
+                        },
                     },
                     logChannels: {
                         chat: "",
@@ -1102,9 +1465,20 @@ export default new Conf<Config>({
         //         );
         //     }
         // },
-        "1.9.0": (store) => {
-            store.set("automod.infiniteDurationScaling", true);
-            store.set("warns.infiniteDurationScaling", true);
+        // "1.9.0": (store) => {
+        //     store.set("automod.infiniteDurationScaling", true);
+        //     store.set("warns.infiniteDurationScaling", true);
+        // },
+        "1.16.8": (store) => {
+            const servers = store.get("servers");
+
+            for (let i = 0; i < servers.length; i++) {
+                store.set(`servers.${i}.rcon.status.fallbackValues`, {
+                    serverName: "",
+                    serverPort: 0,
+                    maxPlayerCount: 0,
+                });
+            }
         },
     },
 });

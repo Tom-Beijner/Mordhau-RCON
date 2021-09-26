@@ -143,6 +143,8 @@ export async function getServerInfo(server: {
     port: number;
 }) {
     try {
+        if (!server.name) return null;
+
         const result = await GetServerList({
             TagFilter: {
                 Includes: [

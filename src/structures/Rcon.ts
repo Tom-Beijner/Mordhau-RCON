@@ -59,7 +59,7 @@ export default class Rcon {
     currentName: string;
     currentGamemode: string;
     currentMap: string;
-    maxPlayerCount: number;
+    maxPlayerCount: number = Infinity;
     statusMessageID: string;
 
     constructor(
@@ -339,6 +339,7 @@ export default class Rcon {
             .split("\n")
             .map((stat) => stat.split(": ")[1]);
 
+        this.hostname = hostname;
         this.currentName = name?.toLowerCase();
         this.currentGamemode = gamemode?.toLowerCase();
         this.currentMap = currentMap?.toLowerCase();

@@ -208,7 +208,7 @@ export default class Watchdog {
                 )})`
             );
 
-            const { online, hostname, currentMap, gamemode, name } =
+            let { online, hostname, currentMap, gamemode, name } =
                 await server.rcon.getServerInfo();
             const players = await server.rcon.getIngamePlayers();
             // const players = await Promise.all(
@@ -223,14 +223,23 @@ export default class Watchdog {
             const serverInfo = await getServerInfo({
                 name,
                 host: server.rcon.options.host,
-                port: server.rcon.options.port,
+                port: configServer.rcon.status.fallbackValues.serverPort,
             });
-            const adress = `${server.rcon.options.host}:${serverInfo.ServerPort}`;
-            const maxPlayerCount =
-                (serverInfo
-                    ? parseInt(serverInfo.Tags.MaxPlayers)
-                    : server.rcon.maxPlayerCount) || 0;
-            const currentPlayerCount = serverInfo ? players.length : 0;
+            if (serverInfo) {
+                server.rcon.maxPlayerCount = parseInt(
+                    serverInfo.Tags.MaxPlayers
+                );
+            }
+            const adress = serverInfo
+                ? `${server.rcon.options.host}:${serverInfo.ServerPort}`
+                : configServer.rcon.status.fallbackValues.serverPort
+                ? `${server.rcon.options.host}:${configServer.rcon.status.fallbackValues.serverPort}`
+                : "Unknown";
+            const maxPlayerCount = configServer.rcon.status.fallbackValues
+                .maxPlayerCount
+                ? configServer.rcon.status.fallbackValues.maxPlayerCount
+                : server.rcon.maxPlayerCount;
+            const currentPlayerCount = players.length;
             const playerList = online
                 ? players.map((p) => `${p.id} - ${p.name}`).join("\n") ||
                   "No players online"
@@ -244,7 +253,7 @@ export default class Watchdog {
                 const date = new Date();
                 let country: string | boolean;
 
-                if (server.rcon.hostname === hostname) {
+                if (server.rcon.country && server.rcon.hostname === hostname) {
                     country =
                         baseEmbed?.fields
                             ?.find((f) => f.name === "Location")
@@ -263,7 +272,12 @@ export default class Watchdog {
                 embed
                     .setTitle(
                         name
-                            ? `${passwordProtected ? ":lock: " : ""}\`${name}\``
+                            ? `${passwordProtected ? ":lock: " : ""}\`${
+                                  serverInfo
+                                      ? serverInfo.Tags.ServerName
+                                      : configServer.rcon.status.fallbackValues
+                                            .serverName || name
+                              }\``
                             : baseEmbed?.title || "Unknown"
                     )
                     .setColor(
@@ -285,17 +299,23 @@ export default class Watchdog {
 
                 if (!configServer.rcon.status.hideIPPort)
                     embed
-                        .setDescription(`Connect: steam://connect/${adress}`)
+                        .setDescription(
+                            `Connect: ${
+                                adress === "Unknown"
+                                    ? "Unknown"
+                                    : `steam://connect/${adress}`
+                            }`
+                        )
                         .addField("Address:Port", `\`${adress}\``, true);
 
                 embed
                     .addField(
                         "Location",
                         typeof country === "string"
-                            ? `:flag_${
+                            ? `:${
                                   country === "Unknown"
-                                      ? "unknown"
-                                      : country.toLowerCase()
+                                      ? "united_nations"
+                                      : `flag_${country.toLowerCase()}`
                               }: ${country}`
                             : ":united_nations: Unknown",
                         true
@@ -399,7 +419,7 @@ export default class Watchdog {
                             server.name
                         } status (Error: ${
                             error.message || error
-                        }, Message error Count: ${
+                        }, Message error count: ${
                             this.statusMessageErrorCount
                         })`
                     );
@@ -420,7 +440,7 @@ export default class Watchdog {
                 "Server Status",
                 `Error occurred while updating ${server.name} status (Error: ${
                     error.message || error
-                }, Message error Count: ${this.statusMessageErrorCount})`
+                }, Message error count: ${this.statusMessageErrorCount})`
             );
         }
     }
