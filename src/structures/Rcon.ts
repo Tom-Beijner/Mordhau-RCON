@@ -54,13 +54,13 @@ export default class Rcon {
         password?: string;
     };
     killStreak: KillStreak;
-    hostname: string;
-    country: string;
-    currentName: string;
-    currentGamemode: string;
-    currentMap: string;
+    hostname?: string;
+    country?: string;
+    currentName?: string;
+    currentGamemode?: string;
+    currentMap?: string;
     maxPlayerCount: number = Infinity;
-    statusMessageID: string;
+    statusMessageID?: string;
 
     constructor(
         bot: Watchdog,

@@ -208,7 +208,7 @@ export default class Watchdog {
                 )})`
             );
 
-            let { online, hostname, currentMap, gamemode, name } =
+            const { online, hostname, currentMap, gamemode, name } =
                 await server.rcon.getServerInfo();
             const players = await server.rcon.getIngamePlayers();
             // const players = await Promise.all(
@@ -254,10 +254,10 @@ export default class Watchdog {
                 let country: string | boolean;
 
                 if (server.rcon.country && server.rcon.hostname === hostname) {
-                    country =
-                        baseEmbed?.fields
-                            ?.find((f) => f.name === "Location")
-                            ?.value?.split(" ")[1] || false;
+                    country = server.rcon.country
+                        // baseEmbed?.fields
+                        //     ?.find((f) => f.name === "Location")
+                        //     ?.value?.split(" ")[1] || false;
                 } else {
                     server.rcon.hostname = hostname;
 
@@ -265,7 +265,10 @@ export default class Watchdog {
                         `https://ipinfo.io/${server.rcon.options.host}/country`
                     );
 
-                    if (res.status === 200) country = (await res.text()).trim();
+                    if (res.status === 200) {
+                        country = (await res.text()).trim();
+                        server.rcon.country = country;
+                    }
                     else country = false;
                 }
                 embed
