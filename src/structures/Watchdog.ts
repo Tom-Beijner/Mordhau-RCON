@@ -1,7 +1,7 @@
 import flatMap from "array.prototype.flatmap";
 import { addMinutes, formatDistanceToNow } from "date-fns";
 import { format } from "date-fns-tz";
-import Eris, { Client, Constants, Embed, GuildTextableChannel } from "eris";
+import Eris, { Client, Constants, Embed, TextChannel } from "eris";
 import LRU from "lru-cache";
 import fetch from "node-fetch";
 import path, { resolve as res } from "path";
@@ -94,9 +94,10 @@ export default class Watchdog {
                 (s) => s.rcon.status.channel && s.rcon.status.channel.length
             );
         const permissions =
-            Constants.Permissions.sendMessages &
-            Constants.Permissions.readMessageHistory &
-            Constants.Permissions.viewChannel;
+            Constants.Permissions.sendMessages |
+            Constants.Permissions.readMessageHistory |
+            Constants.Permissions.viewChannel |
+            Constants.Permissions.manageMessages;
 
         for (let i = 0; i < servers.length; i++) {
             const server = servers[i];
@@ -105,15 +106,35 @@ export default class Watchdog {
             try {
                 const channel = this.client.getChannel(
                     statusChannelID
-                ) as GuildTextableChannel;
+                ) as TextChannel;
+
+                // channel.permissionOverwrites
+                //     .get(this.client.user.id)
+                //     .has("viewChannel") &&
+                //     channel.permissionOverwrites
+                //         .get(this.client.user.id)
+                //         .has("readMessages") &&
+                //     channel.permissionOverwrites
+                //         .get(this.client.user.id)
+                //         .has("readMessageHistory") &&
+                //     channel.permissionOverwrites
+                //         .get(this.client.user.id)
+                //         .has("sendMessages") &&
+                //     channel.permissionOverwrites
+                //         .get(this.client.user.id)
+                //         .has("manageMessages");
+
                 if (
-                    channel.permissionsOf(this.client.user.id).allow &
+                    (BigInt(
+                        channel.permissionOverwrites.get(this.client.user.id)
+                            ?.allow || false
+                    ) &
+                        permissions) ===
                     permissions
                 )
                     continue;
 
-                await this.client.editChannelPermission(
-                    statusChannelID,
+                await channel.editPermission(
                     this.client.user.id,
                     permissions,
                     0,
@@ -254,10 +275,10 @@ export default class Watchdog {
                 let country: string | boolean;
 
                 if (server.rcon.country && server.rcon.hostname === hostname) {
-                    country = server.rcon.country
-                        // baseEmbed?.fields
-                        //     ?.find((f) => f.name === "Location")
-                        //     ?.value?.split(" ")[1] || false;
+                    country = server.rcon.country;
+                    // baseEmbed?.fields
+                    //     ?.find((f) => f.name === "Location")
+                    //     ?.value?.split(" ")[1] || false;
                 } else {
                     server.rcon.hostname = hostname;
 
@@ -268,8 +289,7 @@ export default class Watchdog {
                     if (res.status === 200) {
                         country = (await res.text()).trim();
                         server.rcon.country = country;
-                    }
-                    else country = false;
+                    } else country = false;
                 }
                 embed
                     .setTitle(
@@ -434,6 +454,9 @@ export default class Watchdog {
                         );
 
                         this.statusMessageErrorCount = 0;
+
+                        await this.setStatusesChannelPermissions();
+
                         await this.refreshStatuses();
                     }
                 }

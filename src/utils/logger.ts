@@ -1,6 +1,6 @@
 import date from "date-fns-tz";
 import { createLogger, format, Logger, transports } from "winston";
-
+import DailyRotateFile from "winston-daily-rotate-file";
 export default class logger {
     private static logger: Logger;
 
@@ -20,6 +20,24 @@ export default class logger {
 
             return info;
         });
+
+        const fileTransport = new DailyRotateFile({
+            filename: "%DATE%",
+            extension: ".log",
+            dirname: "logs",
+            datePattern: "YYYY-MM-DD",
+            maxFiles: "14d",
+            maxSize: "20m",
+            zippedArchive: true,
+            createSymlink: true,
+        });
+        fileTransport.on("rotate", (oldFilename, newFilename) => {
+            this.info(
+                "Logs",
+                `Rotating log file from ${oldFilename} to ${newFilename}`
+            );
+        });
+
         this.logger = createLogger({
             level:
                 (process.env.LOG_LEVEL && process.env.LOG_LEVEL.trim()) ||
@@ -30,7 +48,7 @@ export default class logger {
                 timestamp({ timeZone: "Europe/Berlin" }),
                 logFormat
             ),
-            transports: [new transports.Console()],
+            transports: [new transports.Console(), fileTransport],
             exitOnError: false,
         });
     }
