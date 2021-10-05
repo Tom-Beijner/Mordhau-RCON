@@ -1521,7 +1521,11 @@ export default class Rcon {
                     !config
                         .get("servers")
                         .find((server) => server.name === this.options.name)
-                        .rcon.teleportSystem
+                        .rcon.teleportSystem &&
+                    !config
+                        .get("servers")
+                        .find((server) => server.name === this.options.name)
+                        .rcon.mapVote.enabled
                 )
                     return;
 
