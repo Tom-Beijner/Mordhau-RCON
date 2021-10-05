@@ -1146,6 +1146,11 @@ duplexer3@^0.1.4:
   resolved "https://registry.yarnpkg.com/duplexer3/-/duplexer3-0.1.4.tgz#ee01dd1cac0ed3cbc7fdbea37dc0a8f1ce002ce2"
   integrity sha1-7gHdHKwO08vH/b6jfcCo8c4ALOI=
 
+easytimer.js@^4.5.1:
+  version "4.5.1"
+  resolved "https://registry.yarnpkg.com/easytimer.js/-/easytimer.js-4.5.1.tgz#76053bdcae1d504c9bf918be4f5de8c8ebf1c37f"
+  integrity sha512-m+ZVLeBevBhUqw6kghBMnXHSIH+N1VFcwj2cP5zJ+ovbXLR0mWddDj9n1VwmJGpHMbOjLuBfq3j4l/gJ/lvdRQ==
+
 ee-first@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"

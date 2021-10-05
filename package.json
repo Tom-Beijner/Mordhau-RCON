@@ -34,6 +34,7 @@
     "date-fns-tz": "^1.1.6",
     "deep-cleaner": "^1.2.1",
     "download-git-repo": "^3.0.2",
+    "easytimer.js": "^4.5.1",
     "eris": "^0.15.1",
     "express": "^4.17.1",
     "fs-extra": "^10.0.0",
