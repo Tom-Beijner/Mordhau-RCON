@@ -137,6 +137,7 @@ export default class MapVote {
                 return;
             }
 
+            this.voted = this.voted.filter((vote) => vote.id !== player.id);
             this.voted.push({ id: player.id, map: mapNumber - 1 });
 
             this.rcon.say(
