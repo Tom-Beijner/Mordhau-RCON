@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   Added mid-match map voting command, `mapvote`. This introduces new config options (see `example.config.json`).
+-   Added mid-match map voting command, `votemap`. This introduces new config options (see `example.config.json`).
 -   Added `cancelmapvote` for admins to cancel a map vote.
 
 ## [1.17.0] - 2021-09-28
