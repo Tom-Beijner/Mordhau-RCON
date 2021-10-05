@@ -1611,9 +1611,9 @@ export default class Watchdog {
                     } catch (err) {
                         logger.error(
                             "Bot",
-                            `Error occurred while loading RCON command (${
+                            `Error occurred while loading RCON command (Error: ${
                                 err.message || err
-                            })`
+                            }, Command: ${fileStats.name})`
                         );
                     }
                 });

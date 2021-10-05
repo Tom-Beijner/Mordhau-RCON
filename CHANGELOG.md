@@ -5,15 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.0] - 2021-10-05
+
+### Added
+
+-   Added mid-match map voting command, `mapvote`. This introduces new config options (see `example.config.json`).
+-   Added `cancelmapvote` for admins to cancel a map vote.
+
 ## [1.17.0] - 2021-09-28
 
 ### Added
 
--   Added logging to files (currently hard coded settings like max 14 days of logs and max 20mb size per log file)
+-   Added logging to files (currently hardcoded settings like max 14 days of logs and max 20MB size per log file)
 
 ### Fixed
 
--   Might have fixed messages not being deleted, the bot requires manage messages and sets its own permissions to the appropriate channels
+-   Might have fixed messages not being deleted, the bot requires to manage messages and sets its permissions to the appropriate channels
 
 ## [1.16.10] - 2021-09-28
 

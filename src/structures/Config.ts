@@ -89,6 +89,7 @@ export interface Rcon {
     automod: boolean;
     punishments: Punishments;
     status: ServerStatus;
+    mapVote: MapVote;
     logChannels: LogChannels;
     ingameCommands: string[];
 }
@@ -101,6 +102,19 @@ export interface ServerStatus {
     fallbackValues: FallbackValues;
 }
 
+export interface MapVote {
+    enabled: boolean;
+    voteDuration: number;
+    voteCooldown: number;
+    voteThreshold: number;
+    initialDelay: number;
+    maps: Maps[];
+}
+
+export interface Maps {
+    shownName: string;
+    map: string;
+}
 export interface FallbackValues {
     serverName?: string;
     serverPort?: number;
@@ -172,7 +186,7 @@ export default new Conf<Config>({
         // },
         ingamePrefix: {
             type: "string",
-            default: "/",
+            default: "-",
         },
         autoUpdate: {
             type: "object",
@@ -379,6 +393,53 @@ export default new Conf<Config>({
                                     },
                                 },
                             },
+                            mapVote: {
+                                type: "object",
+                                properties: {
+                                    enabled: {
+                                        type: "boolean",
+                                        default: true,
+                                    },
+                                    voteDuration: {
+                                        type: "number",
+                                        default: 30,
+                                    },
+                                    voteCooldown: {
+                                        type: "number",
+                                        default: 240,
+                                    },
+                                    voteThreshold: {
+                                        type: "number",
+                                        default: 0.6,
+                                    },
+                                    initialDelay: {
+                                        type: "number",
+                                        default: 30,
+                                    },
+                                    maps: {
+                                        type: "array",
+                                        items: {
+                                            type: "object",
+                                            properties: {
+                                                shownName: {
+                                                    type: "string",
+                                                    minLength: 1,
+                                                },
+                                                map: {
+                                                    type: "string",
+                                                    minLength: 1,
+                                                },
+                                            },
+                                        },
+                                        default: [
+                                            {
+                                                shownName: "Contraband",
+                                                map: "ffa_contraband",
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
                             logChannels: {
                                 type: "object",
                                 properties: {
@@ -498,6 +559,19 @@ export default new Conf<Config>({
                                     passwordProtected: false,
                                 },
                             },
+                            mapVote: {
+                                enabled: true,
+                                voteDuration: 30,
+                                voteCooldown: 240,
+                                voteThreshold: 0.6,
+                                initialDelay: 30,
+                                maps: [
+                                    {
+                                        shownName: "Contraband",
+                                        map: "ffa_contraband",
+                                    },
+                                ],
+                            },
                             logChannels: {
                                 chat: "",
                                 punishments: "",
@@ -561,6 +635,19 @@ export default new Conf<Config>({
                                 maxPlayerCount: 0,
                                 passwordProtected: false,
                             },
+                        },
+                        mapVote: {
+                            enabled: true,
+                            voteDuration: 30,
+                            voteCooldown: 240,
+                            voteThreshold: 0.6,
+                            initialDelay: 30,
+                            maps: [
+                                {
+                                    shownName: "Contraband",
+                                    map: "ffa_contraband",
+                                },
+                            ],
                         },
                         logChannels: {
                             chat: "",
@@ -1157,7 +1244,7 @@ export default new Conf<Config>({
         },
     },
     defaults: {
-        ingamePrefix: "/",
+        ingamePrefix: "-",
         autoUpdate: {
             enabled: true,
             checkInterval: 30,
@@ -1204,6 +1291,19 @@ export default new Conf<Config>({
                             maxPlayerCount: 0,
                             passwordProtected: false,
                         },
+                    },
+                    mapVote: {
+                        enabled: true,
+                        voteDuration: 30,
+                        voteCooldown: 240,
+                        voteThreshold: 0.6,
+                        initialDelay: 30,
+                        maps: [
+                            {
+                                shownName: "Contraband",
+                                map: "ffa_contraband",
+                            },
+                        ],
                     },
                     logChannels: {
                         chat: "",

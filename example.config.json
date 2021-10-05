@@ -1,5 +1,5 @@
 {
-    "ingamePrefix": "/",
+    "ingamePrefix": "-",
     "autoUpdate": {
         "enabled": true,
         "checkInterval": 30
@@ -46,6 +46,19 @@
                         "maxPlayerCount": 0,
                         "passwordProtected": false
                     }
+                },
+                "mapVote": {
+                    "enabled": true,
+                    "voteDuration": 30,
+                    "voteCooldown": 240,
+                    "voteThreshold": 0.6,
+                    "initialDelay": 30,
+                    "maps": [
+                        {
+                            "shownName": "Contraband",
+                            "map": "ffa_contraband"
+                        }
+                    ]
                 },
                 "logChannels": {
                     "chat": "",

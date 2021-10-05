@@ -13,6 +13,7 @@ import logger from "../utils/logger";
 import { outputPlayerIDs } from "../utils/PlayerID";
 import removeMentions from "../utils/RemoveMentions";
 import KillStreak from "./KillStreak";
+import MapVote from "./MapVote";
 import RCONCommandContext from "./RCONCommandContext";
 import Watchdog from "./Watchdog";
 
@@ -54,6 +55,7 @@ export default class Rcon {
         password?: string;
     };
     killStreak: KillStreak;
+    mapVote: MapVote;
     hostname?: string;
     country?: string;
     currentName?: string;
@@ -84,6 +86,8 @@ export default class Rcon {
 
         if (options.killstreaks.enabled)
             this.killStreak = new KillStreak(this, options.name);
+
+        this.mapVote = new MapVote(this);
     }
 
     async banUser(
@@ -330,6 +334,10 @@ export default class Rcon {
 
     async say(message: string) {
         return await this.rcon.send(`say ${message}`);
+    }
+
+    async changeMap(map: string) {
+        return await this.rcon.send(`changelevel ${map}`);
     }
 
     async getServerInfo() {
@@ -719,6 +727,8 @@ export default class Rcon {
 
     async onMatchStart() {
         await this.updateCache();
+
+        this.mapVote.clear();
 
         let message = "";
 
