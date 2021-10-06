@@ -118,7 +118,9 @@ export default class MapVote {
                     .map((m, i) => `${i + 1}. ${m.shownName}`)
                     .join("\n")}\n\nVoting ends in ${
                     this.options.voteDuration
-                } seconds`
+                } seconds, to vote use: ${config.get(
+                    "ingamePrefix"
+                )}votemap [map number]`
             );
 
             this.timer.start({
@@ -161,6 +163,8 @@ export default class MapVote {
     public cancel() {
         if (!this.timer.isRunning()) {
             this.rcon.say("[Map Vote] Map vote is not running");
+
+            return;
         }
 
         this.timer.stop();

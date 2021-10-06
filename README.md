@@ -29,11 +29,27 @@
 
 A Discord bot that utilizes RCON for the Mordhau server and logs punishments with extra features. It makes use of [Slash Commands](https://discord.com/developers/docs/interactions/slash-commands) and has in-game commands. As this is version 2 of AssaultLine's [Mordhau Ban Logger](https://github.com/academy-gaming/mordhaubanlogger) a migration feature has been added. The bot is semi-configurable, some features can be toggled on, off, or customized (like killstreaks). The bot is self-hosted so you need to host the bot on your server.
 
+### Features
+
+-   Per-server punishments saving (You can customize each server to save specific punishment types or just disable it altogether)
+-   Sync server punishments (Default: false)
+-   Per-server in-game commands specification (You can choose which commands are available in-game)
+-   Per discord role slash commands access (You can choose which commands are available for each role, multiple roles can have the same permissions)
+-   Global punishments (Servers can be set to ignore global punishments)
+-   Killstreaks (You can toggle this feature, as well as a toggle to count bot kills for each server and customize it, for each kill threshold with its message. The available variables are `{name}` and `{kills}`)
+-   Automod (Fully customizable, you can also change the profane words list by configuring `bannedWords.json`. The available variables are `{name}` and `{words}`)
+-   Admin list saving/rollback (Toggleable feature with notifying only mode)
+-   Auto Update (The bot will automatically download and overwrite files as well as auto restart the bot, it's a good idea to check out the patch notes and change `config.json` to match the structure of `example.config.json` (not a requirement as the bot has own config system that has values to fall back to))
+-   Warn system (Acts like automod infraction threshold system with a reset after duration (in minutes, default is 1 month). The available variables are `{name}`, `{currentWarns}` and `{maxWarns}` )
+-   Teleport system (Dynamically add/remove/edit teleport locations, default: no locations provided)
+-   Server status (You do not have to enable `bAdvertiseServerViaSteam` to show server stats, if you use DiscordGSM you have to enable it)
+-   Map vote (Works like RTV, Rock The Vote. Enabling the feature will enable the `votemap [map number]` (map number is ignored until the map list message pops up) and `cancelmapvote` (for admins) commands)
+
 ### Notices
 
 You can only have a maximum of 25 servers (not that you will have that many) as this is a limitation of Discord\'s Slash Commands.
 
-Invite your bot using the link (replace "\<bot ID\>" with your bot ID): https://discord.com/api/oauth2/authorize?client_id=\<bot ID\>&permissions=536947728&scope=bot%20applications.commands
+Invite your bot using the link (replace "\<bot ID\>" with your bot ID): https://discord.com/api/oauth2/authorize?client_id=<bot ID\>&permissions=536947728&scope=bot%20applications.commands
 
 The auto-updater will download, install all dependencies, build and migrate configs automatically when there's an update available, the only thing you should do is make sure the settings in the `config` files fit your preferences.
 
@@ -92,21 +108,6 @@ unmute
 warn
 unwarn
 ```
-
-### Features
-
--   Per-server punishments saving (You can customize each server to save specific punishment types or just disable it altogether)
--   Sync server punishments (Default: false)
--   Per-server in-game commands specification (You can choose which commands are available in-game)
--   Per discord role slash commands access (You can choose which commands are available for each role, multiple roles can have the same permissions)
--   Global punishments (Servers can be set to ignore global punishments)
--   Killstreaks (You can toggle this feature, as well as a toggle to count bot kills for each server and customize it, for each kill threshold with its message. The available variables are `{name}` and `{kills}`)
--   Automod (Fully customizable, you can also change the profane words list by configuring `bannedWords.json`. The available variables are `{name}` and `{words}`)
--   Admin list saving/rollback (Toggleable feature with notifying only mode)
--   Auto Update (The bot will automatically download and overwrite files as well as auto restart the bot, it's a good idea to check out the patch notes and change `config.json` to match the structure of `example.config.json` (not a requirement as the bot has own config system that has values to fall back to))
--   Warn system (Acts like automod infraction threshold system with a reset after duration (in minutes, default is 1 month). The available variables are `{name}`, `{currentWarns}` and `{maxWarns}` )
--   Teleport system (Dynamically add/remove/edit teleport locations, default: no locations provided)
--   Server status (You do not have to enable `bAdvertiseServerViaSteam` to show server stats, if you use DiscordGSM you have to enable it)
 
 ## Prerequisites
 

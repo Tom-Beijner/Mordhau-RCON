@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.3] - 2021-10-06
+
+### Added
+
+-   Added info about the map vote feature in the README file
+
+### Changed
+
+-   The map vote message also has the command usage now
+
+### Fixed
+
+-   Fixed a issue where if the player left the vote wouldn't be removed
+-   Fixed a bug where 2 messages would be sent when cancelling a map vote
+
 ## [1.18.2] - 2021-10-05
 
 ### Fixed

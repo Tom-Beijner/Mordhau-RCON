@@ -948,6 +948,8 @@ export default class Rcon {
         if (this.options.killstreaks.enabled)
             this.killStreak.removeKillstreak(player);
 
+        this.mapVote.removeVote(player);
+
         this.bot.punishedPlayers.del(player.id);
         this.bot.naughtyPlayers.del(player.id);
 
