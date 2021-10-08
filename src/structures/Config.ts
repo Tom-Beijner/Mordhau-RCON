@@ -431,6 +431,7 @@ export default new Conf<Config>({
                                                 },
                                             },
                                         },
+                                        minItems: 1,
                                         default: [
                                             {
                                                 shownName: "Contraband",

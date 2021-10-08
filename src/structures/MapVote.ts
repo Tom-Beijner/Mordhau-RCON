@@ -7,6 +7,7 @@ export default class MapVote {
     public timer: Timer;
     public voteBlocked: boolean = false;
     public voteBlockedSince: number;
+    public voteBlockedDuration: number;
     public votes: number = 0;
     public voted: { id: string; map: number }[] = [];
     options: IMapVote;
@@ -30,12 +31,12 @@ export default class MapVote {
             if (this.voted.length < this.options.voteThreshold) {
                 this.clear();
                 this.voteBlocked = true;
+                this.voteBlockedSince = Date.now();
+                this.voteBlockedDuration = this.options.voteCooldown;
 
                 this.rcon.say(
                     `[Map Vote] Voting has been cancelled due to not reaching the required amount of votes`
                 );
-
-                this.voteBlockedSince = Date.now();
 
                 setTimeout(() => {
                     this.voteBlocked = false;
@@ -85,9 +86,15 @@ export default class MapVote {
             return;
         }
 
+        if (this.voteBlocked && this.voteBlockedSince === null) {
+            this.rcon.say(`[Map Vote] Waiting for the match to start`);
+
+            return;
+        }
+
         if (this.voteBlocked) {
             const time = Math.floor(
-                (this.options.voteCooldown * 1000 -
+                (this.voteBlockedDuration * 1000 -
                     (Date.now() - this.voteBlockedSince)) /
                     1000
             );
@@ -132,6 +139,16 @@ export default class MapVote {
         }
 
         if (this.timer.isRunning()) {
+            if (isNaN(mapNumber)) {
+                this.rcon.say(
+                    `[Map Vote] Invalid map number. Use: ${config.get(
+                        "ingamePrefix"
+                    )}votemap [map number]`
+                );
+
+                return;
+            }
+
             if (!this.options.maps[mapNumber - 1]) {
                 this.rcon.say(
                     `[Map Vote] Map ${mapNumber} does not exist in the list of maps.`
@@ -148,6 +165,35 @@ export default class MapVote {
                 } (${this.voted.length}/${requiredVotes})`
             );
         }
+    }
+
+    onMatchEnd() {
+        this.voteBlocked = true;
+        this.voteBlockedSince = null;
+
+        this.clear();
+    }
+
+    public onMatchStart() {
+        this.clear();
+
+        this.voteBlockedSince = Date.now();
+
+        this.rcon.say(
+            `[Map Vote] Map voting will be enabled in ${this.options.initialDelay} seconds`
+        );
+
+        this.voteBlockedDuration = this.options.initialDelay;
+
+        setTimeout(() => {
+            this.voteBlocked = false;
+
+            this.rcon.say(
+                `[Map Vote] Map voting has been enabled, use ${config.get(
+                    "ingamePrefix"
+                )}votemap`
+            );
+        }, this.options.initialDelay * 1000);
     }
 
     public removeVote(player: {

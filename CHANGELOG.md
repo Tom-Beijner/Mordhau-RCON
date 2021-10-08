@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.5] - 2021-10-08
+
+### Changed
+
+-   Made the `votemap` command only work after match start
+-   If a map number that isnt valid, like a letter, it will return a wrong usage message
+
+### Fixed
+
+-   Fixed `initialDelay` of mapvote system to be used
+
 ## [1.18.4] - 2021-10-06
 
 ### Fixed

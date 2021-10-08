@@ -725,10 +725,12 @@ export default class Rcon {
         await this.saveAdmins();
     }
 
+    onMatchWaitingToStart() {}
+
     async onMatchStart() {
         await this.updateCache();
 
-        this.mapVote.clear();
+        this.mapVote.onMatchStart();
 
         let message = "";
 
@@ -769,6 +771,10 @@ export default class Rcon {
                 );
             }
         }
+    }
+
+    onMatchChangeMap() {
+        this.mapVote.onMatchEnd();
     }
 
     // async onMatchChangeMap() {
@@ -1518,26 +1524,20 @@ export default class Rcon {
                     !config
                         .get("servers")
                         .find((server) => server.name === this.options.name)
-                        .rcon.ingameCommands.includes(command.meta.name)
-                )
-                    return;
-
-                if (
-                    command.meta.name === "teleport" &&
-                    !config
-                        .get("servers")
-                        .find((server) => server.name === this.options.name)
-                        .rcon.teleportSystem
-                )
-                    return;
-
-                if (
-                    (command.meta.name === "votemap" ||
-                        command.meta.name === "cancelmapvote") &&
-                    !config
-                        .get("servers")
-                        .find((server) => server.name === this.options.name)
-                        .rcon.mapVote.enabled
+                        .rcon.ingameCommands.includes(command.meta.name) &&
+                    ((command.meta.name === "teleport" &&
+                        !config
+                            .get("servers")
+                            .find((server) => server.name === this.options.name)
+                            .rcon.teleportSystem) ||
+                        ((command.meta.name === "votemap" ||
+                            command.meta.name === "cancelmapvote") &&
+                            !config
+                                .get("servers")
+                                .find(
+                                    (server) =>
+                                        server.name === this.options.name
+                                ).rcon.mapVote.enabled))
                 )
                     return;
 
@@ -1558,15 +1558,21 @@ export default class Rcon {
                 );
             }
 
+            if (data.startsWith("Match")) console.log(data);
+            // Match waiting to start
+            if (data.startsWith("Match: Waiting to start")) {
+                this.onMatchWaitingToStart();
+            }
+
             // Match start
             if (data.includes("MatchState: In progress")) {
                 this.onMatchStart();
             }
 
-            // // Match change map
-            // if (data.includes("MatchState: Leaving map")) {
-            //     this.onMatchChangeMap();
-            // }
+            // Match change map, match end
+            if (data.includes("MatchState: Leaving map")) {
+                this.onMatchChangeMap();
+            }
 
             // // Match change map
             // if (data.includes("Scorefeed: ") && data.includes("100.0")) {
