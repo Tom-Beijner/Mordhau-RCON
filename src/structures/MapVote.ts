@@ -175,6 +175,10 @@ export default class MapVote {
     }
 
     public onMatchStart() {
+        if (!this.options.enabled) {
+            return;
+        }
+
         this.clear();
 
         this.voteBlockedSince = Date.now();
@@ -207,6 +211,10 @@ export default class MapVote {
     }
 
     public cancel() {
+        if (!this.options.enabled) {
+            return;
+        }
+
         if (!this.timer.isRunning()) {
             this.rcon.say("[Map Vote] Map vote is not running");
 
