@@ -8,7 +8,7 @@ export default class MapVote {
     public voteBlocked: boolean = false;
     public voteBlockedSince: number;
     public voteBlockedDuration: number;
-    public votes: number = 0;
+    public votes: string[] = [];
     public voted: { id: string; map: number }[] = [];
     options: IMapVote;
 
@@ -111,15 +111,15 @@ export default class MapVote {
                 (await this.rcon.getIngamePlayers()).length
         );
 
-        if (!this.timer.isRunning()) {
-            this.votes++;
+        if (!this.timer.isRunning() && !this.votes.includes(player.id)) {
+            this.votes.push(player.id);
 
             this.rcon.say(
                 `[Map Vote] Map voting requested by ${player.name} (${this.votes}/${requiredVotes})`
             );
         }
 
-        if (this.votes >= requiredVotes && !this.timer.isRunning()) {
+        if (this.votes.length >= requiredVotes && !this.timer.isRunning()) {
             this.rcon.say(
                 `[Map Vote] Starting map vote. Map list:\n${this.options.maps
                     .map((m, i) => `${i + 1}. ${m.shownName}`)
@@ -205,7 +205,7 @@ export default class MapVote {
         id: string;
     }) {
         if (this.voted.find((vote) => vote.id === player.id)) {
-            this.votes--;
+            this.votes = this.votes.filter((vote) => vote !== player.id);
             this.voted = this.voted.filter((vote) => vote.id !== player.id);
         }
     }
@@ -227,7 +227,7 @@ export default class MapVote {
     }
 
     public clear() {
-        this.votes = 0;
+        this.votes = [];
         this.voted = [];
         this.timer.stop();
     }

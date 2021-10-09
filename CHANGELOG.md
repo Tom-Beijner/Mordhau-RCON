@@ -5,18 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.7] - 2021-10-09
+
+### Fixed
+
+-   Fixed a bug where a player could initiate map voting by continuing to use the `mapvote` command
+
 ## [1.18.6] - 2021-10-08
 
 ### Fixed
 
--   Fixed map vote system enabled message being sent when its disabled
+-   Fixed map vote system enabled message being sent when it's disabled
 
 ## [1.18.5] - 2021-10-08
 
 ### Changed
 
 -   Made the `votemap` command only work after match start
--   If a map number that isnt valid, like a letter, it will return a wrong usage message
+-   If a map number that isn't valid, like a letter, it will return a wrong usage message
 
 ### Fixed
 
@@ -26,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   Properly handle the votemap and cancelmapvote command based if the map voting feature is enabled
+-   Properly handle the votemap and cancelmapvote commands based if the map voting feature is enabled
 
 ## [1.18.3] - 2021-10-06
 
@@ -40,20 +46,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   Fixed a issue where if the player left the vote wouldn't be removed
--   Fixed a bug where 2 messages would be sent when cancelling a map vote
+-   Fixed an issue where if the player left the vote wouldn't be removed
+-   Fixed a bug where 2 messages would be sent when canceling a map vote
 
 ## [1.18.2] - 2021-10-05
 
 ### Fixed
 
--   You could vote infinite amounts of time and it would count each one of them as new vote
+-   You could vote infinite amounts of time and it would count each one of them as a new vote
 
 ## [1.18.1] - 2021-10-05
 
 ### Fixed
 
--   Toggling `mapVote` option should enable/disable the ingame-commands `votemap` and `cancelmapvote`
+-   Toggling `mapVote` option should enable/disable the in-game commands `votemap` and `cancelmapvote`
 
 ## [1.18.0] - 2021-10-05
 
