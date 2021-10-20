@@ -12,6 +12,7 @@ import { hastebin } from "../utils";
 import logger from "../utils/logger";
 import { outputPlayerIDs } from "../utils/PlayerID";
 import removeMentions from "../utils/RemoveMentions";
+import AdminActivityConfig from "./AdminActivityConfig";
 import KillStreak from "./KillStreak";
 import MapVote from "./MapVote";
 import RCONCommandContext from "./RCONCommandContext";
@@ -799,6 +800,44 @@ export default class Rcon {
 
         const admin = this.admins.has(player.id);
 
+        if (admin) {
+            const currentDate = new Date().toISOString().slice(0, 10);
+            const adminActivityPath = `admins.${player.id}`;
+            const adminActivity = AdminActivityConfig.get(adminActivityPath);
+
+            if (adminActivity) {
+                const activityTodayPath = `admins.${player.id}.servers.${this.options.name}.activity.${currentDate}`;
+                const activityToday =
+                    AdminActivityConfig.get(activityTodayPath);
+
+                if (activityToday) {
+                    AdminActivityConfig.set(
+                        `${activityTodayPath}.startedAt`,
+                        new Date().getTime()
+                    );
+                } else {
+                    AdminActivityConfig.set(activityTodayPath, {
+                        startedAt: new Date().getTime(),
+                        duration: 0,
+                    });
+                }
+            } else {
+                AdminActivityConfig.set(adminActivityPath, {
+                    name: player.name,
+                    servers: {
+                        [server]: {
+                            activity: {
+                                [currentDate]: {
+                                    startedAt: new Date().getTime(),
+                                    duration: 0,
+                                },
+                            },
+                        },
+                    },
+                });
+            }
+        }
+
         this.bot.cachedPlayers.set(player.id, {
             ...this.bot.cachedPlayers.get(player.id),
             ...deepClean(player),
@@ -950,6 +989,54 @@ export default class Rcon {
             this.bot.cachedPlayers.get(id) || (await this.getPlayerToCache(id));
         const admin = this.admins.has(player.id);
         const punishedPlayer = this.bot.punishedPlayers.get(player.id);
+
+        if (admin) {
+            const currentDate = new Date().toISOString().slice(0, 10);
+            const adminActivityPath = `admins.${player.id}`;
+            const adminActivity = AdminActivityConfig.get(adminActivityPath);
+
+            if (adminActivity) {
+                const activityTodayPath = `admins.${player.id}.servers.${this.options.name}.activity.${currentDate}`;
+                const activityToday =
+                    AdminActivityConfig.get(activityTodayPath);
+
+                if (activityToday) {
+                    AdminActivityConfig.set(
+                        `${activityTodayPath}.duration`,
+                        (AdminActivityConfig.get(
+                            `${activityTodayPath}.duration`
+                        ) as number) +
+                            Math.round(
+                                (new Date().getTime() -
+                                    ((AdminActivityConfig.get(
+                                        `${activityTodayPath}.startedAt`
+                                    ) as number) ||
+                                        new Date(currentDate).getTime())) /
+                                    1000
+                            )
+                    );
+                } else {
+                    AdminActivityConfig.set(activityTodayPath, {
+                        startedAt: new Date().getTime(),
+                        duration: 0,
+                    });
+                }
+            } else {
+                AdminActivityConfig.set(adminActivityPath, {
+                    name: player.name,
+                    servers: {
+                        [server]: {
+                            activity: {
+                                [currentDate]: {
+                                    startedAt: new Date().getTime(),
+                                    duration: 0,
+                                },
+                            },
+                        },
+                    },
+                });
+            }
+        }
 
         if (this.options.killstreaks.enabled)
             this.killStreak.removeKillstreak(player);
@@ -1412,6 +1499,38 @@ export default class Rcon {
                 }
             }
 
+            // Server unbanned
+            // The search endpoint is not allowed to be used with a bot account
+            // if (data.startsWith("Punishment: Unbanned")) {
+            //     const permanentChannel = config
+            //         .get("servers")
+            //         .find((s) => s.name === this.options.name).rcon
+            //         .logChannels.permanent;
+
+            //     if (!permanentChannel) return;
+
+            //     const string = data.replace("Punishment: Unbanned", "");
+            //     const id = string.split("PlayFab ID")[1].trim();
+
+            //     const player =
+            //         this.bot.cachedPlayers.get(id) ||
+            //         (await this.getPlayerToCache(id));
+
+            //     const results = await this.bot.client.searchChannelMessages(
+            //         permanentChannel,
+            //         {
+            //             authorID: this.bot.client.user.id,
+            //             has: `${player.name} (PlayFabID: ${player.ids.playFabID}, SteamID: ${player.ids.steamID}) in`,
+            //         }
+            //     );
+
+            //     await this.bot.client.deleteMessages(
+            //         permanentChannel,
+            //         flatMap(results.results, (r) => r.map((m) => m.id))
+            //     );
+            // }
+
+            // Player punished
             if (data.startsWith("Punishment: Admin")) {
                 // const punishment = data.split(" ")[1].toLowerCase();
 
@@ -1558,7 +1677,6 @@ export default class Rcon {
                 );
             }
 
-            if (data.startsWith("Match")) console.log(data);
             // Match waiting to start
             if (data.startsWith("Match: Waiting to start")) {
                 this.onMatchWaitingToStart();

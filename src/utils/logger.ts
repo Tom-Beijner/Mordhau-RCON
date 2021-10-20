@@ -1,6 +1,7 @@
 import date from "date-fns-tz";
 import { createLogger, format, Logger, transports } from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
+import Config from "../structures/Config";
 export default class logger {
     private static logger: Logger;
 
@@ -45,7 +46,11 @@ export default class logger {
             format: format.combine(
                 format.colorize(),
                 format.errors({ stack: true }),
-                timestamp({ timeZone: "Europe/Berlin" }),
+                timestamp({
+                    timeZone:
+                        Config.get("consoleTimezone") ||
+                        Intl.DateTimeFormat().resolvedOptions().timeZone,
+                }), // Europe/Berlin
                 logFormat
             ),
             transports: [new transports.Console(), fileTransport],

@@ -3,6 +3,7 @@ import Conf from "conf";
 export interface Config {
     ingamePrefix: string;
     autoUpdate: AutoUpdate;
+    consoleTimezone: string;
     bot: Bot;
     syncServerPunishments: boolean;
     servers: Server[];
@@ -90,6 +91,7 @@ export interface Rcon {
     punishments: Punishments;
     status: ServerStatus;
     mapVote: MapVote;
+    saveAdminActvity: boolean;
     logChannels: LogChannels;
     ingameCommands: string[];
 }
@@ -201,6 +203,10 @@ export default new Conf<Config>({
                     default: 30,
                 },
             },
+        },
+        consoleTimezone: {
+            type: "string",
+            default: "",
         },
         bot: {
             type: "object",
@@ -441,6 +447,10 @@ export default new Conf<Config>({
                                     },
                                 },
                             },
+                            saveAdminActvity: {
+                                type: "boolean",
+                                default: true,
+                            },
                             logChannels: {
                                 type: "object",
                                 properties: {
@@ -573,6 +583,7 @@ export default new Conf<Config>({
                                     },
                                 ],
                             },
+                            saveAdminActvity: true,
                             logChannels: {
                                 chat: "",
                                 punishments: "",
@@ -650,6 +661,7 @@ export default new Conf<Config>({
                                 },
                             ],
                         },
+                        saveAdminActvity: true,
                         logChannels: {
                             chat: "",
                             punishments: "",
@@ -990,6 +1002,7 @@ export default new Conf<Config>({
                                 type: "array",
                                 items: {
                                     enum: [
+                                        "admins",
                                         "ban",
                                         "banned",
                                         "chatlog",
@@ -1031,6 +1044,7 @@ export default new Conf<Config>({
                             name: "Mods",
                             Ids: [""],
                             commands: [
+                                "admins",
                                 "ban",
                                 "banned",
                                 "chatlog",
@@ -1049,6 +1063,7 @@ export default new Conf<Config>({
                             name: "Admins",
                             Ids: [""],
                             commands: [
+                                "admins",
                                 "ban",
                                 "banned",
                                 "globalban",
@@ -1070,6 +1085,7 @@ export default new Conf<Config>({
                             name: "Owner",
                             Ids: [""],
                             commands: [
+                                "admins",
                                 "teleportadd",
                                 "teleportremove",
                                 "teleportedit",
@@ -1111,6 +1127,7 @@ export default new Conf<Config>({
                         name: "Mods",
                         Ids: [""],
                         commands: [
+                            "admins",
                             "ban",
                             "banned",
                             "chatlog",
@@ -1129,6 +1146,7 @@ export default new Conf<Config>({
                         name: "Admins",
                         Ids: [""],
                         commands: [
+                            "admins",
                             "ban",
                             "banned",
                             "globalban",
@@ -1150,6 +1168,7 @@ export default new Conf<Config>({
                         name: "Owner",
                         Ids: [""],
                         commands: [
+                            "admins",
                             "teleportadd",
                             "teleportremove",
                             "teleportedit",
@@ -1250,6 +1269,7 @@ export default new Conf<Config>({
             enabled: true,
             checkInterval: 30,
         },
+        consoleTimezone: "",
         bot: {
             token: "",
             publicKey: "",
@@ -1306,6 +1326,7 @@ export default new Conf<Config>({
                             },
                         ],
                     },
+                    saveAdminActvity: true,
                     logChannels: {
                         chat: "",
                         punishments: "",
@@ -1432,6 +1453,7 @@ export default new Conf<Config>({
                     name: "Mods",
                     Ids: [""],
                     commands: [
+                        "admins",
                         "ban",
                         "banned",
                         "chatlog",
@@ -1450,6 +1472,7 @@ export default new Conf<Config>({
                     name: "Admins",
                     Ids: [""],
                     commands: [
+                        "admins",
                         "ban",
                         "banned",
                         "globalban",
@@ -1471,6 +1494,7 @@ export default new Conf<Config>({
                     name: "Owner",
                     Ids: [""],
                     commands: [
+                        "admins",
                         "teleportadd",
                         "teleportremove",
                         "teleportedit",
@@ -1591,14 +1615,29 @@ export default new Conf<Config>({
         //         });
         //     }
         // },
-        "1.16.9": (store) => {
+        // "1.16.9": (store) => {
+        //     const servers = store.get("servers");
+
+        //     for (let i = 0; i < servers.length; i++) {
+        //         store.set(
+        //             `servers.${i}.rcon.status.fallbackValues.passwordProtected`,
+        //             false
+        //         );
+        //     }
+        // },
+        "1.19.0": (store) => {
+            if (!store.get("consoleTimezone")) store.set("consoleTimezone", "");
+
             const servers = store.get("servers");
 
             for (let i = 0; i < servers.length; i++) {
-                store.set(
-                    `servers.${i}.rcon.status.fallbackValues.passwordProtected`,
-                    false
-                );
+                if (
+                    typeof store.get(`servers.${i}.rcon.saveAdminActivity`) !==
+                    "undefined"
+                )
+                    continue;
+
+                store.set(`servers.${i}.rcon.saveAdminActivity`, false);
             }
         },
     },
