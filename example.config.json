@@ -60,6 +60,7 @@
                         }
                     ]
                 },
+                "saveAdminActivity": true,
                 "logChannels": {
                     "chat": "",
                     "punishments": "",
@@ -178,6 +179,7 @@
                 "name": "Mods",
                 "Ids": [""],
                 "commands": [
+                    "admins",
                     "ban",
                     "banned",
                     "chatlog",
@@ -197,6 +199,7 @@
                 "name": "Admins",
                 "Ids": [""],
                 "commands": [
+                    "admins",
                     "ban",
                     "banned",
                     "globalban",
@@ -219,6 +222,7 @@
                 "name": "Owner",
                 "Ids": [""],
                 "commands": [
+                    "admins",
                     "teleportadd",
                     "teleportremove",
                     "teleportedit",

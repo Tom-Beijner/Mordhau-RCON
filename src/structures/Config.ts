@@ -91,7 +91,7 @@ export interface Rcon {
     punishments: Punishments;
     status: ServerStatus;
     mapVote: MapVote;
-    saveAdminActvity: boolean;
+    saveAdminActivity: boolean;
     logChannels: LogChannels;
     ingameCommands: string[];
 }
@@ -447,7 +447,7 @@ export default new Conf<Config>({
                                     },
                                 },
                             },
-                            saveAdminActvity: {
+                            saveAdminActivity: {
                                 type: "boolean",
                                 default: true,
                             },
@@ -583,7 +583,7 @@ export default new Conf<Config>({
                                     },
                                 ],
                             },
-                            saveAdminActvity: true,
+                            saveAdminActivity: true,
                             logChannels: {
                                 chat: "",
                                 punishments: "",
@@ -661,7 +661,7 @@ export default new Conf<Config>({
                                 },
                             ],
                         },
-                        saveAdminActvity: true,
+                        saveAdminActivity: true,
                         logChannels: {
                             chat: "",
                             punishments: "",
@@ -1326,7 +1326,7 @@ export default new Conf<Config>({
                             },
                         ],
                     },
-                    saveAdminActvity: true,
+                    saveAdminActivity: true,
                     logChannels: {
                         chat: "",
                         punishments: "",
@@ -1637,7 +1637,7 @@ export default new Conf<Config>({
                 )
                     continue;
 
-                store.set(`servers.${i}.rcon.saveAdminActivity`, false);
+                store.set(`servers.${i}.rcon.saveAdminActivity`, true);
             }
         },
     },

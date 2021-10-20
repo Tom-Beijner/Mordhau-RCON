@@ -800,7 +800,11 @@ export default class Rcon {
 
         const admin = this.admins.has(player.id);
 
-        if (admin) {
+        if (
+            admin &&
+            config.get("servers").find((s) => s.name === this.options.name).rcon
+                .saveAdminActivity
+        ) {
             const currentDate = new Date().toISOString().slice(0, 10);
             const adminActivityPath = `admins.${player.id}`;
             const adminActivity = AdminActivityConfig.get(adminActivityPath);
@@ -990,7 +994,11 @@ export default class Rcon {
         const admin = this.admins.has(player.id);
         const punishedPlayer = this.bot.punishedPlayers.get(player.id);
 
-        if (admin) {
+        if (
+            admin &&
+            config.get("servers").find((s) => s.name === this.options.name).rcon
+                .saveAdminActivity
+        ) {
             const currentDate = new Date().toISOString().slice(0, 10);
             const adminActivityPath = `admins.${player.id}`;
             const adminActivity = AdminActivityConfig.get(adminActivityPath);
