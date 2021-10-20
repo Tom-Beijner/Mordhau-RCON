@@ -62,6 +62,7 @@ To see your coordinates then use `ShowDebug PHYSICS` and look at the left side w
 For setting discord role commands access
 
 ```
+admins
 teleportadd
 teleportremove
 teleportedit

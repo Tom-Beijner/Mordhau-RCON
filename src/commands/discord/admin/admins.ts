@@ -9,7 +9,6 @@ import {
     SlashCreator,
 } from "slash-create";
 import { getBorderCharacters, table } from "table";
-import { LookupPlayer } from "../../../services/PlayFab";
 import AdminActivityConfig from "../../../structures/AdminActivityConfig";
 import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
@@ -149,7 +148,9 @@ export default class Admins extends SlashCommand {
                     this.bot.cachedPlayers.get(
                         ingamePlayer?.id || leftAdmins[i]
                     ) ||
-                    (await LookupPlayer(ingamePlayer?.id || leftAdmins[i]));
+                    (await server.rcon.getPlayerToCache(
+                        ingamePlayer?.id || leftAdmins[i]
+                    ));
 
                 admins.push({
                     id: leftAdmins[i],
