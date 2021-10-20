@@ -134,3 +134,4 @@ config.json
 save
 .autoUpdater
 teleportLocations.json
+adminActivity.json
