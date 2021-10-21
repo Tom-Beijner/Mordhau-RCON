@@ -115,7 +115,7 @@ export default class MapVote {
             this.votes.push(player.id);
 
             this.rcon.say(
-                `[Map Vote] Map voting requested by ${player.name} (${this.votes}/${requiredVotes})`
+                `[Map Vote] Map voting requested by ${player.name} (${this.votes.length}/${requiredVotes})`
             );
         }
 

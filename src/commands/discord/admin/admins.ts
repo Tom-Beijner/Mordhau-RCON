@@ -88,7 +88,9 @@ export default class Admins extends SlashCommand {
                 )) as Message;
             }
 
+            const adminList = await server.rcon.getAdmins();
             const ingamePlayers = await server.rcon.getIngamePlayers();
+            const currentDate = new Date().toISOString().slice(0, 10);
 
             let admins: {
                 id: string;
@@ -97,98 +99,99 @@ export default class Admins extends SlashCommand {
                 totalPlayTime: number;
                 punishmentsMade?: number;
             }[] = [];
-            for (const adminID in AdminActivityConfig.get("admins")) {
-                const activities = AdminActivityConfig.get(
-                    `admins.${adminID}.servers.${options.server}.activity`
-                ) as {
-                    [date: string]: {
-                        startedAt: number;
-                        endedAt: number;
-                        duration: number;
-                    };
-                };
-
-                const lastActivities = Object.values(activities)
-                    .sort()
-                    .reverse();
-                lastActivities.length = options.pastdays;
-                const lastActivity = Object.values(activities)
-                    .sort()
-                    .reverse()[0];
-                const lastActivityDate = Object.keys(activities)
-                    .sort()
-                    .reverse()[0];
-
-                admins.push({
-                    id: adminID,
-                    name: AdminActivityConfig.get(`admins.${adminID}.name`),
-                    lastActivity: ingamePlayers.find((a) => a.id === adminID)
-                        ? "online now"
-                        : Boolean(lastActivity.endedAt)
-                        ? lastActivity.endedAt
-                        : null,
-                    totalPlayTime: lastActivities.reduce(
-                        (a, b, index) =>
-                            a +
-                            b.duration +
-                            (index !== 0 && !isToday(parseISO(lastActivityDate))
-                                ? 0
-                                : !lastActivities.some((a) => a.startedAt)
-                                ? 0
-                                : Math.round(
-                                      (new Date().getTime() -
-                                          (lastActivity.startedAt ||
-                                              new Date(
-                                                  new Date()
-                                                      .toISOString()
-                                                      .slice(0, 10)
-                                              ).getTime())) /
-                                          1000 /
-                                          60
-                                  )),
-                        0
-                    ),
-                });
-            }
-
-            const leftAdmins = (await server.rcon.getAdmins()).filter(
-                (a) => !admins.find((b) => b.id === a)
-            );
-            const currentDate = new Date().toISOString().slice(0, 10);
-
-            for (let i = 0; i < leftAdmins.length; i++) {
-                const ingamePlayer = ingamePlayers.find(
-                    (a) => a.id === leftAdmins[i]
+            for (let i = 0; i < adminList.length; i++) {
+                const adminID = adminList[i];
+                const inAdminActivityFile = AdminActivityConfig.get(
+                    `admins.${adminID}`
                 );
-                const player =
-                    this.bot.cachedPlayers.get(
-                        ingamePlayer?.id || leftAdmins[i]
-                    ) ||
-                    (await server.rcon.getPlayerToCache(
-                        ingamePlayer?.id || leftAdmins[i]
-                    ));
 
-                AdminActivityConfig.set(`admins.${player.id}`, {
-                    name: player.name,
-                    servers: {
-                        [server.name]: {
-                            activity: {
-                                [currentDate]: {
-                                    startedAt: 0,
-                                    endedAt: 0,
-                                    duration: 0,
+                if (inAdminActivityFile) {
+                    const activities = AdminActivityConfig.get(
+                        `admins.${adminID}.servers.${options.server}.activity`
+                    ) as {
+                        [date: string]: {
+                            startedAt: number;
+                            endedAt: number;
+                            duration: number;
+                        };
+                    };
+
+                    const lastActivities = Object.values(activities)
+                        .sort()
+                        .reverse();
+                    lastActivities.length = options.pastdays;
+                    const lastActivity = lastActivities[0];
+                    const lastActivityDate = Object.keys(activities)
+                        .sort()
+                        .reverse()[0];
+
+                    admins.push({
+                        id: adminID,
+                        name: AdminActivityConfig.get(`admins.${adminID}.name`),
+                        lastActivity: ingamePlayers.find(
+                            (a) => a.id === adminID
+                        )
+                            ? "online now"
+                            : Boolean(lastActivity.endedAt)
+                            ? lastActivity.endedAt
+                            : null,
+                        totalPlayTime: lastActivities.reduce(
+                            (a, b, index) =>
+                                a +
+                                b.duration +
+                                (index !== 0 &&
+                                !isToday(parseISO(lastActivityDate))
+                                    ? 0
+                                    : !lastActivities.some((a) => a.startedAt)
+                                    ? 0
+                                    : Math.round(
+                                          (new Date().getTime() -
+                                              (lastActivity.startedAt ||
+                                                  new Date(
+                                                      new Date()
+                                                          .toISOString()
+                                                          .slice(0, 10)
+                                                  ).getTime())) /
+                                              1000 /
+                                              60
+                                      )),
+                            0
+                        ),
+                    });
+                } else {
+                    const ingamePlayer = ingamePlayers.find(
+                        (a) => a.id === adminID
+                    );
+                    const player =
+                        this.bot.cachedPlayers.get(
+                            ingamePlayer?.id || adminID
+                        ) ||
+                        (await server.rcon.getPlayerToCache(
+                            ingamePlayer?.id || adminID
+                        ));
+
+                    AdminActivityConfig.set(`admins.${player.id}`, {
+                        name: player.name,
+                        servers: {
+                            [server.name]: {
+                                activity: {
+                                    [currentDate]: {
+                                        startedAt: 0,
+                                        endedAt: 0,
+                                        duration: 0,
+                                    },
                                 },
                             },
                         },
-                    },
-                });
+                    });
 
-                admins.push({
-                    id: leftAdmins[i],
-                    name: player.name,
-                    lastActivity: ingamePlayer?.id ? "online now" : null,
-                    totalPlayTime: ingamePlayer?.id ? 0 : 0,
-                });
+                    admins.push({
+                        id: adminID,
+                        name: player.name,
+                        lastActivity: ingamePlayer?.id ? "online now" : null,
+                        totalPlayTime: ingamePlayer?.id ? 0 : 0,
+                    });
+                }
             }
 
             // const punishmentsMade = await this.bot.database.Logs.aggregate([

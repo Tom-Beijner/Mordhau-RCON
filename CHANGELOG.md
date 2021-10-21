@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.6] - 2021-10-22
+
+### Fixed
+
+-   Fixed `mapvote` total votes message before initiating the real vote sending the list of players instead of the count of players
+-   Fixed the `admins` to only show the real admins (this also improved the performance of the command)
+-   Fixed the `lookupplayer` command to properly handle in-game players and output a response instead of leaving the message on thinking
+
 ## [1.19.5] - 2021-10-21
 
 ### Added

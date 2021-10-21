@@ -29,10 +29,11 @@ export default class LookupPlayer extends SlashCommand {
         await ctx.defer();
         const id = ctx.options.player as string;
 
-        const ingamePlayer = await this.bot.rcon.getIngamePlayer(
-            ctx.options.player as string
-        );
+        const ingamePlayer = await this.bot.rcon.getIngamePlayer(id);
         const player = await GetPlayer(ingamePlayer?.id || id);
+
+        if (!player)
+            return (await ctx.send("Invalid player provided")) as Message;
 
         const playerData = await this.bot.mordhau.getPlayerData(
             player.ids.playFabID,
