@@ -1,6 +1,6 @@
 import flatMap from "array.prototype.flatmap";
 import { addMinutes, formatDistanceToNow } from "date-fns";
-import { format } from "date-fns-tz";
+import { format, utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 import Eris, { Client, Constants, Embed, TextChannel } from "eris";
 import LRU from "lru-cache";
 import fetch from "node-fetch";
@@ -376,16 +376,51 @@ export default class Watchdog {
                     )
                     .setFooter(
                         `Mordhau RCON | Last Update: ${format(
-                            addMinutes(date, date.getTimezoneOffset()),
-                            "yyyy-MM-dd HH:mm:ss"
-                        )} UTC\nNext Update: ${format(
-                            addMinutes(
-                                date,
-                                date.getTimezoneOffset() +
-                                    configServer.rcon.status.updateInterval
+                            utcToZonedTime(
+                                zonedTimeToUtc(
+                                    date,
+                                    Intl.DateTimeFormat().resolvedOptions()
+                                        .timeZone
+                                ),
+                                config.get("consoleTimezone") ||
+                                    Intl.DateTimeFormat().resolvedOptions()
+                                        .timeZone
                             ),
-                            "yyyy-MM-dd HH:mm:ss"
-                        )} UTC (${formatDistanceToNow(
+                            "yyyy-MM-dd HH:mm:ss",
+                            {
+                                timeZone:
+                                    config.get("consoleTimezone") ||
+                                    Intl.DateTimeFormat().resolvedOptions()
+                                        .timeZone,
+                            }
+                        )} ${
+                            config.get("consoleTimezone") ||
+                            Intl.DateTimeFormat().resolvedOptions().timeZone
+                        }\nNext Update: ${format(
+                            utcToZonedTime(
+                                zonedTimeToUtc(
+                                    addMinutes(
+                                        date,
+                                        configServer.rcon.status.updateInterval
+                                    ),
+                                    Intl.DateTimeFormat().resolvedOptions()
+                                        .timeZone
+                                ),
+                                config.get("consoleTimezone") ||
+                                    Intl.DateTimeFormat().resolvedOptions()
+                                        .timeZone
+                            ),
+                            "yyyy-MM-dd HH:mm:ss",
+                            {
+                                timeZone:
+                                    config.get("consoleTimezone") ||
+                                    Intl.DateTimeFormat().resolvedOptions()
+                                        .timeZone,
+                            }
+                        )} ${
+                            config.get("consoleTimezone") ||
+                            Intl.DateTimeFormat().resolvedOptions().timeZone
+                        } (${formatDistanceToNow(
                             addMinutes(
                                 date,
                                 configServer.rcon.status.updateInterval

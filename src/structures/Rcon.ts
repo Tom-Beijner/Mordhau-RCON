@@ -816,12 +816,18 @@ export default class Rcon {
 
                 if (activityToday) {
                     AdminActivityConfig.set(
+                        `admins.${player.id}.name`,
+                        player.name
+                    );
+
+                    AdminActivityConfig.set(
                         `${activityTodayPath}.startedAt`,
                         new Date().getTime()
                     );
                 } else {
                     AdminActivityConfig.set(activityTodayPath, {
                         startedAt: new Date().getTime(),
+                        endedAt: 0,
                         duration: 0,
                     });
                 }
@@ -833,6 +839,7 @@ export default class Rcon {
                             activity: {
                                 [currentDate]: {
                                     startedAt: new Date().getTime(),
+                                    endedAt: 0,
                                     duration: 0,
                                 },
                             },
@@ -1023,9 +1030,15 @@ export default class Rcon {
                                     1000
                             )
                     );
+
+                    AdminActivityConfig.set(
+                        `${activityTodayPath}.endedAt`,
+                        new Date().getTime()
+                    );
                 } else {
                     AdminActivityConfig.set(activityTodayPath, {
                         startedAt: new Date().getTime(),
+                        endedAt: new Date().getTime(),
                         duration: 0,
                     });
                 }
@@ -1037,6 +1050,7 @@ export default class Rcon {
                             activity: {
                                 [currentDate]: {
                                     startedAt: new Date().getTime(),
+                                    endedAt: new Date().getTime(),
                                     duration: 0,
                                 },
                             },

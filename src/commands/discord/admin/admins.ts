@@ -1,6 +1,8 @@
 import flatMap from "array.prototype.flatmap";
 import { formatRelative, isToday, parseISO } from "date-fns";
+import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 import pluralize from "pluralize";
+import removeMarkdown from "remove-markdown";
 import {
     ApplicationCommandPermissionType,
     CommandContext,
@@ -14,7 +16,6 @@ import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import { hastebin } from "../../../utils";
-
 export default class Admins extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
@@ -87,10 +88,12 @@ export default class Admins extends SlashCommand {
                 )) as Message;
             }
 
+            const ingamePlayers = await server.rcon.getIngamePlayers();
+
             let admins: {
                 id: string;
                 name: string;
-                lastActivity: string;
+                lastActivity: number | string;
                 totalPlayTime: number;
                 punishmentsMade?: number;
             }[] = [];
@@ -98,31 +101,43 @@ export default class Admins extends SlashCommand {
                 const activities = AdminActivityConfig.get(
                     `admins.${adminID}.servers.${options.server}.activity`
                 ) as {
-                    [date: string]: { startedAt: number; duration: number };
+                    [date: string]: {
+                        startedAt: number;
+                        endedAt: number;
+                        duration: number;
+                    };
                 };
 
                 const lastActivities = Object.values(activities)
                     .sort()
                     .reverse();
                 lastActivities.length = options.pastdays;
-                const lastActivity = Object.keys(activities)
+                const lastActivity = Object.values(activities)
+                    .sort()
+                    .reverse()[0];
+                const lastActivityDate = Object.keys(activities)
                     .sort()
                     .reverse()[0];
 
                 admins.push({
                     id: adminID,
                     name: AdminActivityConfig.get(`admins.${adminID}.name`),
-                    lastActivity: lastActivity,
+                    lastActivity: ingamePlayers.find((a) => a.id === adminID)
+                        ? "online now"
+                        : Boolean(lastActivity.endedAt)
+                        ? lastActivity.endedAt
+                        : null,
                     totalPlayTime: lastActivities.reduce(
                         (a, b, index) =>
                             a +
                             b.duration +
-                            (index !== lastActivities.length - 1 &&
-                            !isToday(parseISO(lastActivity))
+                            (index !== 0 && !isToday(parseISO(lastActivityDate))
+                                ? 0
+                                : !lastActivities.some((a) => a.startedAt)
                                 ? 0
                                 : Math.round(
                                       (new Date().getTime() -
-                                          (lastActivities[0].startedAt ||
+                                          (lastActivity.startedAt ||
                                               new Date(
                                                   new Date()
                                                       .toISOString()
@@ -139,10 +154,11 @@ export default class Admins extends SlashCommand {
             const leftAdmins = (await server.rcon.getAdmins()).filter(
                 (a) => !admins.find((b) => b.id === a)
             );
+            const currentDate = new Date().toISOString().slice(0, 10);
 
             for (let i = 0; i < leftAdmins.length; i++) {
-                const ingamePlayer = await server.rcon.getIngamePlayer(
-                    leftAdmins[i]
+                const ingamePlayer = ingamePlayers.find(
+                    (a) => a.id === leftAdmins[i]
                 );
                 const player =
                     this.bot.cachedPlayers.get(
@@ -152,12 +168,25 @@ export default class Admins extends SlashCommand {
                         ingamePlayer?.id || leftAdmins[i]
                     ));
 
+                AdminActivityConfig.set(`admins.${player.id}`, {
+                    name: player.name,
+                    servers: {
+                        [server.name]: {
+                            activity: {
+                                [currentDate]: {
+                                    startedAt: 0,
+                                    endedAt: 0,
+                                    duration: 0,
+                                },
+                            },
+                        },
+                    },
+                });
+
                 admins.push({
                     id: leftAdmins[i],
                     name: player.name,
-                    lastActivity: ingamePlayer?.id
-                        ? new Date().toISOString().slice(0, 10)
-                        : null,
+                    lastActivity: ingamePlayer?.id ? "online now" : null,
                     totalPlayTime: ingamePlayer?.id ? 0 : 0,
                 });
             }
@@ -197,7 +226,10 @@ export default class Admins extends SlashCommand {
                         "Rank",
                         "ID",
                         "Name",
-                        "Last played",
+                        `Last played (${
+                            config.get("consoleTimezone") ||
+                            Intl.DateTimeFormat().resolvedOptions().timeZone
+                        })`,
                         `Total playtime (past ${pluralize(
                             "day",
                             options.pastdays,
@@ -210,9 +242,20 @@ export default class Admins extends SlashCommand {
                             `${index + 1}.`,
                             admin.id,
                             admin.name,
-                            admin.lastActivity
+                            admin.lastActivity === "online now"
+                                ? "online now"
+                                : typeof admin.lastActivity === "number"
                                 ? formatRelative(
-                                      parseISO(admin.lastActivity),
+                                      utcToZonedTime(
+                                          zonedTimeToUtc(
+                                              new Date(admin.lastActivity),
+                                              Intl.DateTimeFormat().resolvedOptions()
+                                                  .timeZone
+                                          ),
+                                          config.get("consoleTimezone") ||
+                                              Intl.DateTimeFormat().resolvedOptions()
+                                                  .timeZone
+                                      ),
                                       new Date(),
                                       {
                                           weekStartsOn: 1,
@@ -257,7 +300,7 @@ export default class Admins extends SlashCommand {
                 content:
                     message.length > 900
                         ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                              message
+                              removeMarkdown(message)
                           )})`
                         : message,
             });

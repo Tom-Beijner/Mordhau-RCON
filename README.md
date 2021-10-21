@@ -44,6 +44,7 @@ A Discord bot that utilizes RCON for the Mordhau server and logs punishments wit
 -   Teleport system (Dynamically add/remove/edit teleport locations, default: no locations provided)
 -   Server status (You do not have to enable `bAdvertiseServerViaSteam` to show server stats, if you use DiscordGSM you have to enable it)
 -   Map vote (Works like RTV, Rock The Vote. Enabling the feature will enable the `votemap [map number]` (map number is ignored until the map list message pops up) and `cancelmapvote` (for admins) commands)
+-   Admin list command (the ability to see all the admins with when they last played and total playtime past any amount of days, default: 14 days)
 
 ### Notices
 

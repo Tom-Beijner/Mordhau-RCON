@@ -21,6 +21,7 @@ export interface Server {
 
 export interface Activity {
     startedAt: number;
+    endedAt: number;
     duration: number;
 }
 
@@ -65,6 +66,9 @@ export default new Conf<AdminActivityConfig>({
                                         type: "object",
                                         properties: {
                                             startedAt: {
+                                                type: "number",
+                                            },
+                                            endedAt: {
                                                 type: "number",
                                             },
                                             duration: {

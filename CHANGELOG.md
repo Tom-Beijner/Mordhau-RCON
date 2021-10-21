@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.5] - 2021-10-21
+
+### Added
+
+-   Server status now uses the timezone config value
+-   `admins` command now uses the timezone config value
+-   `admins` command will now show accurate last time an admin was seen and if they're online
+
+### Fixed
+
+-   Fixed the timezone config value not correctly being used, the logging now shows the correct time based on the timezone config value
+
+### Change
+
+-   More optimization of the performance of `admins` command
+
 ## [1.19.4] - 2021-10-20
 
 ### Change

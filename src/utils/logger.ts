@@ -1,4 +1,8 @@
-import date from "date-fns-tz";
+import {
+    format as dateFormat,
+    utcToZonedTime,
+    zonedTimeToUtc,
+} from "date-fns-tz";
 import { createLogger, format, Logger, transports } from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 import Config from "../structures/Config";
@@ -11,8 +15,14 @@ export default class logger {
         });
         const timestamp = format((info, opts: { timeZone: string }) => {
             if (opts.timeZone)
-                info.timestamp = date.format(
-                    new Date(),
+                info.timestamp = dateFormat(
+                    utcToZonedTime(
+                        zonedTimeToUtc(
+                            new Date(),
+                            Intl.DateTimeFormat().resolvedOptions().timeZone
+                        ),
+                        opts.timeZone
+                    ),
                     "yyyy-MM-dd kk:mm:ss.SSS O",
                     {
                         timeZone: opts.timeZone,
