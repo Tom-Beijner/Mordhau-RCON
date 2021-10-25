@@ -42,19 +42,22 @@ export default class Admins extends SlashCommand {
                 },
             ],
             defaultPermission: false,
-            permissions: {
-                [config.get("discord.guildId") as string]: flatMap(
-                    (config.get("discord.roles") as Role[]).filter((role) =>
-                        role.commands.includes(commandName)
+            permissions: Object.assign(
+                {},
+                ...bot.client.guilds.map((guild) => ({
+                    [guild.id]: flatMap(
+                        (config.get("discord.roles") as Role[]).filter((role) =>
+                            role.commands.includes(commandName)
+                        ),
+                        (role) =>
+                            role.Ids.map((id) => ({
+                                type: ApplicationCommandPermissionType.ROLE,
+                                id,
+                                permission: true,
+                            }))
                     ),
-                    (role) =>
-                        role.Ids.map((id) => ({
-                            type: ApplicationCommandPermissionType.ROLE,
-                            id,
-                            permission: true,
-                        }))
-                ),
-            },
+                }))
+            ),
         });
     }
 
@@ -107,7 +110,8 @@ export default class Admins extends SlashCommand {
 
                 if (inAdminActivityFile) {
                     const activities = AdminActivityConfig.get(
-                        `admins.${adminID}.servers.${options.server}.activity`
+                        `admins.${adminID}.servers.${options.server}.activity`,
+                        {}
                     ) as {
                         [date: string]: {
                             startedAt: number;
@@ -120,7 +124,11 @@ export default class Admins extends SlashCommand {
                         .sort()
                         .reverse();
                     lastActivities.length = options.pastdays;
-                    const lastActivity = lastActivities[0];
+                    const lastActivity = lastActivities[0] || {
+                        startedAt: 0,
+                        endedAt: 0,
+                        duration: 0,
+                    };
                     const lastActivityDate = Object.keys(activities)
                         .sort()
                         .reverse()[0];
@@ -297,7 +305,7 @@ export default class Admins extends SlashCommand {
                     // drawVerticalLine: () => false,
                     // drawHorizontalLine: (lineIndex) => lineIndex === 1,
                 }
-            )}\n\`\`\``;
+            )}\`\`\``;
 
             await ctx.send({
                 content:

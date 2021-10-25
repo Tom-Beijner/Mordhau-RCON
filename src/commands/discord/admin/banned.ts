@@ -25,19 +25,22 @@ export default class Banned extends SlashCommand {
                 },
             ],
             defaultPermission: false,
-            permissions: {
-                [config.get("discord.guildId") as string]: flatMap(
-                    (config.get("discord.roles") as Role[]).filter((role) =>
-                        role.commands.includes(commandName)
+            permissions: Object.assign(
+                {},
+                ...bot.client.guilds.map((guild) => ({
+                    [guild.id]: flatMap(
+                        (config.get("discord.roles") as Role[]).filter((role) =>
+                            role.commands.includes(commandName)
+                        ),
+                        (role) =>
+                            role.Ids.map((id) => ({
+                                type: ApplicationCommandPermissionType.ROLE,
+                                id,
+                                permission: true,
+                            }))
                     ),
-                    (role) =>
-                        role.Ids.map((id) => ({
-                            type: ApplicationCommandPermissionType.ROLE,
-                            id,
-                            permission: true,
-                        }))
-                ),
-            },
+                }))
+            ),
         });
     }
 

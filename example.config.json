@@ -173,7 +173,6 @@
         }
     },
     "discord": {
-        "guildId": "",
         "roles": [
             {
                 "name": "Mods",

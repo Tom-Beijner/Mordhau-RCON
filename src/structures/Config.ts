@@ -59,7 +59,6 @@ export interface Database {
 }
 
 export interface Discord {
-    guildId: string;
     roles: Role[];
 }
 
@@ -976,11 +975,6 @@ export default new Conf<Config>({
         discord: {
             type: "object",
             properties: {
-                guildId: {
-                    type: "string",
-                    minLength: 1,
-                    default: "",
-                },
                 roles: {
                     type: "array",
                     items: {
@@ -1121,7 +1115,6 @@ export default new Conf<Config>({
                 },
             },
             default: {
-                guildId: "",
                 roles: [
                     {
                         name: "Mods",
@@ -1201,7 +1194,7 @@ export default new Conf<Config>({
                     },
                 ],
             },
-            required: ["guildId", "roles"],
+            required: ["roles"],
         },
         mordhau: {
             type: "object",
@@ -1447,7 +1440,6 @@ export default new Conf<Config>({
             },
         },
         discord: {
-            guildId: "",
             roles: [
                 {
                     name: "Mods",
@@ -1625,20 +1617,24 @@ export default new Conf<Config>({
         //         );
         //     }
         // },
-        "1.19.0": (store) => {
-            if (!store.get("consoleTimezone")) store.set("consoleTimezone", "");
+        // "1.19.0": (store) => {
+        //     if (!store.get("consoleTimezone")) store.set("consoleTimezone", "");
 
-            const servers = store.get("servers");
+        //     const servers = store.get("servers");
 
-            for (let i = 0; i < servers.length; i++) {
-                if (
-                    typeof store.get(`servers.${i}.rcon.saveAdminActivity`) !==
-                    "undefined"
-                )
-                    continue;
+        //     for (let i = 0; i < servers.length; i++) {
+        //         if (
+        //             typeof store.get(`servers.${i}.rcon.saveAdminActivity`) !==
+        //             "undefined"
+        //         )
+        //             continue;
 
-                store.set(`servers.${i}.rcon.saveAdminActivity`, true);
-            }
+        //         store.set(`servers.${i}.rcon.saveAdminActivity`, true);
+        //     }
+        // },
+        "1.20.0": (store) => {
+            // @ts-ignore
+            store.delete("discord.guildId");
         },
     },
 });

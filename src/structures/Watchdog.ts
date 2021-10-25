@@ -1357,134 +1357,9 @@ export default class Watchdog {
         const error = await Login();
         if (error) logger.error("PlayFab", error);
 
-        this.client.once("ready", async () => {
-            for (let i = 0; i < config.get("servers").length; i++) {
-                const webhooks = await this.client.guilds
-                    .get(config.get("discord.guildId"))
-                    .getWebhooks();
-                const server = config.get("servers")[i];
-
-                for (const channel in server.rcon.logChannels) {
-                    const channelID = server.rcon.logChannels[channel];
-                    if (!channelID.length) continue;
-
-                    const fetchedChannel = this.client.guilds
-                        .get(config.get("discord.guildId"))
-                        .channels.filter((channel) => channel.type === 0)
-                        .find(
-                            (channel) => channel.id === channelID
-                        ) as Eris.GuildTextableChannel;
-                    if (!fetchedChannel) {
-                        logger.warn(
-                            "Bot",
-                            `${
-                                channel[0].toUpperCase() + channel.substr(1)
-                            } log channel doesn't exist`
-                        );
-
-                        continue;
-                    }
-
-                    const webhook = webhooks.find(
-                        (webhook) =>
-                            webhook.channel_id === channelID &&
-                            webhook.user.id === this.client.user.id
-                    );
-
-                    if (webhook && webhook.token) {
-                        logger.info(
-                            "Bot",
-                            `${
-                                channel[0].toUpperCase() + channel.substr(1)
-                            } log channel found (Channel: ${
-                                fetchedChannel.name
-                            }, ID: ${fetchedChannel.id})`
-                        );
-
-                        this.servers
-                            .get(server.name)
-                            .rcon.webhooks.set(
-                                channel as
-                                    | "chat"
-                                    | "punishments"
-                                    | "activity"
-                                    | "wanted"
-                                    | "permanent"
-                                    | "automod"
-                                    | "killstreak"
-                                    | "adminCalls"
-                                    | "warns",
-                                {
-                                    id: webhook.id,
-                                    token: webhook.token,
-                                }
-                            );
-
-                        continue;
-                    } else {
-                        logger.debug(
-                            "Bot",
-                            `${
-                                channel[0].toUpperCase() + channel.substr(1)
-                            } log channel webhook not found (Channel: ${
-                                fetchedChannel.name
-                            }, ID: ${fetchedChannel.id})`
-                        );
-
-                        const newWebhook = await fetchedChannel.createWebhook(
-                            {
-                                name: `${
-                                    channel[0].toUpperCase() + channel.substr(1)
-                                } logger`,
-                                avatar: this.client.user.avatarURL,
-                            },
-                            "Automatic webhook creation"
-                        );
-
-                        if (newWebhook?.id) {
-                            logger.info(
-                                "Bot",
-                                `${
-                                    channel[0].toUpperCase() + channel.substr(1)
-                                } log channel webhook was created (Channel: ${
-                                    fetchedChannel.name
-                                }, ID: ${fetchedChannel.id})`
-                            );
-
-                            this.servers
-                                .get(server.name)
-                                .rcon.webhooks.set(
-                                    channel as
-                                        | "chat"
-                                        | "punishments"
-                                        | "activity"
-                                        | "wanted"
-                                        | "permanent"
-                                        | "automod"
-                                        | "killstreak"
-                                        | "adminCalls"
-                                        | "warns",
-                                    {
-                                        id: newWebhook.id,
-                                        token: newWebhook.token,
-                                    }
-                                );
-                        } else {
-                            logger.error(
-                                "Bot",
-                                `${
-                                    channel[0].toUpperCase() + channel.substr(1)
-                                } log channel webhook creation failed, check error:\n${webhook}`
-                            );
-                        }
-                    }
-                }
-            }
-
-            await this.setStatusesChannelPermissions();
-
-            await this.refreshStatuses();
-        });
+        this.client.once("ready", () => this.onInstanceUpdate());
+        this.client.on("guildCreate", () => this.onInstanceUpdate());
+        this.client.on("guildDelete", () => this.onInstanceUpdate());
 
         await this.client.connect();
 
@@ -1537,8 +1412,6 @@ export default class Watchdog {
             })
             .on("debug", (message) => logger.debug("Bot", message));
 
-        await this.loadDiscordCommands();
-
         await this.loadRCONCommands();
 
         for (const [name, server] of this.servers) {
@@ -1553,6 +1426,142 @@ export default class Watchdog {
         }
 
         logger.info("Bot", "Client initialized - running client.");
+    }
+
+    private async onInstanceUpdate() {
+        await this.loadDiscordCommands();
+
+        for (let i = 0; i < config.get("servers").length; i++) {
+            const webhooks = flatMap(
+                await Promise.all(
+                    this.client.guilds.map((guild) => guild.getWebhooks())
+                ),
+                (webhooks) => webhooks
+            );
+            const server = config.get("servers")[i];
+
+            for (const channel in server.rcon.logChannels) {
+                const channelID = server.rcon.logChannels[channel];
+                if (!channelID.length) continue;
+
+                const fetchedChannel = (
+                    flatMap(
+                        this.client.guilds.map((guild) => guild.channels),
+                        (channels) => channels.map((channel) => channel)
+                    ) as Eris.GuildTextableChannel[]
+                )
+                    .filter((channel) => channel.type === 0)
+                    .find((channel) => channel.id === channelID);
+                if (!fetchedChannel) {
+                    logger.warn(
+                        "Bot",
+                        `${
+                            channel[0].toUpperCase() + channel.substr(1)
+                        } log channel doesn't exist`
+                    );
+
+                    continue;
+                }
+
+                const webhook = webhooks.find(
+                    (webhook) =>
+                        webhook.channel_id === channelID &&
+                        webhook.user.id === this.client.user.id
+                );
+
+                if (webhook && webhook.token) {
+                    logger.info(
+                        "Bot",
+                        `${
+                            channel[0].toUpperCase() + channel.substr(1)
+                        } log channel found (Channel: ${
+                            fetchedChannel.name
+                        }, ID: ${fetchedChannel.id})`
+                    );
+
+                    this.servers
+                        .get(server.name)
+                        .rcon.webhooks.set(
+                            channel as
+                                | "chat"
+                                | "punishments"
+                                | "activity"
+                                | "wanted"
+                                | "permanent"
+                                | "automod"
+                                | "killstreak"
+                                | "adminCalls"
+                                | "warns",
+                            {
+                                id: webhook.id,
+                                token: webhook.token,
+                            }
+                        );
+
+                    continue;
+                } else {
+                    logger.debug(
+                        "Bot",
+                        `${
+                            channel[0].toUpperCase() + channel.substr(1)
+                        } log channel webhook not found (Channel: ${
+                            fetchedChannel.name
+                        }, ID: ${fetchedChannel.id})`
+                    );
+
+                    const newWebhook = await fetchedChannel.createWebhook(
+                        {
+                            name: `${
+                                channel[0].toUpperCase() + channel.substr(1)
+                            } logger`,
+                            avatar: this.client.user.avatarURL,
+                        },
+                        "Automatic webhook creation"
+                    );
+
+                    if (newWebhook?.id) {
+                        logger.info(
+                            "Bot",
+                            `${
+                                channel[0].toUpperCase() + channel.substr(1)
+                            } log channel webhook was created (Channel: ${
+                                fetchedChannel.name
+                            }, ID: ${fetchedChannel.id})`
+                        );
+
+                        this.servers
+                            .get(server.name)
+                            .rcon.webhooks.set(
+                                channel as
+                                    | "chat"
+                                    | "punishments"
+                                    | "activity"
+                                    | "wanted"
+                                    | "permanent"
+                                    | "automod"
+                                    | "killstreak"
+                                    | "adminCalls"
+                                    | "warns",
+                                {
+                                    id: newWebhook.id,
+                                    token: newWebhook.token,
+                                }
+                            );
+                    } else {
+                        logger.error(
+                            "Bot",
+                            `${
+                                channel[0].toUpperCase() + channel.substr(1)
+                            } log channel webhook creation failed, check error:\n${webhook}`
+                        );
+                    }
+                }
+            }
+        }
+
+        await this.setStatusesChannelPermissions();
+
+        await this.refreshStatuses();
     }
 
     private loadDiscordCommands() {
