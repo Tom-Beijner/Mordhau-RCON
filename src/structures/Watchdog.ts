@@ -1,6 +1,5 @@
 import flatMap from "array.prototype.flatmap";
 import { addMinutes, formatDistanceToNow } from "date-fns";
-import { format, utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
 import Eris, { Client, Constants, Embed, TextChannel } from "eris";
 import LRU from "lru-cache";
 import fetch from "node-fetch";
@@ -320,16 +319,26 @@ export default class Watchdog {
                         true
                     );
 
-                if (!configServer.rcon.status.hideIPPort)
-                    embed
-                        .setDescription(
-                            `Connect: ${
-                                adress === "Unknown"
-                                    ? "Unknown"
-                                    : `steam://connect/${adress}`
-                            }`
-                        )
-                        .addField("Address:Port", `\`${adress}\``, true);
+                let description = "";
+                if (!configServer.rcon.status.hideIPPort) {
+                    description += `Connect: ${
+                        adress === "Unknown"
+                            ? "Unknown"
+                            : `steam://connect/${adress}`
+                    }`;
+                    embed.addField("Address:Port", `\`${adress}\``, true);
+                }
+
+                description += `\n\nLast Update: <t:${Math.round(
+                    date.getTime() / 1000
+                )}:R>\nNext Update: <t:${Math.round(
+                    addMinutes(
+                        date,
+                        configServer.rcon.status.updateInterval
+                    ).getTime() / 1000
+                )}:R>`;
+
+                embed.setDescription(description);
 
                 embed
                     .addField(
@@ -374,60 +383,7 @@ export default class Watchdog {
                             : `\`\`\`${playerList}\`\`\``,
                         !configServer.rcon.status.showPlayerList ? true : false
                     )
-                    .setFooter(
-                        `Mordhau RCON | Last Update: ${format(
-                            utcToZonedTime(
-                                zonedTimeToUtc(
-                                    date,
-                                    Intl.DateTimeFormat().resolvedOptions()
-                                        .timeZone
-                                ),
-                                config.get("consoleTimezone") ||
-                                    Intl.DateTimeFormat().resolvedOptions()
-                                        .timeZone
-                            ),
-                            "yyyy-MM-dd HH:mm:ss",
-                            {
-                                timeZone:
-                                    config.get("consoleTimezone") ||
-                                    Intl.DateTimeFormat().resolvedOptions()
-                                        .timeZone,
-                            }
-                        )} ${
-                            config.get("consoleTimezone") ||
-                            Intl.DateTimeFormat().resolvedOptions().timeZone
-                        }\nNext Update: ${format(
-                            utcToZonedTime(
-                                zonedTimeToUtc(
-                                    addMinutes(
-                                        date,
-                                        configServer.rcon.status.updateInterval
-                                    ),
-                                    Intl.DateTimeFormat().resolvedOptions()
-                                        .timeZone
-                                ),
-                                config.get("consoleTimezone") ||
-                                    Intl.DateTimeFormat().resolvedOptions()
-                                        .timeZone
-                            ),
-                            "yyyy-MM-dd HH:mm:ss",
-                            {
-                                timeZone:
-                                    config.get("consoleTimezone") ||
-                                    Intl.DateTimeFormat().resolvedOptions()
-                                        .timeZone,
-                            }
-                        )} ${
-                            config.get("consoleTimezone") ||
-                            Intl.DateTimeFormat().resolvedOptions().timeZone
-                        } (${formatDistanceToNow(
-                            addMinutes(
-                                date,
-                                configServer.rcon.status.updateInterval
-                            ),
-                            { addSuffix: true }
-                        )})`
-                    );
+                    .setFooter(`Mordhau RCON`);
 
                 return embed;
             }
@@ -1418,6 +1374,8 @@ export default class Watchdog {
             const s = config.get("servers").find((s) => s.name === name);
 
             server.rcon.initialize();
+
+            if (!s.rcon.status.channel) continue;
 
             setInterval(
                 () => this.sendOrUpdateStatus(server),
