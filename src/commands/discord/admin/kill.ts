@@ -80,8 +80,8 @@ export default class Kill extends SlashCommand {
         }
 
         try {
-            await server.rcon.send(`kill ${player.id}`);
-            await ctx.send(`${player.name} was killed by lightning!`);
+            await server.rcon.send(`killplayer ${player.id}`);
+            await server.rcon.say(`${player.name} was killed by lightning!`);
 
             logger.info(
                 "Command",

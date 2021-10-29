@@ -27,7 +27,7 @@ export default class Kill extends BaseRCONCommand {
             return await ctx.say("Invalid player provided");
         }
 
-        await ctx.rcon.send(`kill ${player.id}`);
+        await ctx.rcon.send(`killplayer ${player.id}`);
         await ctx.say(`${player.name} was killed by lightning!`);
     }
 }
