@@ -670,6 +670,7 @@ export default class Rcon {
     async getIngamePlayer(id: string) {
         return matchSorter(await this.getIngamePlayers(), id, {
             keys: ["id", "name"],
+            threshold: matchSorter.rankings.CONTAINS,
         })[0];
 
         // return (await this.getIngamePlayers()).find((player) => {
