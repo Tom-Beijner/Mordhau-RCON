@@ -55,19 +55,8 @@ export default class Teleport extends BaseRCONCommand {
             )
                 return true;
         });
-        const name = ctx.args
-            .slice(
-                0,
-                ctx.args.length -
-                    (foundWithName
-                        ? location[0].length
-                        : ctx.args.length > 1
-                        ? 1
-                        : ctx.args.length > 3
-                        ? ctx.args.length - 3
-                        : 0)
-            )
-            .join(" ");
+        let name = ctx.args.join(" ");
+        if (location) name = name.replace(new RegExp(` ${location[0]}$`), "");
         let player: {
             id: string;
             name: string;

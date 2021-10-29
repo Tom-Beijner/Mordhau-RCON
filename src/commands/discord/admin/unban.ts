@@ -88,7 +88,7 @@ export default class Unban extends SlashCommand {
         };
 
         if (!player?.id) {
-            return await ctx.send(`Invalid player provided`);
+            return await ctx.send("Invalid player provided");
         }
 
         try {

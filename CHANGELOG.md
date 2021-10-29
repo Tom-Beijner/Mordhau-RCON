@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.5] - 2021-10-29
+
+### Added
+
+-   Added kill slash-command and in-game coommand (admins only)
+
+### Changed
+
+-   Changed the package that searches for in-game players, might fix the issue of teleporting wrong player (also added a weight for the ID to be prioritize over the name)
+
+### Fixed
+
+-   Fix in-game punishment commands not working with Steam/PlayFab IDs
+
 ## [1.20.4] - 2021-10-29
 
 ### Changed

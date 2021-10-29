@@ -1,3 +1,4 @@
+import { LookupPlayer } from "../../../services/PlayFab";
 import BaseRCONCommand from "../../../structures/BaseRCONCommands";
 import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
@@ -22,17 +23,16 @@ export default class Unban extends BaseRCONCommand {
 
         const id = ctx.args.join(" ");
 
-        const cachedPlayer = ctx.bot.cachedPlayers.get(id) || {
+        const player = ctx.bot.cachedPlayers.get(id) || {
             server: ctx.rcon.options.name,
-            ...(await ctx.rcon.getPlayerToCache(id)),
+            ...(await LookupPlayer(id)),
         };
-
-        if (!cachedPlayer) return await ctx.say("Player not found");
+        if (!player) return await ctx.say("Player not found");
 
         const error = await ctx.rcon.unbanUser(
             ctx.rcon.options.name,
             admin,
-            cachedPlayer
+            player
         );
         if (error) await ctx.say(error);
     }

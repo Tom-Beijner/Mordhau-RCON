@@ -89,7 +89,7 @@ export default class AddAdmin extends SlashCommand {
         };
 
         if (!player?.id) {
-            return await ctx.send(`Invalid player provided`);
+            return await ctx.send("Invalid player provided");
         }
 
         try {

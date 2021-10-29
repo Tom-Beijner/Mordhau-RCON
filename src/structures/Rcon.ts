@@ -2,7 +2,7 @@ import flatMap from "array.prototype.flatmap";
 import { compareArrayVals } from "crud-object-diff";
 import { addSeconds, formatDistanceToNow } from "date-fns";
 import deepClean from "deep-cleaner";
-import { matchSorter } from "match-sorter";
+import Fuse from "fuse.js";
 import pluralize from "pluralize";
 import { Rcon as RconClient } from "../rcon";
 import { mentionRole, sendWebhookMessage } from "../services/Discord";
@@ -668,10 +668,30 @@ export default class Rcon {
     }
 
     async getIngamePlayer(id: string) {
-        return matchSorter(await this.getIngamePlayers(), id, {
-            keys: ["id", "name"],
-            threshold: matchSorter.rankings.CONTAINS,
-        })[0];
+        return new Fuse(await this.getIngamePlayers(), {
+            threshold: 0.4,
+            minMatchCharLength: 2,
+            keys: [
+                {
+                    name: "id",
+                    weight: 10,
+                },
+                {
+                    name: "name",
+                    weight: 1,
+                },
+            ],
+        }).search(id)[0]?.item;
+
+        // return matchSorter(await this.getIngamePlayers(), id, {
+        //     keys: ["id", "name"],
+        //     threshold: matchSorter.rankings.CONTAINS,
+        // })[0];
+
+        // return matchSorter(await this.getIngamePlayers(), id, {
+        //     keys: ["id", "name"],
+        //     threshold: matchSorter.rankings.CONTAINS,
+        // })[0];
 
         // return (await this.getIngamePlayers()).find((player) => {
         //     const name = player.name.toLowerCase();
@@ -1663,6 +1683,9 @@ export default class Rcon {
                 if (command.meta.adminsOnly && !this.admins.has(id))
                     return this.say("Permission denied");
                 if (
+                    !["teleport", "votemap", "cancelmapvote"].includes(
+                        command.meta.name
+                    ) &&
                     !config
                         .get("servers")
                         .find((server) => server.name === this.options.name)
@@ -1674,7 +1697,7 @@ export default class Rcon {
                     !config
                         .get("servers")
                         .find((server) => server.name === this.options.name)
-                        .rcon.teleportSystem
+                        ?.rcon?.teleportSystem
                 )
                     return;
                 if (
@@ -1683,7 +1706,7 @@ export default class Rcon {
                     !config
                         .get("servers")
                         .find((server) => server.name === this.options.name)
-                        .rcon.mapVote.enabled
+                        ?.rcon?.mapVote?.enabled
                 )
                     return;
 

@@ -60,7 +60,7 @@ export default class GlobalUnmute extends SlashCommand {
             (await LookupPlayer(ingamePlayer?.id || options.player));
 
         if (!player?.id) {
-            return await ctx.send(`Invalid player provided`);
+            return await ctx.send("Invalid player provided");
         }
 
         try {

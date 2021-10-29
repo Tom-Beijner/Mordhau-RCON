@@ -69,7 +69,7 @@ export default class GlobalMute extends SlashCommand {
         const duration = options.duration;
 
         if (!player?.id) {
-            return await ctx.send(`Invalid player provided`);
+            return await ctx.send("Invalid player provided");
         }
 
         try {

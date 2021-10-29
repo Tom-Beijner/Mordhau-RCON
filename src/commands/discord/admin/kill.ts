@@ -6,18 +6,16 @@ import {
     Message,
     SlashCreator,
 } from "slash-create";
-import { LookupPlayer } from "../../../services/PlayFab";
 import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import logger from "../../../utils/logger";
-import { outputPlayerIDs } from "../../../utils/PlayerID";
 
-export default class Kick extends SlashCommand {
+export default class Kill extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
             name: commandName,
-            description: "Kick a player",
+            description: "Kill a in game player's name",
             options: [
                 {
                     name: "server",
@@ -33,11 +31,6 @@ export default class Kick extends SlashCommand {
                     name: "player",
                     description: "PlayFab ID or name of the player",
                     required: true,
-                    type: CommandOptionType.STRING,
-                },
-                {
-                    name: "reason",
-                    description: "Reason of the kick",
                     type: CommandOptionType.STRING,
                 },
             ],
@@ -63,13 +56,7 @@ export default class Kick extends SlashCommand {
 
     async run(ctx: CommandContext) {
         await ctx.defer();
-        const options = {
-            server: ctx.options.server as string,
-            player: ctx.options.player as string,
-            reason: ctx.options.reason as string | null,
-        };
-
-        const server = this.bot.servers.get(options.server);
+        const server = this.bot.servers.get(ctx.options.server as string);
         if (!server) {
             return (await ctx.send(
                 `Server not found, existing servers are: ${[
@@ -85,51 +72,32 @@ export default class Kick extends SlashCommand {
             )) as Message;
         }
 
-        const ingamePlayer = await server.rcon.getIngamePlayer(options.player);
-
-        if (!ingamePlayer?.id) {
-            return await ctx.send("Invalid player provided");
+        const player = await this.bot.rcon.getIngamePlayer(
+            ctx.options.player as string
+        );
+        if (!player) {
+            return (await ctx.send("Player is not in the server")) as Message;
         }
 
-        const player = this.bot.cachedPlayers.get(
-            ingamePlayer?.id || options.player
-        ) || {
-            server: server.name,
-            ...(await LookupPlayer(ingamePlayer?.id || options.player)),
-        };
-        const reason = options.reason;
-
         try {
-            const error = await server.rcon.kickUser(
-                player.server,
-                {
-                    ids: { playFabID: ctx.member.id },
-                    id: ctx.member.id,
-                    name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
-                },
-                player,
-                reason
-            );
-
-            if (error) {
-                return (await ctx.send(error)) as Message;
-            }
+            await server.rcon.send(`kill ${player.id}`);
+            await ctx.send(`${player.name} was killed by lightning!`);
 
             logger.info(
                 "Command",
-                `${ctx.member.displayName}#${ctx.member.user.discriminator} kicked ${player.name} (${player.id}) (Reason: ${reason})`
+                `${ctx.member.nick || ctx.member.user.username}#${
+                    ctx.member.user.discriminator
+                } killed player ${player.name} (${player.id}) (Server: ${
+                    server.name
+                })`
             );
 
             await ctx.send({
                 embeds: [
                     {
                         description: [
-                            `Kicked player ${player.name} (${outputPlayerIDs(
-                                player.ids,
-                                true
-                            )})\n`,
                             `Server: ${server.name}`,
-                            `Reason: ${reason}`,
+                            `Killed ${player.name} (${player.id})\n`,
                         ].join("\n"),
                     },
                 ],

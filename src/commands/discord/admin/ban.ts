@@ -103,7 +103,7 @@ export default class Ban extends SlashCommand {
         };
 
         if (!player?.id) {
-            return await ctx.send(`Invalid player provided`);
+            return await ctx.send("Invalid player provided");
         }
 
         const duration = options.duration;

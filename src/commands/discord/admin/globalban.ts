@@ -76,7 +76,7 @@ export default class GlobalBan extends SlashCommand {
         const reason = options.reason;
 
         if (!player?.id) {
-            return await ctx.send(`Invalid player provided`);
+            return await ctx.send("Invalid player provided");
         }
 
         try {

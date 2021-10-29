@@ -57,7 +57,7 @@ export default class GlobalUnban extends SlashCommand {
             (await LookupPlayer(options.player));
 
         if (!player?.id) {
-            return await ctx.send(`Invalid player provided`);
+            return await ctx.send("Invalid player provided");
         }
 
         try {

@@ -55,7 +55,7 @@ export default class Banned extends SlashCommand {
                 this.bot.cachedPlayers.get(id) || (await LookupPlayer(id));
 
             if (!player?.id) {
-                return await ctx.send(`Invalid player provided`);
+                return await ctx.send("Invalid player provided");
             }
 
             // if (!servers.length) {

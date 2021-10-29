@@ -1,5 +1,6 @@
 import pluralize from "pluralize";
 import { sendWebhookMessage } from "../../../services/Discord";
+import { LookupPlayer } from "../../../services/PlayFab";
 import { Punishment } from "../../../structures/AutoMod";
 import BaseRCONCommand from "../../../structures/BaseRCONCommands";
 import config, { InfractionThreshold } from "../../../structures/Config";
@@ -28,13 +29,15 @@ export default class Warn extends BaseRCONCommand {
         };
 
         const name = ctx.args.join(" ");
-
-        const player = await ctx.rcon.getIngamePlayer(name);
-        if (!player) return await ctx.say("Player not found");
-        const cachedPlayer = ctx.bot.cachedPlayers.get(player.id) || {
+        const ingamePlayer = await ctx.rcon.getIngamePlayer(name);
+        const player = this.bot.cachedPlayers.get(ingamePlayer?.id) || {
             server: ctx.rcon.options.name,
-            ...(await ctx.rcon.getPlayerToCache(player.id)),
+            ...(await LookupPlayer(ingamePlayer?.id)),
         };
+
+        if (!player?.id) {
+            return await ctx.say("Invalid player provided");
+        }
 
         const playerWarns = await this.bot.database.Warns.findOneAndUpdate(
             { id: player.id },
@@ -117,7 +120,7 @@ export default class Warn extends BaseRCONCommand {
                         const error = await ctx.rcon.muteUser(
                             server,
                             admin,
-                            cachedPlayer,
+                            player,
                             duration
                         );
 
@@ -126,9 +129,7 @@ export default class Warn extends BaseRCONCommand {
                                 "Warn",
                                 `Error occurred while muting ${
                                     player.name
-                                } (${outputPlayerIDs(
-                                    cachedPlayer.ids
-                                )}) (${error})`
+                                } (${outputPlayerIDs(player.ids)}) (${error})`
                             );
                         } else {
                             await ctx.say(message);
@@ -140,7 +141,7 @@ export default class Warn extends BaseRCONCommand {
                         const error = await ctx.rcon.kickUser(
                             server,
                             admin,
-                            cachedPlayer,
+                            player,
                             reason
                         );
 
@@ -149,9 +150,7 @@ export default class Warn extends BaseRCONCommand {
                                 "Warn",
                                 `Error occurred while kicking ${
                                     player.name
-                                } (${outputPlayerIDs(
-                                    cachedPlayer.ids
-                                )}) (${error})`
+                                } (${outputPlayerIDs(player.ids)}) (${error})`
                             );
                         } else {
                             await ctx.say(message);
@@ -163,7 +162,7 @@ export default class Warn extends BaseRCONCommand {
                         const error = await ctx.rcon.banUser(
                             server,
                             admin,
-                            cachedPlayer,
+                            player,
                             duration,
                             reason
                         );
@@ -173,9 +172,7 @@ export default class Warn extends BaseRCONCommand {
                                 "Warn",
                                 `Error occurred while banning ${
                                     player.name
-                                } (${outputPlayerIDs(
-                                    cachedPlayer.ids
-                                )}) (${error})`
+                                } (${outputPlayerIDs(player.ids)}) (${error})`
                             );
                         } else {
                             await ctx.say(message);
@@ -186,7 +183,7 @@ export default class Warn extends BaseRCONCommand {
                     case "globalmute": {
                         const result = await this.bot.rcon.globalMute(
                             admin,
-                            cachedPlayer,
+                            player,
                             duration
                         );
                         const failedServers = result.filter(
@@ -199,7 +196,7 @@ export default class Warn extends BaseRCONCommand {
                                 `Error occurred while globally muting ${
                                     player.name
                                 } (${outputPlayerIDs(
-                                    cachedPlayer.ids
+                                    player.ids
                                 )}) (Failed to mute on ${pluralize(
                                     "server",
                                     failedServers.length
@@ -219,7 +216,7 @@ export default class Warn extends BaseRCONCommand {
                     case "globalban": {
                         const result = await this.bot.rcon.globalBan(
                             admin,
-                            cachedPlayer,
+                            player,
                             duration,
                             reason
                         );
@@ -233,7 +230,7 @@ export default class Warn extends BaseRCONCommand {
                                 `Error occurred while globally banning ${
                                     player.name
                                 } (${outputPlayerIDs(
-                                    cachedPlayer.ids
+                                    player.ids
                                 )}) (Failed to ban on ${pluralize(
                                     "server",
                                     failedServers.length
@@ -267,8 +264,8 @@ export default class Warn extends BaseRCONCommand {
                             : ["warn", "kick"].includes(punishment.type)
                             ? "ed"
                             : "d"
-                    } ${removeMentions(cachedPlayer.name)} (${outputPlayerIDs(
-                        cachedPlayer.ids,
+                    } ${removeMentions(player.name)} (${outputPlayerIDs(
+                        player.ids,
                         true
                     )}) for reaching warn threshold (Server: ${
                         ctx.rcon.options.name
@@ -303,8 +300,8 @@ export default class Warn extends BaseRCONCommand {
                             : ["warn", "kick"].includes(punishment.type)
                             ? "ed"
                             : "d"
-                    } ${cachedPlayer.name} (${outputPlayerIDs(
-                        cachedPlayer.ids
+                    } ${player.name} (${outputPlayerIDs(
+                        player.ids
                     )}) for reaching warn threshold (Server: ${
                         ctx.rcon.options.name
                     }, Admin: ${admin.name} (${outputPlayerIDs(admin.ids)})${
@@ -332,8 +329,8 @@ export default class Warn extends BaseRCONCommand {
 
                     logger.info(
                         "Warn",
-                        `Reset ${cachedPlayer.name} (${outputPlayerIDs(
-                            cachedPlayer.ids
+                        `Reset ${player.name} (${outputPlayerIDs(
+                            player.ids
                         )}) infractions`
                     );
                 }
