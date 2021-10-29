@@ -69,7 +69,7 @@ export default class Teleport extends BaseRCONCommand {
             else if (
                 player &&
                 player.id !== ctx.player.id &&
-                ctx.rcon.admins.has(ctx.player.id)
+                !ctx.rcon.admins.has(ctx.player.id)
             ) {
                 return await ctx.say(
                     "You don't have permission to teleport other players"
@@ -103,7 +103,7 @@ export default class Teleport extends BaseRCONCommand {
         if (
             player &&
             player.id !== ctx.player.id &&
-            ctx.rcon.admins.has(ctx.player.id)
+            !ctx.rcon.admins.has(ctx.player.id)
         ) {
             return await ctx.say(
                 "You don't have permission to teleport other players"
