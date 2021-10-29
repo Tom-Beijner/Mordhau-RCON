@@ -80,6 +80,7 @@ history
 kick
 mute
 rename
+kill
 say
 unban
 unmute
@@ -109,6 +110,7 @@ unban
 unmute
 warn
 unwarn
+kill
 ```
 
 ## Prerequisites

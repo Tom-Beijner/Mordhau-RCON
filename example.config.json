@@ -81,7 +81,8 @@
                     "kick",
                     "mute",
                     "unban",
-                    "unmute"
+                    "unmute",
+                    "kill"
                 ]
             }
         }
