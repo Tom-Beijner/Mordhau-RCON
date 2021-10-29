@@ -1683,9 +1683,12 @@ export default class Rcon {
                 if (command.meta.adminsOnly && !this.admins.has(id))
                     return this.say("Permission denied");
                 if (
-                    !["teleport", "votemap", "cancelmapvote"].includes(
-                        command.meta.name
-                    ) &&
+                    ![
+                        "teleport",
+                        "teleportwith",
+                        "votemap",
+                        "cancelmapvote",
+                    ].includes(command.meta.name) &&
                     !config
                         .get("servers")
                         .find((server) => server.name === this.options.name)
@@ -1693,7 +1696,8 @@ export default class Rcon {
                 )
                     return;
                 if (
-                    command.meta.name === "teleport" &&
+                    (command.meta.name === "teleport" ||
+                        command.meta.name === "teleportwith") &&
                     !config
                         .get("servers")
                         .find((server) => server.name === this.options.name)

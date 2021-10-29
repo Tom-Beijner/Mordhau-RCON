@@ -6,12 +6,13 @@ import TeleportConfig, {
 } from "../../../structures/TeleportConfig";
 import Watchdog from "../../../structures/Watchdog";
 
-export default class Teleport extends BaseRCONCommand {
+export default class TeleportWith extends BaseRCONCommand {
     constructor(bot: Watchdog, commandName: string) {
         super(bot, {
             name: commandName,
-            usage: "teleport [player name/id] ([x] [y] [z]/[location])",
-            aliases: ["tp"],
+            usage: "teleportwith [player name/id] ([x] [y] [z]/[location])",
+            aliases: ["tpwith"],
+            adminsOnly: true,
         });
     }
 
@@ -62,25 +63,18 @@ export default class Teleport extends BaseRCONCommand {
             player = await ctx.rcon.getIngamePlayer(name);
         }
 
-        if (location) {
-            if (ctx.args.length > 1 && !player)
-                return await ctx.say("Player not found");
-            else if (
-                player &&
-                player.id !== ctx.player.id &&
-                !ctx.rcon.admins.has(ctx.player.id)
-            ) {
-                return await ctx.say(
-                    "You don't have permission to teleport other players"
-                );
-            }
+        if (!player) {
+            return await ctx.say("Player not found");
+        }
 
-            return await ctx.rcon.teleportPlayer(
-                ctx.args.length === 2 && ctx.rcon.admins.has(ctx.player.id)
-                    ? player?.id
-                    : ctx.player.id,
-                location[1].coordinates
-            );
+        if (player.id === ctx.player.id) {
+            return await ctx.say("You can't teleport yourself with yourself");
+        }
+
+        if (location) {
+            ctx.rcon.teleportPlayer(ctx.player.id, location[1].coordinates);
+            ctx.rcon.teleportPlayer(player.id, location[1].coordinates);
+            return;
         }
 
         // X coordinate
@@ -101,16 +95,7 @@ export default class Teleport extends BaseRCONCommand {
         z = parseInt(z);
         if (isNaN(z)) return;
 
-        if (
-            player &&
-            player.id !== ctx.player.id &&
-            !ctx.rcon.admins.has(ctx.player.id)
-        ) {
-            return await ctx.say(
-                "You don't have permission to teleport other players"
-            );
-        }
-
-        await ctx.rcon.teleportPlayer(player?.id || ctx.player.id, { x, y, z });
+        ctx.rcon.teleportPlayer(ctx.player.id, { x, y, z });
+        ctx.rcon.teleportPlayer(player.id, { x, y, z });
     }
 }
