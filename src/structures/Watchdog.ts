@@ -329,9 +329,9 @@ export default class Watchdog {
                     embed.addField("Address:Port", `\`${adress}\``, true);
                 }
 
-                description += `\n\nLast Update: <t:${Math.round(
+                description += `\n\nLast Update: <t:${Math.floor(
                     date.getTime() / 1000
-                )}:R>\nNext Update: <t:${Math.round(
+                )}:R>\nNext Update: <t:${Math.ceil(
                     addMinutes(
                         date,
                         configServer.rcon.status.updateInterval

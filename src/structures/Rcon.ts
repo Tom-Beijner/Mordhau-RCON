@@ -1666,20 +1666,24 @@ export default class Rcon {
                     !config
                         .get("servers")
                         .find((server) => server.name === this.options.name)
-                        .rcon.ingameCommands.includes(command.meta.name) &&
-                    ((command.meta.name === "teleport" &&
-                        !config
-                            .get("servers")
-                            .find((server) => server.name === this.options.name)
-                            .rcon.teleportSystem) ||
-                        ((command.meta.name === "votemap" ||
-                            command.meta.name === "cancelmapvote") &&
-                            !config
-                                .get("servers")
-                                .find(
-                                    (server) =>
-                                        server.name === this.options.name
-                                ).rcon.mapVote.enabled))
+                        .rcon.ingameCommands.includes(command.meta.name)
+                )
+                    return;
+                if (
+                    command.meta.name === "teleport" &&
+                    !config
+                        .get("servers")
+                        .find((server) => server.name === this.options.name)
+                        .rcon.teleportSystem
+                )
+                    return;
+                if (
+                    (command.meta.name === "votemap" ||
+                        command.meta.name === "cancelmapvote") &&
+                    !config
+                        .get("servers")
+                        .find((server) => server.name === this.options.name)
+                        .rcon.mapVote.enabled
                 )
                     return;
 
