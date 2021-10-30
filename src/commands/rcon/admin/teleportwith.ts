@@ -10,7 +10,7 @@ export default class TeleportWith extends BaseRCONCommand {
     constructor(bot: Watchdog, commandName: string) {
         super(bot, {
             name: commandName,
-            usage: "teleportwith [player name/id] ([x] [y] [z]/[location])",
+            usage: "teleportwith <player name/id> ([x] [y] [z]/[location])",
             aliases: ["tpwith"],
             adminsOnly: true,
         });

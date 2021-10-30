@@ -378,7 +378,7 @@ export default class Watchdog {
                         }`,
                         !configServer.rcon.status.showPlayerList
                             ? `${currentPlayerCount}/${maxPlayerCount}`
-                            : playerList.length > 1024
+                            : `\`\`\`${playerList}\`\`\``.length > 1024
                             ? `[paste.gg](${await hastebin(playerList)})`
                             : `\`\`\`${playerList}\`\`\``,
                         !configServer.rcon.status.showPlayerList ? true : false
