@@ -1,10 +1,8 @@
-import { Events } from "../constants";
 import Watchdog from "./Watchdog";
 
 // Make the event name get a type from the eris types events list
 // Maybe also make the execute function follow the listener function properties
 interface MetaData {
-    event: Events;
     runOnce?: Boolean;
 }
 

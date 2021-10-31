@@ -18,6 +18,7 @@ import { outputPlayerIDs } from "../utils/PlayerID";
 import removeMentions from "../utils/RemoveMentions";
 import AntiSlur from "./AutoMod";
 import AutoUpdater from "./AutoUpdater";
+import BaseEvent from "./BaseEvent";
 import BaseRCONCommand from "./BaseRCONCommands";
 import Database from "./Database";
 import DiscordEmbed from "./DiscordEmbed";
@@ -35,6 +36,7 @@ export default class Watchdog {
     public startTime: number = Date.now();
     public autoUpdater: AutoUpdater;
     public RCONCommands: BaseRCONCommand[] = [];
+    public events: BaseEvent[] = [];
     public database: Database;
     public slashCreator: SlashCreator;
     public owners: string[];
@@ -563,6 +565,26 @@ export default class Watchdog {
             }
 
             return results[0];
+        },
+        getAdmins: async () => {
+            const results: {
+                server: string;
+                admins: string[];
+            }[] = [];
+
+            for (const [serverName, server] of this.servers) {
+                if (!server.rcon.connected || !server.rcon.authenticated)
+                    continue;
+
+                const admins = await server.rcon.getAdmins();
+
+                results.push({
+                    server: serverName,
+                    admins,
+                });
+            }
+
+            return [...new Set(flatMap(results, (result) => result.admins))];
         },
         getMutedPlayer: async (id: string) => {
             const results: {
@@ -1347,6 +1369,8 @@ export default class Watchdog {
         this.client.on("guildCreate", () => this.onInstanceUpdate());
         this.client.on("guildDelete", () => this.onInstanceUpdate());
 
+        await this.loadEvents();
+
         await this.client.connect();
 
         for (let i = 0; i < config.get("servers").length; i++) {
@@ -1571,10 +1595,10 @@ export default class Watchdog {
 
             walker.on("end", () => {
                 this.slashCreator.syncCommands({
-                    deleteCommands: true,
+                    // deleteCommands: true,
                     syncPermissions: true,
                     syncGuilds: true,
-                    // skipGuildErrors: true,
+                    skipGuildErrors: true,
                 });
 
                 resolve();
@@ -1624,6 +1648,53 @@ export default class Watchdog {
                     "Bot",
                     `Loaded ${loadedCommands} RCON commands from module ${module}`
                 );
+
+                next();
+            });
+
+            walker.on("end", () => {
+                resolve();
+            });
+        });
+    }
+
+    private async loadEvents() {
+        const walker = walk(path.join(__dirname, "../events"));
+
+        return new Promise<void>((resolve, reject) => {
+            walker.on("files", (root, files, next) => {
+                const module = path.basename(root);
+
+                logger.info("Bot", `Found ${files.length} events`);
+
+                let loadedEvents = 0;
+
+                files.forEach((fileStats) => {
+                    try {
+                        const props = require(`${res(root)}/${fileStats.name}`);
+                        if (props) {
+                            const Event: BaseEvent = new props.default();
+                            const EventData = Event.meta;
+
+                            this.events.push(Event);
+                            this.client[EventData?.runOnce ? "once" : "on"](
+                                fileStats.name.slice(0, -3),
+                                Event.execute.bind(this, this)
+                            );
+
+                            loadedEvents++;
+                        }
+                    } catch (err) {
+                        logger.error(
+                            "Bot",
+                            `Error occurred while loading discord command (${
+                                err.message || err
+                            })`
+                        );
+                    }
+                });
+
+                logger.info("Bot", `Loaded ${loadedEvents} events`);
 
                 next();
             });

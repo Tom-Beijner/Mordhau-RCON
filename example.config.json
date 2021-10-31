@@ -4,6 +4,7 @@
         "enabled": true,
         "checkInterval": 30
     },
+    "consoleTimezone": "",
     "bot": {
         "token": "",
         "publicKey": "",
@@ -71,6 +72,10 @@
                     "killstreak": "",
                     "adminCalls": "",
                     "warns": ""
+                },
+                "stats": {
+                    "adminActionWebhookChannel": "",
+                    "serverLagReportsWebhookChannel": ""
                 },
                 "ingameCommands": [
                     "timeleft",

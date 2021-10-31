@@ -91,6 +91,7 @@ export interface Rcon {
     status: ServerStatus;
     mapVote: MapVote;
     saveAdminActivity: boolean;
+    stats: Stats;
     logChannels: LogChannels;
     ingameCommands: string[];
 }
@@ -125,6 +126,11 @@ export interface FallbackValues {
 export interface Killstreaks {
     enabled: boolean;
     countBotKills: boolean;
+}
+
+export interface Stats {
+    adminActionWebhookChannel: string;
+    serverLagReportsWebhookChannel: string;
 }
 
 export interface LogChannels {
@@ -450,6 +456,19 @@ export default new Conf<Config>({
                                 type: "boolean",
                                 default: true,
                             },
+                            stats: {
+                                type: "object",
+                                properties: {
+                                    adminActionWebhookChannel: {
+                                        type: "string",
+                                        default: "",
+                                    },
+                                    serverLagReportsWebhookChannel: {
+                                        type: "string",
+                                        default: "",
+                                    },
+                                },
+                            },
                             logChannels: {
                                 type: "object",
                                 properties: {
@@ -585,6 +604,10 @@ export default new Conf<Config>({
                                 ],
                             },
                             saveAdminActivity: true,
+                            stats: {
+                                adminActionWebhookChannel: "",
+                                serverLagReportsWebhookChannel: "",
+                            },
                             logChannels: {
                                 chat: "",
                                 punishments: "",
@@ -664,6 +687,10 @@ export default new Conf<Config>({
                             ],
                         },
                         saveAdminActivity: true,
+                        stats: {
+                            adminActionWebhookChannel: "",
+                            serverLagReportsWebhookChannel: "",
+                        },
                         logChannels: {
                             chat: "",
                             punishments: "",
@@ -1331,6 +1358,10 @@ export default new Conf<Config>({
                         ],
                     },
                     saveAdminActivity: true,
+                    stats: {
+                        adminActionWebhookChannel: "",
+                        serverLagReportsWebhookChannel: "",
+                    },
                     logChannels: {
                         chat: "",
                         punishments: "",

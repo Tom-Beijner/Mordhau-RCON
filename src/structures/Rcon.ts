@@ -16,6 +16,7 @@ import AdminActivityConfig from "./AdminActivityConfig";
 import KillStreak from "./KillStreak";
 import MapVote from "./MapVote";
 import RCONCommandContext from "./RCONCommandContext";
+import StatsConfig from "./StatsConfig";
 import Watchdog from "./Watchdog";
 
 export default class Rcon {
@@ -830,6 +831,8 @@ export default class Rcon {
             const adminActivityPath = `admins.${player.id}`;
             const adminActivity = AdminActivityConfig.get(adminActivityPath);
 
+            StatsConfig.set(`admins.${player.id}.name`, player.name);
+
             if (adminActivity) {
                 const activityTodayPath = `admins.${player.id}.servers.${this.options.name}.activity.${currentDate}`;
                 const activityToday =
@@ -1030,6 +1033,8 @@ export default class Rcon {
             const currentDate = new Date().toISOString().slice(0, 10);
             const adminActivityPath = `admins.${player.id}`;
             const adminActivity = AdminActivityConfig.get(adminActivityPath);
+
+            StatsConfig.set(`admins.${player.id}.name`, player.name);
 
             if (adminActivity) {
                 const activityTodayPath = `admins.${player.id}.servers.${this.options.name}.activity.${currentDate}`;

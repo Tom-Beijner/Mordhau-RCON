@@ -135,3 +135,4 @@ save
 .autoUpdater
 teleportLocations.json
 adminActivity.json
+stats.json
