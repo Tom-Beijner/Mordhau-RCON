@@ -1313,31 +1313,6 @@ export default class Watchdog {
         const error = await Login();
         if (error) logger.error("PlayFab", error);
 
-        this.client.once("ready", () => this.onInstanceUpdate());
-        this.client.on("guildCreate", () => this.onInstanceUpdate());
-        this.client.on("guildDelete", () => this.onInstanceUpdate());
-
-        await this.client.connect();
-
-        for (let i = 0; i < config.get("servers").length; i++) {
-            const server = config.get("servers")[i];
-
-            this.servers.set(server.name, {
-                rcon: new Rcon(this, {
-                    ...server.rcon,
-                    name: server.name,
-                }),
-                name: server.name,
-            });
-        }
-
-        logger.info(
-            "Bot",
-            `Loaded ${pluralize("server", config.get("servers").length, true)}`
-        );
-
-        this.antiSlur = new AntiSlur(this);
-
         this.slashCreator = new SlashCreator({
             applicationID: config.get("bot.id"),
             publicKey: config.get("bot.publicKey"),
@@ -1367,6 +1342,31 @@ export default class Watchdog {
                 );
             })
             .on("debug", (message) => logger.debug("Bot", message));
+
+        this.client.once("ready", () => this.onInstanceUpdate());
+        this.client.on("guildCreate", () => this.onInstanceUpdate());
+        this.client.on("guildDelete", () => this.onInstanceUpdate());
+
+        await this.client.connect();
+
+        for (let i = 0; i < config.get("servers").length; i++) {
+            const server = config.get("servers")[i];
+
+            this.servers.set(server.name, {
+                rcon: new Rcon(this, {
+                    ...server.rcon,
+                    name: server.name,
+                }),
+                name: server.name,
+            });
+        }
+
+        logger.info(
+            "Bot",
+            `Loaded ${pluralize("server", config.get("servers").length, true)}`
+        );
+
+        this.antiSlur = new AntiSlur(this);
 
         await this.loadRCONCommands();
 
