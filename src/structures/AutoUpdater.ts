@@ -121,11 +121,10 @@ export default class AutoUpdater {
                 ".autoUpdater",
                 this.config.downloadSubdirectory
             );
-            (destination =
+            destination =
                 process.env.NODE_ENV.trim() !== "production"
                     ? path.join(appRootPath.path, ".autoUpdater", "development")
-                    : appRootPath.path),
-                ".autoUpdater";
+                    : path.join(appRootPath.path);
             logger.info("Auto Updater", "Installing update...");
             logger.debug("Auto Updater", `Source: ${source}`);
             logger.debug("Auto Updater", `Destination: ${destination}`);
@@ -134,15 +133,6 @@ export default class AutoUpdater {
 
             // Install dependencies
             await new Promise(function (resolve, reject) {
-                (destination =
-                    process.env.NODE_ENV.trim() !== "production"
-                        ? path.join(
-                              appRootPath.path,
-                              ".autoUpdater",
-                              "development"
-                          )
-                        : appRootPath.path),
-                    ".autoUpdater";
                 logger.debug(
                     "Auto Updater",
                     "Installing application dependencies in " + destination
