@@ -50,13 +50,13 @@ export default class AutoUpdater {
 
     async compareVersions() {
         try {
-            logger.info("Auto Updater", "Checking for updates...");
+            logger.debug("Auto Updater", "Checking for updates...");
             const currentVersion = await this.readLocalVersion();
             const remoteVersion = await this.readRemoteVersion();
             const upToDate = currentVersion == remoteVersion;
 
             if (upToDate) {
-                logger.info("Auto Updater", `Up to date! (${currentVersion})`);
+                logger.debug("Auto Updater", `Up to date! (${currentVersion})`);
             } else {
                 logger.info(
                     "Auto Updater",
