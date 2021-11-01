@@ -148,7 +148,7 @@ export default class AutoUpdater {
                     "Auto Updater",
                     "Installing application dependencies in " + destination
                 );
-                const child = exec(`cd ${destination} && npm install`);
+                const child = exec(`npm install --prefix ${destination}`);
 
                 child.stdout.on("end", resolve);
                 child.stdout.on("data", (data) =>
@@ -177,15 +177,17 @@ export default class AutoUpdater {
                 });
             });
 
-            const { stderr } = await execPromise("npm run build");
-            if (stderr) {
-                logger.error(
-                    "Auto Updater",
-                    `Error occurred while building (${stderr})`
-                );
+            // const { stderr } = await execPromise(
+            //     `npm run build --prefix ${destination}`
+            // );
+            // if (stderr) {
+            //     logger.error(
+            //         "Auto Updater",
+            //         `Error occurred while building (${stderr})`
+            //     );
 
-                throw new Error(stderr);
-            }
+            //     throw new Error(stderr);
+            // }
 
             const changelog = removeMarkdown(
                 (
