@@ -6,4 +6,12 @@ if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
 
 logger.configureLogger();
 
-new Watchdog(config.get("bot.token"));
+const token = config.get("bot.token", "");
+
+if (!token) {
+    logger.error("Bot", "No bot token found in config.json");
+
+    process.exit(1);
+}
+
+new Watchdog(token);
