@@ -20,12 +20,11 @@
         "build:watch": "tsc --skipLibCheck --watch --preserveWatchOutput",
         "dev": "yarn run build && concurrently \"yarn:build:watch\" \"yarn:start:dev\"",
         "migrate": "node dist/migration/migrate.js",
-        "prerelease": "pinst --disable && yarn run build && git add .",
+        "prerelease": "husky install && yarn run build && git add .",
         "release": "standard-version -a",
-        "postrelease": "pinst --enable && yarn run release:tags && yarn run release:github",
+        "postrelease": "yarn run release:tags && yarn run release:github",
         "release:tags": "git push --follow-tags origin master",
-        "release:github": "conventional-github-releaser -p angular",
-        "postinstall": "husky install"
+        "release:github": "conventional-github-releaser -p angular"
     },
     "config": {
         "commitizen": {
@@ -91,7 +90,6 @@
         "conventional-github-releaser": "^3.1.5",
         "husky": "^7.0.0",
         "nodemon": "^2.0.12",
-        "pinst": "^2.1.6",
         "standard-version": "^9.3.2",
         "typescript": "^4.3.5"
     }
