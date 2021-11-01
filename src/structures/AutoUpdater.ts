@@ -5,7 +5,6 @@ import fs from "fs-extra";
 import fetch from "node-fetch";
 import path from "path";
 import pm2 from "pm2";
-import removeMarkdown from "remove-markdown";
 import { promisify } from "util";
 import logger from "../utils/logger";
 
@@ -189,28 +188,46 @@ export default class AutoUpdater {
             //     throw new Error(stderr);
             // }
 
-            const changelog = removeMarkdown(
-                (
-                    await fs.readFile(`${appRootPath}/CHANGELOG.md`, "utf8")
-                ).replace("\n", ""),
-                { stripListLeaders: false }
-            ).split("\n") as string[];
-            const firstOccurance = changelog.findIndex((string) =>
-                string.includes("[")
+            // Read changelog file and take the latest version with its changes
+            const changelog = await fs.readFile(
+                path.join(
+                    appRootPath.path,
+                    ".autoUpdater",
+                    this.config.downloadSubdirectory,
+                    "CHANGELOG.md"
+                ),
+                "utf8"
             );
 
+            // get the latest version change from the changelog
+            const latestVersion = changelog
+                .split("\n")
+                .find((line) => line.startsWith("## "))
+                .replace("## ", "");
+
+            // const changelog = removeMarkdown(
+            //     (
+            //         await fs.readFile(`${appRootPath}/CHANGELOG.md`, "utf8")
+            //     ).replace("\n", ""),
+            //     { stripListLeaders: false }
+            // ).split("\n") as string[];
+            // const firstOccurance = changelog.findIndex((string) =>
+            //     string.includes("[")
+            // );
+
             logger.info("Auto Updater", "Finished installing update");
-            logger.info(
-                "Auto Updater",
-                `Latest Update:\n${changelog
-                    .splice(
-                        4,
-                        firstOccurance === -1
-                            ? changelog.length
-                            : firstOccurance
-                    )
-                    .join("\n")}`
-            );
+            logger.info("Auto Updater", `Latest Update:\n${latestVersion}`);
+            // logger.info(
+            //     "Auto Updater",
+            //     `Latest Update:\n${changelog
+            //         .splice(
+            //             4,
+            //             firstOccurance === -1
+            //                 ? changelog.length
+            //                 : firstOccurance
+            //         )
+            //         .join("\n")}`
+            // );
             logger.info(
                 "Auto Updater",
                 "Carefully read through the changelog and make any necessary changes"
