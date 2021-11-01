@@ -1414,7 +1414,7 @@ export default class Rcon {
     async reconnect() {
         if (this.reconnecting) return;
 
-        logger.info(
+        logger.debug(
             "RCON",
             `Trying to reconnect (Server: ${this.options.name})`
         );
