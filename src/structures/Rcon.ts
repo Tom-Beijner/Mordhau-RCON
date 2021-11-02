@@ -1868,7 +1868,7 @@ export default class Rcon {
                     this.saveAdmins();
                 })
                 .catch(async (err) => {
-                    logger.error(
+                    logger.debug(
                         "RCON",
                         `Keepalive failed (Error: ${
                             err.message || err
