@@ -15,7 +15,7 @@ export default class messageCreate extends BaseEvent {
             if (
                 Config.get("servers").find(
                     (s) =>
-                        s.rcon.stats.adminActionWebhookChannel ===
+                        s.rcon?.stats?.adminActionWebhookChannel ===
                         message.channel.id
                 )
             ) {
@@ -25,8 +25,6 @@ export default class messageCreate extends BaseEvent {
                     embed.title === "Admin Action" &&
                     embed.description.includes("**Command:**")
                 ) {
-                    console.log(message.embeds[0].title);
-
                     const currentDate = new Date().toISOString().slice(0, 10);
                     const lines = embed.description.split("\n");
                     const command = lines
@@ -78,7 +76,7 @@ export default class messageCreate extends BaseEvent {
         } else if (
             Config.get("servers").find(
                 (s) =>
-                    s.rcon.stats.serverLagReportsWebhookChannel ===
+                    s.rcon?.stats?.serverLagReportsWebhookChannel ===
                     message.channel.id
             )
         ) {
