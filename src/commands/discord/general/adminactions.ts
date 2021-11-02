@@ -108,21 +108,19 @@ export default class AdminActions extends SlashCommand {
                     {}
                 ) as {
                     [server: string]: {
-                        [command: string]: {
-                            [date: string]: number;
+                        adminActions: {
+                            [date: string]: {
+                                [command: string]: number;
+                            };
                         };
                     };
                 };
 
-                // Get the commands from servers and no duplicates
                 for (const server in adminServers) {
-                    for (const command in adminServers[server]) {
-                        if (
-                            !commands.find(
-                                (c) =>
-                                    c.server === server && c.command === command
-                            )
-                        ) {
+                    for (const date in adminServers[server].adminActions) {
+                        for (const command in adminServers[server].adminActions[
+                            date
+                        ]) {
                             commands.push({
                                 server,
                                 command,
@@ -134,19 +132,22 @@ export default class AdminActions extends SlashCommand {
 
             if (
                 !commands.length ||
-                (!commands.find(
+                !commands.find(
                     (c) =>
                         c.command === options.command &&
-                        c.server === options.server
-                ) &&
-                    options.server !== "all")
+                        (c.server === options.server ||
+                            options.server === "all")
+                )
             ) {
                 return ctx.editOriginal(
                     `No admins found with ${
                         options.command
                     } command usage in the last ${options.pastdays} days\n${
                         commands.length
-                            ? `The saved commands are ${commands.join(", ")}`
+                            ? `The saved commands are ${commands
+                                  .map((c) => c.command)
+                                  .sort((a, b) => (a > b ? 1 : -1))
+                                  .join(", ")}`
                             : "No commands has been saved"
                     }`
                 );
@@ -179,7 +180,6 @@ export default class AdminActions extends SlashCommand {
                             `admins.${adminID}.servers.${server}.adminActions`,
                             {}
                         )) {
-                            console.log("date", date);
                             if (
                                 new Date(date).toISOString().slice(0, 10) >=
                                 subDays(new Date(), options.pastdays)
@@ -198,12 +198,8 @@ export default class AdminActions extends SlashCommand {
                                               ) as {
                                                   [command: string]: number;
                                               }
-                                          ).reduce(
-                                              (a, b) =>
-                                                  a + (b[options.command] || 0),
-                                              0
-                                          );
-                                console.log(server, commandUsage);
+                                          ).reduce((a, b) => a + (b || 1), 0);
+
                                 if (commandUsage) {
                                     commandUsages.push({
                                         id: adminID,
@@ -217,7 +213,7 @@ export default class AdminActions extends SlashCommand {
                     const admin =
                         this.bot.cachedPlayers.get(adminID) ||
                         (await LookupPlayer(adminID));
-                    console.log(commandUsages);
+
                     adminActions.push({
                         id: adminID,
                         name: admin.name,
@@ -248,6 +244,16 @@ export default class AdminActions extends SlashCommand {
                 return b.usages - a.usages;
             });
 
+            const backgroundColor = [];
+
+            for (let i = 0; i < adminActions.length; i++) {
+                backgroundColor.push(
+                    `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+                        Math.random() * 255
+                    )}, ${Math.floor(Math.random() * 255)}, 1)`
+                );
+            }
+
             const image = await chartJSNodeCanvas.renderToBuffer(
                 {
                     type: "bar",
@@ -259,11 +265,7 @@ export default class AdminActions extends SlashCommand {
                                 data: adminActions.map(
                                     (admin) => admin.usages || 0
                                 ),
-                                backgroundColor: [
-                                    `#${Math.floor(
-                                        Math.random() * 16777215
-                                    ).toString(16)}`,
-                                ],
+                                backgroundColor: backgroundColor,
                             },
                         ],
                     },
