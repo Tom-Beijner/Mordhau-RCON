@@ -1345,8 +1345,16 @@ export default class Watchdog {
             .withServer(
                 new GatewayServer((handler) =>
                     this.client.on("rawWS", (event) => {
-                        // @ts-ignore
-                        if (event.t === "INTERACTION_CREATE") handler(event.d);
+                        try {
+                            if (event.t === "INTERACTION_CREATE")
+                                // @ts-ignore
+                                handler(event.d);
+                        } catch (err) {
+                            logger.error(
+                                "Discord",
+                                `Error occurred while handling interaction (${error})`
+                            );
+                        }
                     })
                 )
             )
