@@ -29,6 +29,7 @@ export default class UnmuteHandler extends BasePunishment {
         });
     }
 
+    // Unused, was used when log reading was implemented
     parseMessage(
         message: string
     ): { admin: string; id: string; reason?: string } | null {

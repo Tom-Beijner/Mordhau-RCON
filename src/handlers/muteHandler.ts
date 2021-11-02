@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import BasePunishment from "../structures/BasePunishment";
 import Watchdog from "../structures/Watchdog";
 import logger from "../utils/logger";
@@ -20,7 +21,7 @@ export default class MuteHandler extends BasePunishment {
             id: string;
             name?: string;
         },
-        duration?: number,
+        duration?: BigNumber,
         reason?: string
     ) {
         this.savePayload({
@@ -32,6 +33,7 @@ export default class MuteHandler extends BasePunishment {
         });
     }
 
+    // Unused, was used when log reading was implemented
     parseMessage(
         message: string
     ): { admin: string; id: string; duration: string } | null {

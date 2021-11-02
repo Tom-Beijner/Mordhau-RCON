@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import { LookupPlayer } from "../../../services/PlayFab";
 import BaseRCONCommand from "../../../structures/BaseRCONCommands";
 import RCONCommandContext from "../../../structures/RCONCommandContext";
@@ -40,7 +41,7 @@ export default class Mute extends BaseRCONCommand {
             return await ctx.say("Invalid player provided");
         }
 
-        const duration = ctx.opts.duration;
+        const duration = new BigNumber(ctx.opts.duration as number);
 
         const error = await ctx.rcon.muteUser(
             ctx.rcon.options.name,

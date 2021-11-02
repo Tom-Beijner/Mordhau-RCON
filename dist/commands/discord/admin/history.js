@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const array_prototype_flatmap_1 = __importDefault(require("array.prototype.flatmap"));
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const date_fns_1 = require("date-fns");
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const pluralize_1 = __importDefault(require("pluralize"));
@@ -53,6 +54,7 @@ class History extends SlashCommand_1.default {
         });
     }
     async run(ctx) {
+        var _a;
         await ctx.defer();
         const options = {
             type: ctx.options.type.toLowerCase(),
@@ -85,7 +87,7 @@ class History extends SlashCommand_1.default {
                 id: player.id,
                 playername,
                 playeravatar,
-                duration: 0,
+                duration: new bignumber_js_1.default(0),
                 history: playerHistory.history,
             };
             let pastOffenses;
@@ -102,13 +104,13 @@ class History extends SlashCommand_1.default {
                     const date = new Date(h.date);
                     if (type === "BAN")
                         pastBansAmount++;
-                    if (h.duration)
-                        payload.duration += h.duration;
                     let historyDuration;
-                    if (!h.duration)
+                    if (!h.duration || h.duration.isEqualTo(0))
                         historyDuration = "PERMANENT";
-                    else
-                        historyDuration = pluralize_1.default("minute", h.duration, true);
+                    else {
+                        historyDuration = pluralize_1.default("minute", h.duration.toNumber(), true);
+                        payload.duration = payload.duration.plus(h.duration);
+                    }
                     offenses.push([
                         `\nID: ${h._id}`,
                         `Type: ${type}`,
@@ -135,11 +137,11 @@ class History extends SlashCommand_1.default {
                             "GLOBAL BAN",
                             "GLOBAL MUTE",
                         ].includes(type)
-                            ? `Duration: ${historyDuration} ${h.duration
-                                ? `(Un${["BAN", "GLOBAL BAN"].includes(type)
+                            ? `Duration: ${historyDuration} ${((_a = h.duration) === null || _a === void 0 ? void 0 : _a.isEqualTo(0))
+                                ? ""
+                                : `(Un${["BAN", "GLOBAL BAN"].includes(type)
                                     ? "banned"
-                                    : "muted"} ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(date, h.duration), { addSuffix: true })})`
-                                : ""}`
+                                    : "muted"} ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(date, h.duration.toNumber()), { addSuffix: true })})`}`
                             : undefined,
                         `------------------`,
                     ]
@@ -187,7 +189,7 @@ class History extends SlashCommand_1.default {
                                     `**In A Server**: \`${inServer
                                         ? `Yes in ${inServer.server}`
                                         : "No"}\``,
-                                    `**Total Duration**: \`${pluralize_1.default("minute", payload.duration, true)}\`\n`,
+                                    `**Total Duration**: \`${pluralize_1.default("minute", payload.duration.toNumber(), true)}\`\n`,
                                 ]
                                     .filter((line) => typeof line !== "undefined")
                                     .join("\n"),

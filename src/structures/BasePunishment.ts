@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import { addMinutes, formatDistanceToNow } from "date-fns";
 import fetch from "node-fetch";
 import pluralize from "pluralize";
@@ -39,7 +40,7 @@ export default abstract class BasePunishment {
             id: string;
             name?: string;
         },
-        duration?: number,
+        duration?: BigNumber,
         reason?: string,
         global?: boolean
     ) {
@@ -100,7 +101,7 @@ export default abstract class BasePunishment {
             id: string;
             name?: string;
         },
-        duration?: number,
+        duration?: BigNumber,
         reason?: string
     ): Promise<void>;
 
@@ -125,13 +126,14 @@ export default abstract class BasePunishment {
             id: string;
             name?: string;
         };
-        duration?: number;
+        duration?: BigNumber;
         reason?: string;
         global?: boolean;
     }) {
         const type = `${
             payload.global && this.type !== "KICK" ? "GLOBAL " : ""
         }${this.type}` as Types;
+        const duration = new BigNumber(payload.duration);
 
         logger.info(
             "Bot",
@@ -144,10 +146,14 @@ export default abstract class BasePunishment {
                     ? "ed"
                     : "d"
             } ${payload.player.name} (${outputPlayerIDs(payload.player.ids)})${
-                typeof payload.duration === "number"
-                    ? !payload.duration
-                        ? "PERMANENTLY"
-                        : ` for ${pluralize("minute", payload.duration, true)}`
+                !duration.isNaN()
+                    ? duration.isEqualTo(0)
+                        ? " PERMANENTLY"
+                        : ` for ${pluralize(
+                              "minute",
+                              duration.toNumber(),
+                              true
+                          )}`
                     : ""
             }${
                 payload.reason &&
@@ -161,8 +167,6 @@ export default abstract class BasePunishment {
         const server = config
             .get("servers")
             .find((server) => server.name === payload.server);
-
-        if (process.env.NODE_ENV.trim() !== "production") return;
 
         if (["KICK", "BAN", "GLOBAL BAN"].includes(type))
             this.bot.punishedPlayers.set(payload.player.id, {
@@ -220,10 +224,11 @@ export default abstract class BasePunishment {
         const punishments = server?.rcon.punishments;
 
         if (
-            !payload.global &&
-            punishments &&
-            (!punishments.shouldSave ||
-                !punishments.types[`${this.type.toLocaleLowerCase()}s`])
+            (!payload.global &&
+                punishments &&
+                (!punishments.shouldSave ||
+                    !punishments.types[`${this.type.toLocaleLowerCase()}s`])) ||
+            process.env.NODE_ENV.trim() !== "production"
         )
             return;
 
@@ -245,7 +250,7 @@ export default abstract class BasePunishment {
             date: new Date(payload.date).getTime(),
             admin: `${payload.admin.name} (${payload.admin.id})`,
             reason: payload.reason,
-            duration: payload.duration,
+            duration: duration,
         });
     }
 
@@ -265,14 +270,15 @@ export default abstract class BasePunishment {
         };
         playeravatar?: string;
         previousNames: string;
-        duration?: number;
+        duration?: BigNumber;
         reason?: string;
         history: ILog[];
         global?: boolean;
     }) {
-        let duration = data.duration && data.duration.toString();
+        let duration =
+            !data.duration?.isEqualTo(0) && data.duration?.toString();
 
-        if (!data.duration) {
+        if (data.duration?.isEqualTo(0)) {
             duration = "PERMANENT";
 
             if (["BAN", "GLOBAL BAN"].includes(data.type)) {
@@ -297,10 +303,10 @@ export default abstract class BasePunishment {
                     }
                 }
             }
-        } else duration += ` ${pluralize("minute", data.duration)}`;
+        } else duration += ` ${pluralize("minute", data.duration?.toNumber())}`;
 
         let pastOffenses: string;
-        let totalDuration = data.duration || 0;
+        let totalDuration = data.duration || new BigNumber(0);
 
         if (!data.history.length) pastOffenses = "None";
         else {
@@ -314,10 +320,16 @@ export default abstract class BasePunishment {
                 const date = new Date(h.date);
 
                 let historyDuration: string;
-                if (!h.duration) historyDuration = "PERMANENT";
+                if (!h.duration || h.duration.isEqualTo(0))
+                    historyDuration = "PERMANENT";
                 else {
-                    historyDuration = pluralize("minute", h.duration, true);
-                    totalDuration += h.duration;
+                    historyDuration = pluralize(
+                        "minute",
+                        h.duration.toNumber(),
+                        true
+                    );
+
+                    totalDuration = totalDuration.plus(h.duration);
                 }
 
                 offenses.push(
@@ -338,16 +350,19 @@ export default abstract class BasePunishment {
                             type
                         )
                             ? `Duration: ${historyDuration} ${
-                                  h.duration
-                                      ? `(Un${
+                                  h.duration?.isEqualTo(0)
+                                      ? ""
+                                      : `(Un${
                                             ["BAN", "GLOBAL BAN"].includes(type)
                                                 ? "banned"
                                                 : "muted"
                                         } ${formatDistanceToNow(
-                                            addMinutes(date, h.duration),
+                                            addMinutes(
+                                                date,
+                                                h.duration.toNumber()
+                                            ),
                                             { addSuffix: true }
                                         )})`
-                                      : ""
                               }`
                             : undefined,
                         `------------------`,
@@ -384,12 +399,15 @@ export default abstract class BasePunishment {
             message.push(
                 `**Offense**: \`${data.reason || "None given"}\``,
                 `**Duration**: \`${duration}${
-                    data.duration
-                        ? ` (Unbanned ${formatDistanceToNow(
-                              addMinutes(new Date(), parseInt(duration)),
+                    data.duration?.isEqualTo(0)
+                        ? ""
+                        : ` (Unbanned ${formatDistanceToNow(
+                              addMinutes(
+                                  new Date(),
+                                  new BigNumber(data.duration).toNumber()
+                              ),
                               { addSuffix: true }
                           )})`
-                        : ""
                 }\``
             );
 
@@ -399,12 +417,15 @@ export default abstract class BasePunishment {
         if (["MUTE", "GLOBAL MUTE"].includes(data.type)) {
             message.push(
                 `**Duration**: \`${duration} ${
-                    data.duration
-                        ? `(Unmuted ${formatDistanceToNow(
-                              addMinutes(new Date(), parseInt(duration)),
+                    data.duration?.isEqualTo(0)
+                        ? ""
+                        : `(Unmuted ${formatDistanceToNow(
+                              addMinutes(
+                                  new Date(),
+                                  new BigNumber(data.duration).toNumber()
+                              ),
                               { addSuffix: true }
                           )})`
-                        : ""
                 }\``
             );
 
@@ -442,7 +463,7 @@ export default abstract class BasePunishment {
                         }\``,
                         `**Total Duration**: \`${pluralize(
                             "minute",
-                            totalDuration,
+                            totalDuration.toNumber(),
                             true
                         )}\``,
                     ].join("\n"),
@@ -486,7 +507,7 @@ export default abstract class BasePunishment {
             id: string;
             name?: string;
         },
-        duration?: number,
+        duration?: BigNumber,
         reason?: string,
         global?: boolean
     ) {

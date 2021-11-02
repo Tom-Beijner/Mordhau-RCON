@@ -1,4 +1,6 @@
+import BigNumber from "bignumber.js";
 import { Document, model, Schema } from "mongoose";
+import BigNumberSchema from "mongoose-bignumber";
 
 export type platforms = "PlayFab" | "Steam";
 
@@ -11,7 +13,7 @@ export interface ILog extends Document {
     date: number;
     admin: string;
     reason?: string;
-    duration?: number;
+    duration?: BigNumber;
 }
 
 const subSchema = new Schema({
@@ -55,7 +57,7 @@ export const logSchema = new Schema({
         type: String,
     },
     duration: {
-        type: Number,
+        type: BigNumberSchema,
         required: false,
     },
 });

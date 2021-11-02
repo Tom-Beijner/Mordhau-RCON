@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const array_prototype_flatmap_1 = __importDefault(require("array.prototype.flatmap"));
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const conf_1 = __importDefault(require("conf"));
 const pluralize_1 = __importDefault(require("pluralize"));
 const retext_english_1 = __importDefault(require("retext-english"));
@@ -149,9 +150,9 @@ class AutoMod {
                 const reason = `${this.options.name}: ${punishment.reason}`
                     .replace(/{name}/g, player.name)
                     .replace(/{words}/g, allProfaneWords);
-                const duration = infractionIteration > 1
+                const duration = new bignumber_js_1.default(infractionIteration > 1
                     ? punishment.duration * Math.ceil(infractionIteration)
-                    : punishment.duration;
+                    : punishment.duration);
                 switch (punishment.type) {
                     case "message": {
                         await rcon.say(`${this.options.name}: ${message}`);
@@ -224,7 +225,7 @@ class AutoMod {
                     : ["warn", "kick"].includes(punishment.type)
                         ? "ed"
                         : "d"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for profane message (Server: ${rcon.options.name}${duration
-                    ? `, Duration: ${pluralize_1.default("minute", duration, true)}`
+                    ? `, Duration: ${pluralize_1.default("minute", duration.toNumber(), true)}`
                     : ""}, Threshold: ${infractionsThreshhold}, Messages: ${playerMessages.infractions}, Profane words: ${allProfaneWords})`);
                 logger_1.default.info(this.options.name, `${punishment.type === "globalban"
                     ? "Globally ban"
@@ -236,7 +237,7 @@ class AutoMod {
                     : ["warn", "kick"].includes(punishment.type)
                         ? "ed"
                         : "d"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) for profane message (Server: ${rcon.options.name}${duration
-                    ? `, Duration: ${pluralize_1.default("minute", duration, true)}`
+                    ? `, Duration: ${pluralize_1.default("minute", duration.toNumber(), true)}`
                     : ""}, Threshold: ${infractionsThreshhold}, Messages: ${playerMessages.infractions}, Profane words: ${allProfaneWords})`);
                 if (Config_1.default.get("automod.infiniteDurationScaling"))
                     return;

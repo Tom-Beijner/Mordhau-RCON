@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logSchema = void 0;
 const mongoose_1 = require("mongoose");
+const mongoose_bignumber_1 = __importDefault(require("mongoose-bignumber"));
 const subSchema = new mongoose_1.Schema({
     platform: {
         type: String,
@@ -42,7 +46,7 @@ exports.logSchema = new mongoose_1.Schema({
         type: String,
     },
     duration: {
-        type: Number,
+        type: mongoose_bignumber_1.default,
         required: false,
     },
 });

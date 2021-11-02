@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
@@ -57,7 +58,7 @@ export default class GlobalMute extends SlashCommand {
         await ctx.defer();
         const options = {
             player: ctx.options.player as string,
-            duration: ctx.options.duration as number,
+            duration: new BigNumber(ctx.options.duration as number),
         };
 
         const ingamePlayer = await this.bot.rcon.getIngamePlayer(
@@ -113,7 +114,9 @@ export default class GlobalMute extends SlashCommand {
                         }${allServersFailed ? " tried to" : ""} globally ${
                             allServersFailed ? "mute" : "muted"
                         } ${player.name} (${player.id}) (Duration: ${
-                            pluralize("minute", duration, true) || "PERMANENT"
+                            duration.isEqualTo(0)
+                                ? "PERMANENT"
+                                : pluralize("minute", duration.toNumber(), true)
                         })`
                     );
 
@@ -130,8 +133,13 @@ export default class GlobalMute extends SlashCommand {
                                         true
                                     )})\n`,
                                     `Duration: ${
-                                        pluralize("minute", duration, true) ||
-                                        "PERMANENT"
+                                        duration.isEqualTo(0)
+                                            ? "PERMANENT"
+                                            : pluralize(
+                                                  "minute",
+                                                  duration.toNumber(),
+                                                  true
+                                              )
                                     }\n`,
                                 ].join("\n"),
                                 ...(failedServers.length && {

@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const pluralize_1 = __importDefault(require("pluralize"));
 const Discord_1 = require("../../../services/Discord");
 const PlayFab_1 = require("../../../services/PlayFab");
@@ -65,9 +66,9 @@ class Warn extends BaseRCONCommands_1.default {
                     .replace(/{currentWarns}/g, playerWarns.infractions.toString())
                     .replace(/{maxWarns}/g, Object.keys(Config_1.default.get("warns.infractionThresholds")).length.toString());
                 const reason = punishment.reason;
-                const duration = infractionIteration > 1
+                const duration = new bignumber_js_1.default(infractionIteration > 1
                     ? punishment.duration * Math.ceil(infractionIteration)
-                    : punishment.duration;
+                    : punishment.duration);
                 switch (punishment.type) {
                     case "message": {
                         await ctx.say(`${message}`);
@@ -140,7 +141,7 @@ class Warn extends BaseRCONCommands_1.default {
                     : ["warn", "kick"].includes(punishment.type)
                         ? "ed"
                         : "d"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for reaching warn threshold (Server: ${ctx.rcon.options.name}, Admin: ${RemoveMentions_1.default(admin.name)} (${PlayerID_1.outputPlayerIDs(admin.ids, true)})${duration
-                    ? `, Duration: ${pluralize_1.default("minute", duration, true)}`
+                    ? `, Duration: ${pluralize_1.default("minute", duration.toNumber(), true)}`
                     : ""}, Threshold: ${infractionsThreshhold}, Warnings: ${playerWarns.infractions})`);
                 logger_1.default.info("Warn", `${punishment.type === "globalban"
                     ? "Globally ban"
@@ -152,7 +153,7 @@ class Warn extends BaseRCONCommands_1.default {
                     : ["warn", "kick"].includes(punishment.type)
                         ? "ed"
                         : "d"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) for reaching warn threshold (Server: ${ctx.rcon.options.name}, Admin: ${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids)})${duration
-                    ? `, Duration: ${pluralize_1.default("minute", duration, true)}`
+                    ? `, Duration: ${pluralize_1.default("minute", duration.toNumber(), true)}`
                     : ""}, Threshold: ${infractionsThreshhold}, Warnings: ${playerWarns.infractions})`);
                 if (Config_1.default.get("warns.infiniteDurationScaling"))
                     return;

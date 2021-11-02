@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const array_prototype_flatmap_1 = __importDefault(require("array.prototype.flatmap"));
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const date_fns_1 = require("date-fns");
 const pluralize_1 = __importDefault(require("pluralize"));
 const slash_create_1 = require("slash-create");
@@ -68,7 +69,7 @@ class DeleteHistory extends SlashCommand_1.default {
         try {
             const playerHistory = await this.bot.database.getPlayerHistory([player.ids.playFabID, player.ids.steamID], options.type === "admin");
             let pastOffenses;
-            let totalDuration = 0;
+            let totalDuration = new bignumber_js_1.default(0);
             if (!playerHistory.history.length)
                 pastOffenses = "None";
             else {
@@ -80,11 +81,11 @@ class DeleteHistory extends SlashCommand_1.default {
                     const admin = h.admin;
                     const date = new Date(h.date);
                     let historyDuration;
-                    if (!h.duration)
+                    if (h.duration.isEqualTo(0))
                         historyDuration = "PERMANENT";
                     else {
-                        historyDuration = pluralize_1.default("minute", h.duration, true);
-                        totalDuration += h.duration;
+                        historyDuration = pluralize_1.default("minute", h.duration.toNumber(), true);
+                        totalDuration.plus(h.duration);
                     }
                     offense.push([
                         `\nID: ${i + 1}`,
@@ -112,11 +113,11 @@ class DeleteHistory extends SlashCommand_1.default {
                             "GLOBAL BAN",
                             "GLOBAL MUTE",
                         ].includes(type)
-                            ? `Duration: ${historyDuration} ${h.duration
-                                ? `(Un${["BAN", "GLOBAL BAN"].includes(type)
+                            ? `Duration: ${historyDuration} ${h.duration.isEqualTo(0)
+                                ? ""
+                                : `(Un${["BAN", "GLOBAL BAN"].includes(type)
                                     ? "banned"
-                                    : "muted"} ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(date, h.duration), { addSuffix: true })})`
-                                : ""}`
+                                    : "muted"} ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(date, h.duration.toNumber()), { addSuffix: true })})`}`
                             : undefined,
                         `------------------`,
                     ]

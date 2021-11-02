@@ -29,6 +29,7 @@ export default class UnbanHandler extends BasePunishment {
         });
     }
 
+    // Unused, was used when log reading was implemented
     parseMessage(message: string): { admin: string; id: string } | null {
         // LogMordhauPlayerController: Display: Admin AssaultLine (76561198005305380) muted player 76561198966484285 (Duration: 10000)
         const regex = new RegExp(

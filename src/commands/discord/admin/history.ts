@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import { addMinutes, formatDistanceToNow } from "date-fns";
 import fetch from "node-fetch";
 import pluralize from "pluralize";
@@ -6,7 +7,7 @@ import {
     ApplicationCommandPermissionType,
     CommandContext,
     CommandOptionType,
-    SlashCreator,
+    SlashCreator
 } from "slash-create";
 import { LookupPlayer } from "../../../services/PlayFab";
 import config, { Role } from "../../../structures/Config";
@@ -115,7 +116,7 @@ export default class History extends SlashCommand {
                 id: player.id,
                 playername,
                 playeravatar,
-                duration: 0,
+                duration: new BigNumber(0),
                 history: playerHistory.history,
             };
 
@@ -135,12 +136,18 @@ export default class History extends SlashCommand {
 
                     if (type === "BAN") pastBansAmount++;
 
-                    if (h.duration) payload.duration += h.duration;
-
                     let historyDuration: string;
-                    if (!h.duration) historyDuration = "PERMANENT";
-                    else
-                        historyDuration = pluralize("minute", h.duration, true);
+                    if (!h.duration || h.duration.isEqualTo(0))
+                        historyDuration = "PERMANENT";
+                    else {
+                        historyDuration = pluralize(
+                            "minute",
+                            h.duration.toNumber(),
+                            true
+                        );
+
+                        payload.duration = payload.duration.plus(h.duration);
+                    }
 
                     offenses.push(
                         [
@@ -177,18 +184,21 @@ export default class History extends SlashCommand {
                                 "GLOBAL MUTE",
                             ].includes(type)
                                 ? `Duration: ${historyDuration} ${
-                                      h.duration
-                                          ? `(Un${
+                                      h.duration?.isEqualTo(0)
+                                          ? ""
+                                          : `(Un${
                                                 ["BAN", "GLOBAL BAN"].includes(
                                                     type
                                                 )
                                                     ? "banned"
                                                     : "muted"
                                             } ${formatDistanceToNow(
-                                                addMinutes(date, h.duration),
+                                                addMinutes(
+                                                    date,
+                                                    h.duration.toNumber()
+                                                ),
                                                 { addSuffix: true }
                                             )})`
-                                          : ""
                                   }`
                                 : undefined,
                             `------------------`,
@@ -337,7 +347,7 @@ export default class History extends SlashCommand {
                                     }\``,
                                     `**Total Duration**: \`${pluralize(
                                         "minute",
-                                        payload.duration,
+                                        payload.duration.toNumber(),
                                         true
                                     )}\`\n`,
                                 ]

@@ -38,8 +38,6 @@ class GlobalBan extends SlashCommand_1.default {
         await ctx.defer();
         const options = {
             player: ctx.options.player,
-            duration: ctx.options.duration,
-            reason: ctx.options.reason,
         };
         const ingamePlayer = await this.bot.rcon.getIngamePlayer(ctx.options.player);
         const player = this.bot.cachedPlayers.get((ingamePlayer === null || ingamePlayer === void 0 ? void 0 : ingamePlayer.id) || options.player) ||

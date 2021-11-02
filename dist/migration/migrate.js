@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const conf_1 = __importDefault(require("conf"));
 const promises_1 = __importDefault(require("fs/promises"));
 const path_1 = __importDefault(require("path"));
@@ -105,7 +106,7 @@ async function getAllFiles(dirPath, arrayOfFiles) {
                     reason: punishment.Type !== "MUTE"
                         ? punishment.BanReason
                         : null,
-                    duration: punishment.BanDuration,
+                    duration: new bignumber_js_1.default(punishment.BanDuration),
                 });
                 if (duplicate)
                     continue;
@@ -119,7 +120,7 @@ async function getAllFiles(dirPath, arrayOfFiles) {
                     reason: punishment.Type !== "MUTE"
                         ? punishment.BanReason
                         : null,
-                    duration: punishment.BanDuration,
+                    duration: new bignumber_js_1.default(punishment.BanDuration),
                 });
             }
         }

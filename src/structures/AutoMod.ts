@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import Conf from "conf";
 import pluralize from "pluralize";
 import english from "retext-english";
@@ -217,10 +218,11 @@ export default class AutoMod {
                 const reason = `${this.options.name}: ${punishment.reason}`
                     .replace(/{name}/g, player.name)
                     .replace(/{words}/g, allProfaneWords);
-                const duration =
+                const duration = new BigNumber(
                     infractionIteration > 1
                         ? punishment.duration * Math.ceil(infractionIteration)
-                        : punishment.duration;
+                        : punishment.duration
+                );
 
                 switch (punishment.type) {
                     case "message": {
@@ -383,7 +385,7 @@ export default class AutoMod {
                         duration
                             ? `, Duration: ${pluralize(
                                   "minute",
-                                  duration,
+                                  duration.toNumber(),
                                   true
                               )}`
                             : ""
@@ -413,7 +415,7 @@ export default class AutoMod {
                         duration
                             ? `, Duration: ${pluralize(
                                   "minute",
-                                  duration,
+                                  duration.toNumber(),
                                   true
                               )}`
                             : ""

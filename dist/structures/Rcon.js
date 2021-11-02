@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const array_prototype_flatmap_1 = __importDefault(require("array.prototype.flatmap"));
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const crud_object_diff_1 = require("crud-object-diff");
 const date_fns_1 = require("date-fns");
 const deep_cleaner_1 = __importDefault(require("deep-cleaner"));
@@ -41,7 +42,7 @@ class Rcon {
         if (!this.connected || !this.authenticated) {
             return `Not ${!this.connected ? "connected" : "authenticated"} to server`;
         }
-        let result = await this.rcon.send(`ban ${player.id} ${duration || 0} ${reason}`);
+        let result = await this.rcon.send(`ban ${player.id} ${duration.toNumber() || 0} ${reason}`);
         result = result.split("\n")[0].trim();
         if (!result.includes("processed successfully")) {
             return result;
@@ -80,7 +81,7 @@ class Rcon {
         if (!this.connected || !this.authenticated) {
             return `Not ${!this.connected ? "connected" : "authenticated"} to server`;
         }
-        let result = await this.rcon.send(`mute ${player.id} ${duration || 0}`);
+        let result = await this.rcon.send(`mute ${player.id} ${duration.toNumber() || 0}`);
         result = result.split("\n")[0].trim();
         if (!result.includes("processed successfully")) {
             return result;
@@ -240,7 +241,7 @@ class Rcon {
     }
     async getBannedPlayer(id) {
         const bannedPlayer = (await this.getBannedPlayers()).find((ban) => ban[0] === id);
-        return bannedPlayer && { id, duration: bannedPlayer[1] };
+        return bannedPlayer && { id, duration: new bignumber_js_1.default(bannedPlayer[1]) };
     }
     async getMutedPlayers() {
         return (await this.rcon.send("mutelist"))
@@ -249,7 +250,7 @@ class Rcon {
     }
     async getMutedPlayer(id) {
         const mutedPlayer = (await this.getMutedPlayers()).find((ban) => ban[0] === id);
-        return mutedPlayer && { id, duration: mutedPlayer[1] };
+        return mutedPlayer && { id, duration: new bignumber_js_1.default(mutedPlayer[1]) };
     }
     async getIngamePlayers() {
         try {
@@ -398,14 +399,14 @@ class Rcon {
         ])).history;
         const bans = history.filter((log) => log.type === "BAN").length;
         const totalDuration = history
-            .filter((h) => h.duration)
-            .reduce((a, b) => a + b.duration, 0);
+            .filter((h) => !new bignumber_js_1.default(h.duration).isNaN())
+            .reduce((a, b) => a.plus(new bignumber_js_1.default(b.duration)), new bignumber_js_1.default(0));
         logger_1.default.info("Server", `${admin ? "Admin" : "Player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has joined the server (Server: ${server}${bans > 0
-            ? `, Bans: ${bans}, Total Duration: ${pluralize_1.default("minute", Number(totalDuration), true)}`
+            ? `, Bans: ${bans}, Total Duration: ${pluralize_1.default("minute", totalDuration.toNumber(), true)}`
             : ""})`);
         if (process.env.NODE_ENV.trim() === "production")
             Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${admin ? "Admin" : "Player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has joined the server (Server: ${server}${bans > 0
-                ? `, Bans: ${bans}, Total Duration: ${pluralize_1.default("minute", Number(totalDuration), true)}`
+                ? `, Bans: ${bans}, Total Duration: ${pluralize_1.default("minute", totalDuration.toNumber(), true)}`
                 : ""})`);
         if (bans < 3)
             return;
@@ -413,9 +414,9 @@ class Rcon {
             this.bot.naughtyPlayers.set(player.id, this.bot.cachedPlayers.get(player.id) ||
                 (await this.getPlayerToCache(player.id)));
         }
-        logger_1.default.info("Server", `Naughty ${admin ? "admin" : "player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has joined with ${bans} bans a total duration of ${pluralize_1.default("minute", Number(totalDuration), true)} (Server: ${server})`);
+        logger_1.default.info("Server", `Naughty ${admin ? "admin" : "player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has joined with ${bans} bans a total duration of ${pluralize_1.default("minute", totalDuration.toNumber(), true)} (Server: ${server})`);
         if (process.env.NODE_ENV.trim() === "production")
-            Discord_1.sendWebhookMessage(this.webhooks.get("wanted"), `Naughty ${admin ? "admin" : "player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has joined with ${bans} bans a total duration of ${pluralize_1.default("minute", Number(totalDuration), true)} (Server: ${server})`);
+            Discord_1.sendWebhookMessage(this.webhooks.get("wanted"), `Naughty ${admin ? "admin" : "player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has joined with ${bans} bans a total duration of ${pluralize_1.default("minute", totalDuration.toNumber(), true)} (Server: ${server})`);
     }
     async onLeave(id) {
         const server = this.options.name;
@@ -665,7 +666,7 @@ class Rcon {
                 const punishment = s1[s1.length - 2];
                 const adminID = s1[s1.length - 3].replace(/\(|\)/g, "");
                 const playerID = s2[1];
-                const duration = parseInt((_a = string.split(": ")[1]) === null || _a === void 0 ? void 0 : _a.split(", ")[0].replace(")", ""));
+                const duration = new bignumber_js_1.default((_a = string.split(": ")[1]) === null || _a === void 0 ? void 0 : _a.split(", ")[0].replace(")", ""));
                 const reason = (_b = string.split(": ")[2]) === null || _b === void 0 ? void 0 : _b.replace(")", "");
                 if (d[1].includes("failed"))
                     return;
@@ -787,7 +788,7 @@ class Rcon {
                 this.saveAdmins();
             })
                 .catch(async (err) => {
-                logger_1.default.error("RCON", `Keepalive failed (Error: ${err.message || err}, Server: ${this.options.name})`);
+                logger_1.default.debug("RCON", `Keepalive failed (Error: ${err.message || err}, Server: ${this.options.name})`);
                 await this.reconnect();
             });
         }, 30000);

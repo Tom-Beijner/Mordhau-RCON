@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import { addMinutes, formatDistanceToNow } from "date-fns";
 import pluralize from "pluralize";
 import {
@@ -90,7 +91,7 @@ export default class DeleteHistory extends SlashCommand {
             );
 
             let pastOffenses: string;
-            let totalDuration = 0;
+            let totalDuration = new BigNumber(0);
 
             if (!playerHistory.history.length) pastOffenses = "None";
             else {
@@ -104,10 +105,14 @@ export default class DeleteHistory extends SlashCommand {
                     const date = new Date(h.date);
 
                     let historyDuration: string;
-                    if (!h.duration) historyDuration = "PERMANENT";
+                    if (h.duration.isEqualTo(0)) historyDuration = "PERMANENT";
                     else {
-                        historyDuration = pluralize("minute", h.duration, true);
-                        totalDuration += h.duration;
+                        historyDuration = pluralize(
+                            "minute",
+                            h.duration.toNumber(),
+                            true
+                        );
+                        totalDuration.plus(h.duration);
                     }
 
                     offense.push(
@@ -145,18 +150,21 @@ export default class DeleteHistory extends SlashCommand {
                                 "GLOBAL MUTE",
                             ].includes(type)
                                 ? `Duration: ${historyDuration} ${
-                                      h.duration
-                                          ? `(Un${
+                                      h.duration.isEqualTo(0)
+                                          ? ""
+                                          : `(Un${
                                                 ["BAN", "GLOBAL BAN"].includes(
                                                     type
                                                 )
                                                     ? "banned"
                                                     : "muted"
                                             } ${formatDistanceToNow(
-                                                addMinutes(date, h.duration),
+                                                addMinutes(
+                                                    date,
+                                                    h.duration.toNumber()
+                                                ),
                                                 { addSuffix: true }
                                             )})`
-                                          : ""
                                   }`
                                 : undefined,
                             `------------------`,

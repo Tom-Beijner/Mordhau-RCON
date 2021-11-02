@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import Conf from "conf";
 import fs from "fs/promises";
 import path from "path";
@@ -146,7 +147,7 @@ async function getAllFiles(dirPath: string, arrayOfFiles?: Files[]) {
                         punishment.Type !== "MUTE"
                             ? punishment.BanReason
                             : null,
-                    duration: punishment.BanDuration,
+                    duration: new BigNumber(punishment.BanDuration),
                 });
                 if (duplicate) continue;
 
@@ -161,7 +162,7 @@ async function getAllFiles(dirPath: string, arrayOfFiles?: Files[]) {
                         punishment.Type !== "MUTE"
                             ? punishment.BanReason
                             : null,
-                    duration: punishment.BanDuration,
+                    duration: new BigNumber(punishment.BanDuration),
                 });
             }
         }

@@ -10,6 +10,7 @@ import { LookupPlayer } from "../../../services/PlayFab";
 import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
+import { outputPlayerIDs } from "../../../utils/PlayerID";
 
 export default class Banned extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -70,15 +71,24 @@ export default class Banned extends SlashCommand {
                     value: !server.data
                         ? "Player not banned"
                         : `Duration: ${
-                              server.data.duration === "0"
+                              server.data.duration.isEqualTo(0)
                                   ? "Permanent"
                                   : pluralize(
                                         "minute",
-                                        Number(server.data.duration),
+                                        server.data.duration.toNumber(),
                                         true
                                     )
                           }`,
                 });
+            }
+
+            if (!fields.length) {
+                return await ctx.send(
+                    `${player.name} (${outputPlayerIDs(
+                        player.ids,
+                        true
+                    )}) is not banned`
+                );
             }
 
             await ctx.send({

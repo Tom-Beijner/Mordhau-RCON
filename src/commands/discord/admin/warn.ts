@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
@@ -65,7 +66,7 @@ export default class Warn extends SlashCommand {
         const options = {
             server: ctx.options.server as string,
             player: ctx.options.player as string,
-            duration: ctx.options.duration as number,
+            duration: new BigNumber(ctx.options.duration as number),
             reason: ctx.options.reason as string | null,
         };
 
@@ -173,11 +174,12 @@ export default class Warn extends SlashCommand {
                             highestInfractionThreshold.toString()
                         );
                     const reason = punishment.reason;
-                    const duration =
+                    const duration = new BigNumber(
                         infractionIteration > 1
                             ? punishment.duration *
                               Math.ceil(infractionIteration)
-                            : punishment.duration;
+                            : punishment.duration
+                    );
 
                     switch (punishment.type) {
                         case "message": {
@@ -350,7 +352,7 @@ export default class Warn extends SlashCommand {
                             duration
                                 ? `, Duration: ${pluralize(
                                       "minute",
-                                      duration,
+                                      duration.toNumber(),
                                       true
                                   )}`
                                 : ""
@@ -384,7 +386,7 @@ export default class Warn extends SlashCommand {
                             duration
                                 ? `, Duration: ${pluralize(
                                       "minute",
-                                      duration,
+                                      duration.toNumber(),
                                       true
                                   )}`
                                 : ""
@@ -429,7 +431,7 @@ export default class Warn extends SlashCommand {
                                     duration
                                         ? `, Duration: ${pluralize(
                                               "minute",
-                                              duration,
+                                              duration.toNumber(),
                                               true
                                           )}`
                                         : ""

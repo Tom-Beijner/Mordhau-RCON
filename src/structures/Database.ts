@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import mongoose, { ObjectId } from "mongoose";
 import infractionsSchema from "../models/infractionsSchema";
 import logSchema, { ILog, platforms } from "../models/logSchema";
@@ -189,7 +190,7 @@ export default class Database {
         date: number;
         admin: string;
         reason?: string;
-        duration: number;
+        duration: BigNumber;
     }) {
         logger.info("Bot", "Going to save current data");
         if (process.env.NODE_ENV.trim() === "production")

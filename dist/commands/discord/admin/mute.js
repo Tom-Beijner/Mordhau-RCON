@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const array_prototype_flatmap_1 = __importDefault(require("array.prototype.flatmap"));
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const pluralize_1 = __importDefault(require("pluralize"));
 const slash_create_1 = require("slash-create");
 const PlayFab_1 = require("../../../services/PlayFab");
@@ -55,7 +56,7 @@ class Mute extends SlashCommand_1.default {
         const options = {
             server: ctx.options.server,
             player: ctx.options.player,
-            duration: ctx.options.duration,
+            duration: new bignumber_js_1.default(ctx.options.duration),
         };
         const server = this.bot.servers.get(options.server);
         if (!server) {
@@ -89,7 +90,9 @@ class Mute extends SlashCommand_1.default {
                         {
                             description: [
                                 `${allServersFailed ? "Tried to mute" : "Muted"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)})\n`,
-                                `Duration: ${pluralize_1.default("minute", options.duration, true) || "PERMANENT"}`,
+                                `Duration: ${options.duration.isEqualTo(0)
+                                    ? "PERMANENT"
+                                    : pluralize_1.default("minute", options.duration.toNumber(), true)}`,
                             ].join("\n"),
                             ...(failedServers.length && {
                                 fields: [
@@ -120,7 +123,9 @@ class Mute extends SlashCommand_1.default {
                             description: [
                                 `Muted player ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)})\n`,
                                 `Server: ${server.name}`,
-                                `Duration: ${duration}`,
+                                `Duration: ${options.duration.isEqualTo(0)
+                                    ? "PERMANENT"
+                                    : pluralize_1.default("minute", options.duration.toNumber(), true)}`,
                             ].join("\n"),
                         },
                     ],

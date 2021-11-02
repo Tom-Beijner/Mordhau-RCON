@@ -202,7 +202,7 @@ class Watchdog {
                     }
                     const bannedPlayer = await server.rcon.getBannedPlayer(player.id);
                     if (bannedPlayer) {
-                        if (Number(bannedPlayer.duration) === 0) {
+                        if (bannedPlayer.duration.isEqualTo(0)) {
                             servers.push({
                                 name: serverName,
                                 data: {
@@ -262,7 +262,7 @@ class Watchdog {
                     }
                     const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
                     if (mutedPlayer) {
-                        if (Number(mutedPlayer.duration) === 0) {
+                        if (mutedPlayer.duration.isEqualTo(0)) {
                             servers.push({
                                 name: serverName,
                                 data: {
@@ -274,7 +274,7 @@ class Watchdog {
                         }
                         await server.rcon.send(`unmute ${player.id}`);
                     }
-                    let result = await server.rcon.send(`mute ${player.id} ${duration || 0}`);
+                    let result = await server.rcon.send(`mute ${player.id} ${duration.toNumber() || 0}`);
                     result = result.split("\n")[0].trim();
                     if (!result.includes("processed successfully")) {
                         servers.push({

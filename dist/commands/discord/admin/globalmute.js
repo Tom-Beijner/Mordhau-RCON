@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const array_prototype_flatmap_1 = __importDefault(require("array.prototype.flatmap"));
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const pluralize_1 = __importDefault(require("pluralize"));
 const slash_create_1 = require("slash-create");
 const Discord_1 = require("../../../services/Discord");
@@ -45,7 +46,7 @@ class GlobalMute extends SlashCommand_1.default {
         await ctx.defer();
         const options = {
             player: ctx.options.player,
-            duration: ctx.options.duration,
+            duration: new bignumber_js_1.default(ctx.options.duration),
         };
         const ingamePlayer = await this.bot.rcon.getIngamePlayer(ctx.options.player);
         const player = this.bot.cachedPlayers.get((ingamePlayer === null || ingamePlayer === void 0 ? void 0 : ingamePlayer.id) || options.player) ||
@@ -75,14 +76,17 @@ class GlobalMute extends SlashCommand_1.default {
                 }, player, duration);
                 const failedServers = result.filter((result) => result.data.failed);
                 const allServersFailed = this.bot.servers.size === failedServers.length;
-                logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator}${allServersFailed ? " tried to" : ""} globally ${allServersFailed ? "mute" : "muted"} ${player.name} (${player.id}) (Duration: ${pluralize_1.default("minute", duration, true) || "PERMANENT"})`);
+                logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator}${allServersFailed ? " tried to" : ""} globally ${allServersFailed ? "mute" : "muted"} ${player.name} (${player.id}) (Duration: ${duration.isEqualTo(0)
+                    ? "PERMANENT"
+                    : pluralize_1.default("minute", duration.toNumber(), true)})`);
                 await btnCtx.editParent({
                     embeds: [
                         {
                             description: [
                                 `${allServersFailed ? "Tried to g" : "G"}lobally ${allServersFailed ? "mute" : "muted"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)})\n`,
-                                `Duration: ${pluralize_1.default("minute", duration, true) ||
-                                    "PERMANENT"}\n`,
+                                `Duration: ${duration.isEqualTo(0)
+                                    ? "PERMANENT"
+                                    : pluralize_1.default("minute", duration.toNumber(), true)}\n`,
                             ].join("\n"),
                             ...(failedServers.length && {
                                 fields: [

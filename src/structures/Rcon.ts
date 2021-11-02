@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import { compareArrayVals } from "crud-object-diff";
 import { addSeconds, formatDistanceToNow } from "date-fns";
 import deepClean from "deep-cleaner";
@@ -104,7 +105,7 @@ export default class Rcon {
             id: string;
             name?: string;
         },
-        duration: number,
+        duration: BigNumber,
         reason: string,
         shouldSave: boolean = true
     ) {
@@ -127,7 +128,7 @@ export default class Rcon {
         //     }`;
 
         let result = await this.rcon.send(
-            `ban ${player.id} ${duration || 0} ${reason}`
+            `ban ${player.id} ${duration.toNumber() || 0} ${reason}`
         );
         result = result.split("\n")[0].trim();
         if (!result.includes("processed successfully")) {
@@ -242,7 +243,7 @@ export default class Rcon {
             id: string;
             name?: string;
         },
-        duration: number,
+        duration: BigNumber,
         shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
@@ -265,7 +266,9 @@ export default class Rcon {
 
         // const res = await rcon.send(`mute 909275ECE8FEDDB 1`);
         // return console.log(res);
-        let result = await this.rcon.send(`mute ${player.id} ${duration || 0}`);
+        let result = await this.rcon.send(
+            `mute ${player.id} ${duration.toNumber() || 0}`
+        );
         result = result.split("\n")[0].trim();
         if (!result.includes("processed successfully")) {
             return result;
@@ -631,7 +634,7 @@ export default class Rcon {
         const bannedPlayer = (await this.getBannedPlayers()).find(
             (ban) => ban[0] === id
         );
-        return bannedPlayer && { id, duration: bannedPlayer[1] };
+        return bannedPlayer && { id, duration: new BigNumber(bannedPlayer[1]) };
     }
 
     async getMutedPlayers() {
@@ -644,7 +647,7 @@ export default class Rcon {
         const mutedPlayer = (await this.getMutedPlayers()).find(
             (ban) => ban[0] === id
         );
-        return mutedPlayer && { id, duration: mutedPlayer[1] };
+        return mutedPlayer && { id, duration: new BigNumber(mutedPlayer[1]) };
     }
 
     async getIngamePlayers() {
@@ -942,8 +945,11 @@ export default class Rcon {
 
         const bans = history.filter((log) => log.type === "BAN").length;
         const totalDuration = history
-            .filter((h) => h.duration)
-            .reduce((a, b) => a + b.duration, 0);
+            .filter((h) => !new BigNumber(h.duration).isNaN())
+            .reduce(
+                (a, b) => a.plus(new BigNumber(b.duration)),
+                new BigNumber(0)
+            );
 
         logger.info(
             "Server",
@@ -953,7 +959,7 @@ export default class Rcon {
                 bans > 0
                     ? `, Bans: ${bans}, Total Duration: ${pluralize(
                           "minute",
-                          Number(totalDuration),
+                          totalDuration.toNumber(),
                           true
                       )}`
                     : ""
@@ -972,7 +978,7 @@ export default class Rcon {
                     bans > 0
                         ? `, Bans: ${bans}, Total Duration: ${pluralize(
                               "minute",
-                              Number(totalDuration),
+                              totalDuration.toNumber(),
                               true
                           )}`
                         : ""
@@ -997,7 +1003,7 @@ export default class Rcon {
                 player.ids
             )}) has joined with ${bans} bans a total duration of ${pluralize(
                 "minute",
-                Number(totalDuration),
+                totalDuration.toNumber(),
                 true
             )} (Server: ${server})`
         );
@@ -1012,7 +1018,7 @@ export default class Rcon {
                     true
                 )}) has joined with ${bans} bans a total duration of ${pluralize(
                     "minute",
-                    Number(totalDuration),
+                    totalDuration.toNumber(),
                     true
                 )} (Server: ${server})`
             );
@@ -1203,7 +1209,7 @@ export default class Rcon {
         playerID: string,
         date: Date,
         punishment: string,
-        duration?: number,
+        duration?: BigNumber,
         reason?: string
     ) {
         // this.bot.logHandler.read(this.bot, ``, this.options.name)
@@ -1606,7 +1612,7 @@ export default class Rcon {
                 const punishment = s1[s1.length - 2];
                 const adminID = s1[s1.length - 3].replace(/\(|\)/g, "");
                 const playerID = s2[1];
-                const duration = parseInt(
+                const duration = new BigNumber(
                     string.split(": ")[1]?.split(", ")[0].replace(")", "")
                 );
                 const reason = string.split(": ")[2]?.replace(")", "");

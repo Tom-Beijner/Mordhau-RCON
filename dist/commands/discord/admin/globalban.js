@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const array_prototype_flatmap_1 = __importDefault(require("array.prototype.flatmap"));
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const pluralize_1 = __importDefault(require("pluralize"));
 const slash_create_1 = require("slash-create");
 const Discord_1 = require("../../../services/Discord");
@@ -50,7 +51,7 @@ class GlobalBan extends SlashCommand_1.default {
         await ctx.defer();
         const options = {
             player: ctx.options.player,
-            duration: ctx.options.duration,
+            duration: new bignumber_js_1.default(ctx.options.duration),
             reason: ctx.options.reason,
         };
         const ingamePlayer = await this.bot.rcon.getIngamePlayer(ctx.options.player);
@@ -67,8 +68,9 @@ class GlobalBan extends SlashCommand_1.default {
                     {
                         description: [
                             `Are you sure you want to globally ban ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)})?\n`,
-                            `Duration: ${pluralize_1.default("minute", duration, true) ||
-                                "PERMANENT"}`,
+                            `Duration: ${duration.isEqualTo(0)
+                                ? "PERMANENT"
+                                : pluralize_1.default("minute", duration.toNumber(), true)}`,
                             `Reason: ${reason || "None given"}`,
                         ].join("\n"),
                         color: 15158332,
@@ -84,14 +86,17 @@ class GlobalBan extends SlashCommand_1.default {
                 }, player, duration, reason);
                 const failedServers = result.filter((result) => result.data.failed);
                 const allServersFailed = this.bot.servers.size === failedServers.length;
-                logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator}${allServersFailed ? " tried to" : ""} globally ${allServersFailed ? "ban" : "banned"} ${player.name} (${player.id}) (Duration: ${pluralize_1.default("minute", duration, true) || "PERMANENT"}, Reason: ${reason || "None given"})`);
+                logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator}${allServersFailed ? " tried to" : ""} globally ${allServersFailed ? "ban" : "banned"} ${player.name} (${player.id}) (Duration: ${duration.isEqualTo(0)
+                    ? "PERMANENT"
+                    : pluralize_1.default("minute", duration.toNumber(), true)}, Reason: ${reason || "None given"})`);
                 await btnCtx.editParent({
                     embeds: [
                         {
                             description: [
                                 `${allServersFailed ? "Tried to g" : "G"}lobally ${allServersFailed ? "ban" : "banned"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)})\n`,
-                                `Duration: ${pluralize_1.default("minute", duration, true) ||
-                                    "PERMANENT"}`,
+                                `Duration: ${duration.isEqualTo(0)
+                                    ? "PERMANENT"
+                                    : pluralize_1.default("minute", duration.toNumber(), true)}`,
                                 `Reason: ${reason || "None given"}\n`,
                             ].join("\n"),
                             ...(failedServers.length && {

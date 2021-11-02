@@ -9,6 +9,7 @@ const slash_create_1 = require("slash-create");
 const PlayFab_1 = require("../../../services/PlayFab");
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
+const PlayerID_1 = require("../../../utils/PlayerID");
 class Banned extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
         super(creator, bot, {
@@ -48,10 +49,13 @@ class Banned extends SlashCommand_1.default {
                     name: server.server,
                     value: !server.data
                         ? "Player not banned"
-                        : `Duration: ${server.data.duration === "0"
+                        : `Duration: ${server.data.duration.isEqualTo(0)
                             ? "Permanent"
-                            : pluralize_1.default("minute", Number(server.data.duration), true)}`,
+                            : pluralize_1.default("minute", server.data.duration.toNumber(), true)}`,
                 });
+            }
+            if (!fields.length) {
+                return await ctx.send(`${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) is not banned`);
             }
             await ctx.send({
                 embeds: [

@@ -97,13 +97,13 @@ class DeletePunishment extends SlashCommand_1.default {
                     })})`,
                     `Offense: ${reason || "None given"}`,
                     ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(type)
-                        ? `Duration: ${!duration
+                        ? `Duration: ${duration.isEqualTo(0)
                             ? "PERMANENT"
-                            : pluralize_1.default("minute", duration, true)} ${duration
-                            ? `(Un${type === "BAN" ? "banned" : "muted"} ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(date, duration), {
+                            : pluralize_1.default("minute", duration.toNumber(), true)} ${duration.isEqualTo(0)
+                            ? ""
+                            : `(Un${type === "BAN" ? "banned" : "muted"} ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(date, duration.toNumber()), {
                                 addSuffix: true,
-                            })})`
-                            : ""}`
+                            })})`}`
                         : undefined,
                     `Admin: ${admin}`,
                 ]

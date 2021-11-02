@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
@@ -74,7 +75,7 @@ export default class Ban extends SlashCommand {
         const options = {
             server: ctx.options.server as string,
             player: ctx.options.player as string,
-            duration: ctx.options.duration as number,
+            duration: new BigNumber(ctx.options.duration as number),
             reason: ctx.options.reason as string | null,
         };
 
@@ -141,11 +142,13 @@ export default class Ban extends SlashCommand {
                                     true
                                 )})\n`,
                                 `Duration: ${
-                                    pluralize(
-                                        "minute",
-                                        options.duration,
-                                        true
-                                    ) || "PERMANENT"
+                                    options.duration.isEqualTo(0)
+                                        ? "PERMANENT"
+                                        : pluralize(
+                                              "minute",
+                                              options.duration.toNumber(),
+                                              true
+                                          )
                                 }`,
                                 `Reason: ${reason || "None given"}\n`,
                             ].join("\n"),
@@ -190,7 +193,15 @@ export default class Ban extends SlashCommand {
                                     player.name
                                 } (${outputPlayerIDs(player.ids, true)})\n`,
                                 `Server: ${server.name}`,
-                                `Duration: ${duration}`,
+                                `Duration: ${
+                                    options.duration.isEqualTo(0)
+                                        ? "PERMANENT"
+                                        : pluralize(
+                                              "minute",
+                                              options.duration.toNumber(),
+                                              true
+                                          )
+                                }`,
                                 `Reason: ${reason}`,
                             ].join("\n"),
                         },

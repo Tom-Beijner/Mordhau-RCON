@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const PlayFab_1 = require("../../../services/PlayFab");
 const BaseRCONCommands_1 = __importDefault(require("../../../structures/BaseRCONCommands"));
 class Ban extends BaseRCONCommands_1.default {
@@ -42,7 +43,7 @@ class Ban extends BaseRCONCommands_1.default {
         if (!(player === null || player === void 0 ? void 0 : player.id)) {
             return await ctx.say("Invalid player provided");
         }
-        const duration = ctx.opts.duration;
+        const duration = new bignumber_js_1.default(ctx.opts.duration);
         const reason = ctx.opts.reason;
         const error = await ctx.rcon.banUser(ctx.rcon.options.name, admin, player, duration, reason);
         if (error)

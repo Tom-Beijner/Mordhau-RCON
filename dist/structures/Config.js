@@ -1380,5 +1380,14 @@ exports.default = new conf_1.default({
         "1.20.0": (store) => {
             store.delete("discord.guildId");
         },
+        "1.20.10": (store) => {
+            const servers = store.get("servers");
+            for (let i = 0; i < servers.length; i++) {
+                if (!store.get(`servers.${i}.rcon.stats.adminActionWebhookChannel`))
+                    store.set(`servers.${i}.rcon.stats.adminActionWebhookChannel`, "");
+                if (!store.get(`servers.${i}.rcon.stats.serverLagReportsWebhookChannel`))
+                    store.set(`servers.${i}.rcon.stats.serverLagReportsWebhookChannel`, "");
+            }
+        },
     },
 });

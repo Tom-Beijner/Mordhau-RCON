@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import { addMinutes, formatDistanceToNow } from "date-fns";
 import Eris, { Client, Constants, Embed, TextChannel } from "eris";
 import LRU from "lru-cache";
@@ -589,7 +590,7 @@ export default class Watchdog {
         getMutedPlayer: async (id: string) => {
             const results: {
                 server: string;
-                data: { id: string; duration: string };
+                data: { id: string; duration: BigNumber };
             }[] = [];
 
             for (const [serverName, server] of this.servers) {
@@ -607,7 +608,7 @@ export default class Watchdog {
         getBannedPlayer: async (id: string) => {
             const results: {
                 server: string;
-                data: { id: string; duration: string };
+                data: { id: string; duration: BigNumber };
             }[] = [];
 
             for (const [serverName, server] of this.servers) {
@@ -675,7 +676,7 @@ export default class Watchdog {
                 id: string;
                 name?: string;
             },
-            duration?: number,
+            duration?: BigNumber,
             reason?: string,
             punishmentServer?: string
         ) => {
@@ -712,7 +713,7 @@ export default class Watchdog {
                 );
 
                 if (bannedPlayer) {
-                    if (Number(bannedPlayer.duration) === 0) {
+                    if (bannedPlayer.duration.isEqualTo(0)) {
                         servers.push({
                             name: serverName,
                             data: {
@@ -804,7 +805,7 @@ export default class Watchdog {
                 id: string;
                 name?: string;
             },
-            duration?: number,
+            duration?: BigNumber,
             punishmentServer?: string
         ) => {
             const servers: {
@@ -838,7 +839,7 @@ export default class Watchdog {
                 const mutedPlayer = await server.rcon.getMutedPlayer(player.id);
 
                 if (mutedPlayer) {
-                    if (Number(mutedPlayer.duration) === 0) {
+                    if (mutedPlayer.duration.isEqualTo(0)) {
                         servers.push({
                             name: serverName,
                             data: {
@@ -874,7 +875,7 @@ export default class Watchdog {
                 // }
 
                 let result = await server.rcon.send(
-                    `mute ${player.id} ${duration || 0}`
+                    `mute ${player.id} ${duration.toNumber() || 0}`
                 );
                 result = result.split("\n")[0].trim();
 

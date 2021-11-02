@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const array_prototype_flatmap_1 = __importDefault(require("array.prototype.flatmap"));
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const pluralize_1 = __importDefault(require("pluralize"));
 const slash_create_1 = require("slash-create");
 const Discord_1 = require("../../../services/Discord");
@@ -52,7 +53,7 @@ class Warn extends SlashCommand_1.default {
         const options = {
             server: ctx.options.server,
             player: ctx.options.player,
-            duration: ctx.options.duration,
+            duration: new bignumber_js_1.default(ctx.options.duration),
             reason: ctx.options.reason,
         };
         const server = this.bot.servers.get(options.server);
@@ -107,10 +108,10 @@ class Warn extends SlashCommand_1.default {
                         .replace(/{currentWarns}/g, playerWarns.infractions.toString())
                         .replace(/{maxWarns}/g, highestInfractionThreshold.toString());
                     const reason = punishment.reason;
-                    const duration = infractionIteration > 1
+                    const duration = new bignumber_js_1.default(infractionIteration > 1
                         ? punishment.duration *
                             Math.ceil(infractionIteration)
-                        : punishment.duration;
+                        : punishment.duration);
                     switch (punishment.type) {
                         case "message": {
                             await server.rcon.say(`${message}`);
@@ -183,7 +184,7 @@ class Warn extends SlashCommand_1.default {
                         : ["warn", "kick"].includes(punishment.type)
                             ? "ed"
                             : "d"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for reaching warn threshold (Server: ${server.rcon.options.name}, Admin: ${ctx.member.displayName}#${ctx.member.user.discriminator} (${ctx.member.id})${duration
-                        ? `, Duration: ${pluralize_1.default("minute", duration, true)}`
+                        ? `, Duration: ${pluralize_1.default("minute", duration.toNumber(), true)}`
                         : ""}, Threshold: ${infractionsThreshhold}, Warnings: ${playerWarns.infractions})`);
                     logger_1.default.info("Warn", `${punishment.type === "globalban"
                         ? "Globally ban"
@@ -195,7 +196,7 @@ class Warn extends SlashCommand_1.default {
                         : ["warn", "kick"].includes(punishment.type)
                             ? "ed"
                             : "d"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) for reaching warn threshold (Server: ${server.rcon.options.name}, Admin: ${ctx.member.displayName}#${ctx.member.user.discriminator} (${ctx.member.id})${duration
-                        ? `, Duration: ${pluralize_1.default("minute", duration, true)}`
+                        ? `, Duration: ${pluralize_1.default("minute", duration.toNumber(), true)}`
                         : ""}, Threshold: ${infractionsThreshhold}, Warnings: ${playerWarns.infractions})`);
                     logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator} warned ${player.name} (${player.id}) (Server: ${server.rcon.options.name}, Threshold: ${infractionsThreshhold}, Warnings: ${playerWarns.infractions})`);
                     await ctx.send({
@@ -211,7 +212,7 @@ class Warn extends SlashCommand_1.default {
                                     : ["warn", "kick"].includes(punishment.type)
                                         ? "ed"
                                         : "d"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for reaching warn threshold (Server: ${server.rcon.options.name}, Admin: ${ctx.member.displayName}#${ctx.member.user.discriminator} (${ctx.member.id})${duration
-                                    ? `, Duration: ${pluralize_1.default("minute", duration, true)}`
+                                    ? `, Duration: ${pluralize_1.default("minute", duration.toNumber(), true)}`
                                     : ""}, Threshold: ${infractionsThreshhold}, Warnings: ${playerWarns.infractions})`,
                             },
                         ],

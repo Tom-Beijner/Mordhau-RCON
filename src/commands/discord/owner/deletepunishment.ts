@@ -143,20 +143,27 @@ export default class DeletePunishment extends SlashCommand {
                             type
                         )
                             ? `Duration: ${
-                                  !duration
+                                  duration.isEqualTo(0)
                                       ? "PERMANENT"
-                                      : pluralize("minute", duration, true)
+                                      : pluralize(
+                                            "minute",
+                                            duration.toNumber(),
+                                            true
+                                        )
                               } ${
-                                  duration
-                                      ? `(Un${
+                                  duration.isEqualTo(0)
+                                      ? ""
+                                      : `(Un${
                                             type === "BAN" ? "banned" : "muted"
                                         } ${formatDistanceToNow(
-                                            addMinutes(date, duration),
+                                            addMinutes(
+                                                date,
+                                                duration.toNumber()
+                                            ),
                                             {
                                                 addSuffix: true,
                                             }
                                         )})`
-                                      : ""
                               }`
                             : undefined,
                         `Admin: ${admin}`,

@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const date_fns_1 = require("date-fns");
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const pluralize_1 = __importDefault(require("pluralize"));
@@ -38,14 +39,15 @@ class BasePunishment {
     }
     async savePayload(payload) {
         const type = `${payload.global && this.type !== "KICK" ? "GLOBAL " : ""}${this.type}`;
+        const duration = new bignumber_js_1.default(payload.duration);
         logger_1.default.info("Bot", `${payload.admin.name} (${PlayerID_1.outputPlayerIDs(payload.admin.ids)}) ${type.toLowerCase().replace("global", "globally")}${["BAN", "UNBAN", "GLOBAL BAN", "GLOBAL UNBAN"].includes(type)
             ? "ned"
             : type === "KICK"
                 ? "ed"
-                : "d"} ${payload.player.name} (${PlayerID_1.outputPlayerIDs(payload.player.ids)})${typeof payload.duration === "number"
-            ? !payload.duration
-                ? "PERMANENTLY"
-                : ` for ${pluralize_1.default("minute", payload.duration, true)}`
+                : "d"} ${payload.player.name} (${PlayerID_1.outputPlayerIDs(payload.player.ids)})${!duration.isNaN()
+            ? duration.isEqualTo(0)
+                ? " PERMANENTLY"
+                : ` for ${pluralize_1.default("minute", duration.toNumber(), true)}`
             : ""}${payload.reason &&
             payload.reason.length &&
             payload.reason !== "None given"
@@ -54,8 +56,6 @@ class BasePunishment {
         const server = Config_1.default
             .get("servers")
             .find((server) => server.name === payload.server);
-        if (process.env.NODE_ENV.trim() !== "production")
-            return;
         if (["KICK", "BAN", "GLOBAL BAN"].includes(type))
             this.bot.punishedPlayers.set(payload.player.id, {
                 punishment: type,
@@ -96,10 +96,11 @@ class BasePunishment {
             previousNames: playerHistory.previousNames,
         });
         const punishments = server === null || server === void 0 ? void 0 : server.rcon.punishments;
-        if (!payload.global &&
+        if ((!payload.global &&
             punishments &&
             (!punishments.shouldSave ||
-                !punishments.types[`${this.type.toLocaleLowerCase()}s`]))
+                !punishments.types[`${this.type.toLocaleLowerCase()}s`])) ||
+            process.env.NODE_ENV.trim() !== "production")
             return;
         this.bot.database.updatePlayerHistory({
             ids: [
@@ -119,12 +120,13 @@ class BasePunishment {
             date: new Date(payload.date).getTime(),
             admin: `${payload.admin.name} (${payload.admin.id})`,
             reason: payload.reason,
-            duration: payload.duration,
+            duration: duration,
         });
     }
     async sendMessage(data) {
-        let duration = data.duration && data.duration.toString();
-        if (!data.duration) {
+        var _a, _b, _c, _d, _e, _f, _g;
+        let duration = !((_a = data.duration) === null || _a === void 0 ? void 0 : _a.isEqualTo(0)) && ((_b = data.duration) === null || _b === void 0 ? void 0 : _b.toString());
+        if ((_c = data.duration) === null || _c === void 0 ? void 0 : _c.isEqualTo(0)) {
             duration = "PERMANENT";
             if (["BAN", "GLOBAL BAN"].includes(data.type)) {
                 const server = this.bot.servers.get(data.server);
@@ -140,9 +142,9 @@ class BasePunishment {
             }
         }
         else
-            duration += ` ${pluralize_1.default("minute", data.duration)}`;
+            duration += ` ${pluralize_1.default("minute", (_d = data.duration) === null || _d === void 0 ? void 0 : _d.toNumber())}`;
         let pastOffenses;
-        let totalDuration = data.duration || 0;
+        let totalDuration = data.duration || new bignumber_js_1.default(0);
         if (!data.history.length)
             pastOffenses = "None";
         else {
@@ -154,11 +156,11 @@ class BasePunishment {
                 const admin = h.admin;
                 const date = new Date(h.date);
                 let historyDuration;
-                if (!h.duration)
+                if (!h.duration || h.duration.isEqualTo(0))
                     historyDuration = "PERMANENT";
                 else {
-                    historyDuration = pluralize_1.default("minute", h.duration, true);
-                    totalDuration += h.duration;
+                    historyDuration = pluralize_1.default("minute", h.duration.toNumber(), true);
+                    totalDuration = totalDuration.plus(h.duration);
                 }
                 offenses.push([
                     `\nID: ${h._id}`,
@@ -171,11 +173,11 @@ class BasePunishment {
                     `Admin: ${admin}`,
                     `Offense: ${h.reason || "None given"}`,
                     ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(type)
-                        ? `Duration: ${historyDuration} ${h.duration
-                            ? `(Un${["BAN", "GLOBAL BAN"].includes(type)
+                        ? `Duration: ${historyDuration} ${((_e = h.duration) === null || _e === void 0 ? void 0 : _e.isEqualTo(0))
+                            ? ""
+                            : `(Un${["BAN", "GLOBAL BAN"].includes(type)
                                 ? "banned"
-                                : "muted"} ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(date, h.duration), { addSuffix: true })})`
-                            : ""}`
+                                : "muted"} ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(date, h.duration.toNumber()), { addSuffix: true })})`}`
                         : undefined,
                     `------------------`,
                 ]
@@ -195,15 +197,15 @@ class BasePunishment {
         ].filter((line) => typeof line !== "undefined");
         let color;
         if (["BAN", "GLOBAL BAN"].includes(data.type)) {
-            message.push(`**Offense**: \`${data.reason || "None given"}\``, `**Duration**: \`${duration}${data.duration
-                ? ` (Unbanned ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(new Date(), parseInt(duration)), { addSuffix: true })})`
-                : ""}\``);
+            message.push(`**Offense**: \`${data.reason || "None given"}\``, `**Duration**: \`${duration}${((_f = data.duration) === null || _f === void 0 ? void 0 : _f.isEqualTo(0))
+                ? ""
+                : ` (Unbanned ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(new Date(), new bignumber_js_1.default(data.duration).toNumber()), { addSuffix: true })})`}\``);
             color = data.type === "BAN" ? 15158332 : 10038562;
         }
         if (["MUTE", "GLOBAL MUTE"].includes(data.type)) {
-            message.push(`**Duration**: \`${duration} ${data.duration
-                ? `(Unmuted ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(new Date(), parseInt(duration)), { addSuffix: true })})`
-                : ""}\``);
+            message.push(`**Duration**: \`${duration} ${((_g = data.duration) === null || _g === void 0 ? void 0 : _g.isEqualTo(0))
+                ? ""
+                : `(Unmuted ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(new Date(), new bignumber_js_1.default(data.duration).toNumber()), { addSuffix: true })})`}\``);
             color = data.type === "MUTE" ? 3447003 : 2123412;
         }
         if (["UNMUTE", "GLOBAL UNMUTE"].includes(data.type)) {
@@ -230,7 +232,7 @@ class BasePunishment {
                         `**Previous Names**: \`${data.previousNames.length
                             ? data.previousNames
                             : "None"}\``,
-                        `**Total Duration**: \`${pluralize_1.default("minute", totalDuration, true)}\``,
+                        `**Total Duration**: \`${pluralize_1.default("minute", totalDuration.toNumber(), true)}\``,
                     ].join("\n"),
                 },
                 {

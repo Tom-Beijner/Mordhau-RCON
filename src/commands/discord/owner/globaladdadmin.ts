@@ -50,8 +50,6 @@ export default class GlobalBan extends SlashCommand {
         await ctx.defer();
         const options = {
             player: ctx.options.player as string,
-            duration: ctx.options.duration as number,
-            reason: ctx.options.reason as string | null,
         };
 
         const ingamePlayer = await this.bot.rcon.getIngamePlayer(

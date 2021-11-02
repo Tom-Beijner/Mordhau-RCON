@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import pluralize from "pluralize";
 import { sendWebhookMessage } from "../../../services/Discord";
 import { LookupPlayer } from "../../../services/PlayFab";
@@ -105,10 +106,11 @@ export default class Warn extends BaseRCONCommand {
                         ).length.toString()
                     );
                 const reason = punishment.reason;
-                const duration =
+                const duration = new BigNumber(
                     infractionIteration > 1
                         ? punishment.duration * Math.ceil(infractionIteration)
-                        : punishment.duration;
+                        : punishment.duration
+                );
 
                 switch (punishment.type) {
                     case "message": {
@@ -276,7 +278,7 @@ export default class Warn extends BaseRCONCommand {
                         duration
                             ? `, Duration: ${pluralize(
                                   "minute",
-                                  duration,
+                                  duration.toNumber(),
                                   true
                               )}`
                             : ""
@@ -308,7 +310,7 @@ export default class Warn extends BaseRCONCommand {
                         duration
                             ? `, Duration: ${pluralize(
                                   "minute",
-                                  duration,
+                                  duration.toNumber(),
                                   true
                               )}`
                             : ""

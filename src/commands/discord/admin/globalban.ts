@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
@@ -62,7 +63,7 @@ export default class GlobalBan extends SlashCommand {
         await ctx.defer();
         const options = {
             player: ctx.options.player as string,
-            duration: ctx.options.duration as number,
+            duration: new BigNumber(ctx.options.duration as number),
             reason: ctx.options.reason as string | null,
         };
 
@@ -90,8 +91,13 @@ export default class GlobalBan extends SlashCommand {
                                     player.name
                                 } (${outputPlayerIDs(player.ids, true)})?\n`,
                                 `Duration: ${
-                                    pluralize("minute", duration, true) ||
-                                    "PERMANENT"
+                                    duration.isEqualTo(0)
+                                        ? "PERMANENT"
+                                        : pluralize(
+                                              "minute",
+                                              duration.toNumber(),
+                                              true
+                                          )
                                 }`,
                                 `Reason: ${reason || "None given"}`,
                             ].join("\n"),
@@ -126,7 +132,9 @@ export default class GlobalBan extends SlashCommand {
                         }${allServersFailed ? " tried to" : ""} globally ${
                             allServersFailed ? "ban" : "banned"
                         } ${player.name} (${player.id}) (Duration: ${
-                            pluralize("minute", duration, true) || "PERMANENT"
+                            duration.isEqualTo(0)
+                                ? "PERMANENT"
+                                : pluralize("minute", duration.toNumber(), true)
                         }, Reason: ${reason || "None given"})`
                     );
 
@@ -143,8 +151,13 @@ export default class GlobalBan extends SlashCommand {
                                         true
                                     )})\n`,
                                     `Duration: ${
-                                        pluralize("minute", duration, true) ||
-                                        "PERMANENT"
+                                        duration.isEqualTo(0)
+                                            ? "PERMANENT"
+                                            : pluralize(
+                                                  "minute",
+                                                  duration.toNumber(),
+                                                  true
+                                              )
                                     }`,
                                     `Reason: ${reason || "None given"}\n`,
                                 ].join("\n"),

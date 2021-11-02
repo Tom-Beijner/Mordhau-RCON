@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import { LookupPlayer } from "../../../services/PlayFab";
 import BaseRCONCommand from "../../../structures/BaseRCONCommands";
 import RCONCommandContext from "../../../structures/RCONCommandContext";
@@ -45,8 +46,8 @@ export default class Ban extends BaseRCONCommand {
             return await ctx.say("Invalid player provided");
         }
 
-        const duration = ctx.opts.duration;
-        const reason = ctx.opts.reason;
+        const duration = new BigNumber(ctx.opts.duration as number);
+        const reason = ctx.opts.reason as string;
 
         const error = await ctx.rcon.banUser(
             ctx.rcon.options.name,

@@ -98,10 +98,13 @@ class AdminActions extends SlashCommand_1.default {
                     }
                 }
             }
-            if (!commands.find((c) => c.command === options.command &&
-                c.server === options.server) &&
-                options.server !== "all") {
-                return ctx.editOriginal(`No admins found with ${options.command} command usage in the last ${options.pastdays} days\nThe saved commands are ${commands.join(", ")}`);
+            if (!commands.length ||
+                (!commands.find((c) => c.command === options.command &&
+                    c.server === options.server) &&
+                    options.server !== "all")) {
+                return ctx.editOriginal(`No admins found with ${options.command} command usage in the last ${options.pastdays} days\n${commands.length
+                    ? `The saved commands are ${commands.join(", ")}`
+                    : "No commands has been saved"}`);
             }
             for (let i = 0; i < adminList.length; i++) {
                 const adminID = adminList[i];

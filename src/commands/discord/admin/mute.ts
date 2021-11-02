@@ -1,4 +1,5 @@
 import flatMap from "array.prototype.flatmap";
+import BigNumber from "bignumber.js";
 import pluralize from "pluralize";
 import {
     ApplicationCommandPermissionType,
@@ -68,7 +69,7 @@ export default class Mute extends SlashCommand {
         const options = {
             server: ctx.options.server as string,
             player: ctx.options.player as string,
-            duration: ctx.options.duration as number,
+            duration: new BigNumber(ctx.options.duration as number),
         };
 
         const server = this.bot.servers.get(options.server);
@@ -131,11 +132,13 @@ export default class Mute extends SlashCommand {
                                     true
                                 )})\n`,
                                 `Duration: ${
-                                    pluralize(
-                                        "minute",
-                                        options.duration,
-                                        true
-                                    ) || "PERMANENT"
+                                    options.duration.isEqualTo(0)
+                                        ? "PERMANENT"
+                                        : pluralize(
+                                              "minute",
+                                              options.duration.toNumber(),
+                                              true
+                                          )
                                 }`,
                             ].join("\n"),
                             ...(failedServers.length && {
@@ -179,7 +182,15 @@ export default class Mute extends SlashCommand {
                                     true
                                 )})\n`,
                                 `Server: ${server.name}`,
-                                `Duration: ${duration}`,
+                                `Duration: ${
+                                    options.duration.isEqualTo(0)
+                                        ? "PERMANENT"
+                                        : pluralize(
+                                              "minute",
+                                              options.duration.toNumber(),
+                                              true
+                                          )
+                                }`,
                             ].join("\n"),
                         },
                     ],
