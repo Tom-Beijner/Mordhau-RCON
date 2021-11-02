@@ -15,7 +15,6 @@
     "license": "MIT",
     "scripts": {
         "start": "cross-env NODE_ENV=production node dist",
-        "start:dev": "cross-env NODE_ENV=development LOG_LEVEL=debug nodemon --ignore .autoUpdater/ --ignore teleportLocations.json --ignore adminActivity.json --ignore stats.json dist",
         "build": "tsc --skipLibCheck",
         "build:watch": "tsc --skipLibCheck --watch --preserveWatchOutput",
         "dev": "cross-env NODE_ENV=development LOG_LEVEL=debug ts-node-dev --respawn --transpile-only --ignore-watch .autoUpdater/ --ignore-watch teleportLocations.json --ignore-watch adminActivity.json --ignore-watch stats.json -- src/index.ts",
@@ -52,10 +51,8 @@
         "fs-extra": "^10.0.0",
         "fuse.js": "^6.4.6",
         "lru-cache": "^6.0.0",
-        "match-sorter": "^6.3.0",
         "mongoose": "^5.13.5",
         "mongoose-bignumber": "^1.2.0",
-        "node-cache": "^5.1.2",
         "node-fetch": "^2.6.1",
         "playfab-sdk": "^2.71.210802",
         "pluralize": "^8.0.0",
@@ -91,7 +88,6 @@
         "concurrently": "^6.2.0",
         "conventional-github-releaser": "^3.1.5",
         "husky": "^7.0.0",
-        "nodemon": "^2.0.12",
         "standard-version": "^9.3.2",
         "ts-node-dev": "^1.1.8",
         "typescript": "^4.3.5"
