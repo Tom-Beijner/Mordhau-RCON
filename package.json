@@ -36,6 +36,7 @@
         "bignumber.js": "^9.0.1",
         "chart.js": "^3.6.0",
         "chartjs-node-canvas": "^4.1.4",
+        "chartjs-plugin-datalabels": "^2.0.0",
         "cli-progress": "^3.9.0",
         "conf": "^10.0.1",
         "cross-env": "^7.0.3",

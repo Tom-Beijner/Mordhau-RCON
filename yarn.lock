@@ -1320,6 +1320,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chartjs-plugin-datalabels@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "chartjs-plugin-datalabels@npm:2.0.0"
+  peerDependencies:
+    chart.js: ^3.0.0
+  checksum: aa59cabc57feca686281033f6160c4f7e84f973e5ad27e794daa7a6bc8dbf7a14055fee4c05df6a9d8c7be66ec0a59203244e8f528fce3dfd13847bf92d7aa7c
+  languageName: node
+  linkType: hard
+
 "chokidar@npm:^3.5.1":
   version: 3.5.2
   resolution: "chokidar@npm:3.5.2"
@@ -4904,6 +4913,7 @@ __metadata:
     bignumber.js: ^9.0.1
     chart.js: ^3.6.0
     chartjs-node-canvas: ^4.1.4
+    chartjs-plugin-datalabels: ^2.0.0
     cli-progress: ^3.9.0
     concurrently: ^6.2.0
     conf: ^10.0.1

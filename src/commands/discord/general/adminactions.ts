@@ -10,12 +10,19 @@ import StatsConfig from "../../../structures/StatsConfig";
 import Watchdog from "../../../structures/Watchdog";
 
 const chartJSNodeCanvas = new ChartJSNodeCanvas({
-    width: 1500,
-    height: 844,
+    width: 1920,
+    height: 1080,
     backgroundColour: "#36393e",
+    plugins: {
+        requireLegacy: ["chartjs-plugin-datalabels"],
+    },
 });
 
 Chart.defaults.color = "#fff";
+Chart.defaults.font = {
+    family: "sans-serif",
+    size: 16,
+};
 
 export default class AdminActions extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -140,16 +147,16 @@ export default class AdminActions extends SlashCommand {
                 )
             ) {
                 return ctx.editOriginal(
-                    `No admins found with ${
-                        options.command
-                    } command usage in the last ${options.pastdays} days\n${
-                        commands.length
-                            ? `The saved commands are ${commands
-                                  .map((c) => c.command)
-                                  .sort((a, b) => (a > b ? 1 : -1))
-                                  .join(", ")}`
-                            : "No commands has been saved"
-                    }`
+                    !commands.length
+                        ? "No commands has been saved"
+                        : `No admins found with ${
+                              options.command
+                          } command usage in the last ${
+                              options.pastdays
+                          } days\n${`The saved commands are ${commands
+                              .map((c) => c.command)
+                              .sort((a, b) => (a > b ? 1 : -1))
+                              .join(", ")}`}`
                 );
             }
 
@@ -198,7 +205,7 @@ export default class AdminActions extends SlashCommand {
                                               ) as {
                                                   [command: string]: number;
                                               }
-                                          ).reduce((a, b) => a + (b || 1), 0);
+                                          ).reduce((a, b) => a + b, 0);
 
                                 if (commandUsage) {
                                     commandUsages.push({
@@ -210,13 +217,9 @@ export default class AdminActions extends SlashCommand {
                         }
                     }
 
-                    const admin =
-                        this.bot.cachedPlayers.get(adminID) ||
-                        (await LookupPlayer(adminID));
-
                     adminActions.push({
                         id: adminID,
-                        name: admin.name,
+                        name: StatsConfig.get(`admins.${adminID}.name`),
                         usages: commandUsages
                             .filter((c) => c.id === adminID)
                             .reduce(
@@ -233,6 +236,12 @@ export default class AdminActions extends SlashCommand {
                     StatsConfig.set(`admins.${adminID}`, {
                         name: admin.name,
                     });
+
+                    adminActions.push({
+                        id: adminID,
+                        name: admin.name,
+                        usages: 0,
+                    });
                 }
             }
 
@@ -244,13 +253,34 @@ export default class AdminActions extends SlashCommand {
                 return b.usages - a.usages;
             });
 
-            const backgroundColor = [];
+            const backgroundColor: string[] = [];
 
             for (let i = 0; i < adminActions.length; i++) {
+                const backgroundColors = [
+                    "#ffc312",
+                    "#12cbc4",
+                    "#ed4c67",
+                    "#f79f1f",
+                    "#a3cb38",
+                    "#1289a7",
+                    "#d980fa",
+                    "#b53471",
+                    "#ee5a24",
+                    "#009432",
+                    "#0652dd",
+                    "#9980fa",
+                    "#833471",
+                    "#ea2027",
+                    "#006266",
+                    "#1b1464",
+                    "#5758bb",
+                    "#6f1e51",
+                ];
+
                 backgroundColor.push(
-                    `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
-                        Math.random() * 255
-                    )}, ${Math.floor(Math.random() * 255)}, 1)`
+                    backgroundColors[
+                        Math.floor(Math.random() * backgroundColors.length)
+                    ]
                 );
             }
 
@@ -271,6 +301,14 @@ export default class AdminActions extends SlashCommand {
                     },
                     options: {
                         indexAxis: "y",
+                        // maintainAspectRatio: false,
+                        scales: {
+                            xAxes: {
+                                ticks: {
+                                    precision: 0,
+                                },
+                            },
+                        },
                         plugins: {
                             legend: { display: false },
                             title: {
@@ -285,7 +323,13 @@ export default class AdminActions extends SlashCommand {
                                     true
                                 )})`,
                             },
-                        },
+                            datalabels: {
+                                // anchor: "end",
+                                // align: "end",
+                                // clip: true,
+                                clamp: true,
+                            },
+                        } as any,
                         // Performance improvements
                         animation: {
                             duration: 0, // general animation time
