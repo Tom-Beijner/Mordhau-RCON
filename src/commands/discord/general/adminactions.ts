@@ -128,6 +128,9 @@ export default class AdminActions extends SlashCommand {
                         for (const command in adminServers[server].adminActions[
                             date
                         ]) {
+                            if (commands.find((c) => c.command === command))
+                                continue;
+
                             commands.push({
                                 server,
                                 command,
