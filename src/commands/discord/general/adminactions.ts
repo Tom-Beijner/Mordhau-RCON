@@ -248,9 +248,9 @@ export default class AdminActions extends SlashCommand {
             await ctx.editOriginal("Generating chart...");
 
             adminActions = adminActions.sort((a, b) => {
-                if (a.name < b.name) return 1;
-                if (a.name > b.name) return -1;
-                return b.usages - a.usages;
+                if (a.name > b.name) return 1;
+                if (a.name < b.name) return -1;
+                return b.usages > a.usages ? -1 : 1;
             });
 
             const backgroundColor: string[] = [];
