@@ -198,14 +198,10 @@ export default class AdminActions extends SlashCommand {
                                         ? actions[server].adminActions[date][
                                               options.command
                                           ] || 0
-                                        : Object.values(
-                                              StatsConfig.get(
-                                                  `admins.${adminID}.servers.${server}.adminActions.${date}`,
-                                                  {}
-                                              ) as {
-                                                  [command: string]: number;
-                                              }
-                                          ).reduce((a, b) => a + b, 0);
+                                        : (StatsConfig.get(
+                                              `admins.${adminID}.servers.${server}.adminActions.${date}.${options.command}`,
+                                              0
+                                          ) as number);
 
                                 if (commandUsage) {
                                     commandUsages.push({
