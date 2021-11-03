@@ -25,6 +25,7 @@ interface Config {
 
 export default class AutoUpdater {
     private config: Config;
+    public initial: boolean = true;
 
     constructor(config: Config) {
         this.config = config;
@@ -49,19 +50,27 @@ export default class AutoUpdater {
 
     async compareVersions() {
         try {
-            logger.debug("Auto Updater", "Checking for updates...");
+            logger[this.initial ? "info" : "debug"](
+                "Auto Updater",
+                "Checking for updates..."
+            );
             const currentVersion = await this.readLocalVersion();
             const remoteVersion = await this.readRemoteVersion();
             const upToDate = currentVersion == remoteVersion;
 
             if (upToDate) {
-                logger.debug("Auto Updater", `Up to date! (${currentVersion})`);
+                logger[this.initial ? "info" : "debug"](
+                    "Auto Updater",
+                    `Up to date! (${currentVersion})`
+                );
             } else {
                 logger.info(
                     "Auto Updater",
                     `New update available: ${remoteVersion} (Current: ${currentVersion})`
                 );
             }
+
+            this.initial = false;
 
             return { upToDate, currentVersion, remoteVersion };
         } catch (error) {
