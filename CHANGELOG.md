@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.21.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.20.10...v1.21.0) (2021-11-03)
+
+
+### Features
+
+* added adminactions command (has been existing for a short while, it just got fixed to work) ([64cedd4](https://github.com/Tom-Beijner/Mordhau-RCON/commit/64cedd49a6b3126e8fe0a4db5a628f42bf8f7f5c))
+* added server down notification ([5df9f64](https://github.com/Tom-Beijner/Mordhau-RCON/commit/5df9f646931d5563e6c6223aba4e8e342f98c9ec))
+
+
+### Bug Fixes
+
+* adminactions not considering that there might not be any saved commands ([5f6c32d](https://github.com/Tom-Beijner/Mordhau-RCON/commit/5f6c32d807cb08b3c7677786fdafef37e652bd10))
+* **adminactions:** calculation bug fix (accidentally calculated total command usage of each admin) ([256b0de](https://github.com/Tom-Beijner/Mordhau-RCON/commit/256b0debf84d88da80764ffef2452b56b3897e53))
+* fix a issue where if stats object was missing from the config it would crash the bot ([fe3a3b9](https://github.com/Tom-Beijner/Mordhau-RCON/commit/fe3a3b946a45ae256a9c74d01a56f04302dd65a3))
+* fix when interaction fails to not crash the bot ([8f80a4e](https://github.com/Tom-Beijner/Mordhau-RCON/commit/8f80a4e09f4ca2c131b141f359997cef53a32e8e))
+
 ### [1.20.10](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.1.1...v1.20.10) (2021-11-01)
 
 ## [1.20.9] - 2021-10-31
