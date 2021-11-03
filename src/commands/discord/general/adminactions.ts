@@ -324,10 +324,10 @@ export default class AdminActions extends SlashCommand {
                                 )})`,
                             },
                             datalabels: {
-                                // anchor: "end",
-                                // align: "end",
+                                anchor: "start",
+                                align: "end",
                                 // clip: true,
-                                clamp: true,
+                                // clamp: true,
                             },
                         } as any,
                         // Performance improvements
