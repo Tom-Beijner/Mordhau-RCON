@@ -92,6 +92,7 @@ export interface Rcon {
     mapVote: MapVote;
     saveAdminActivity: boolean;
     stats: Stats;
+    serverDownNotification: ServerDownNotification;
     logChannels: LogChannels;
     ingameCommands: string[];
 }
@@ -131,6 +132,11 @@ export interface Killstreaks {
 export interface Stats {
     adminActionWebhookChannel: string;
     serverLagReportsWebhookChannel: string;
+}
+
+export interface ServerDownNotification {
+    timer: 5;
+    channel: string;
 }
 
 export interface LogChannels {
@@ -469,6 +475,19 @@ export default new Conf<Config>({
                                     },
                                 },
                             },
+                            serverDownNotification: {
+                                type: "object",
+                                properties: {
+                                    timer: {
+                                        type: "number",
+                                        default: 5,
+                                    },
+                                    channel: {
+                                        type: "string",
+                                        default: "",
+                                    },
+                                },
+                            },
                             logChannels: {
                                 type: "object",
                                 properties: {
@@ -608,6 +627,10 @@ export default new Conf<Config>({
                                 adminActionWebhookChannel: "",
                                 serverLagReportsWebhookChannel: "",
                             },
+                            serverDownNotification: {
+                                timer: 5,
+                                channel: "",
+                            },
                             logChannels: {
                                 chat: "",
                                 punishments: "",
@@ -690,6 +713,10 @@ export default new Conf<Config>({
                         stats: {
                             adminActionWebhookChannel: "",
                             serverLagReportsWebhookChannel: "",
+                        },
+                        serverDownNotification: {
+                            timer: 5,
+                            channel: "",
                         },
                         logChannels: {
                             chat: "",
@@ -1362,6 +1389,10 @@ export default new Conf<Config>({
                         adminActionWebhookChannel: "",
                         serverLagReportsWebhookChannel: "",
                     },
+                    serverDownNotification: {
+                        timer: 5,
+                        channel: "",
+                    },
                     logChannels: {
                         chat: "",
                         punishments: "",
@@ -1702,6 +1733,28 @@ export default new Conf<Config>({
                 )
                     store.set(
                         `servers.${i}.rcon.stats.serverLagReportsWebhookChannel`,
+                        ""
+                    );
+            }
+        },
+        "1.20.11": (store) => {
+            const servers = store.get("servers");
+
+            for (let i = 0; i < servers.length; i++) {
+                if (
+                    !store.get(`servers.${i}.rcon.serverDownNotification.timer`)
+                )
+                    store.set(
+                        `servers.${i}.rcon.serverDownNotification.timer`,
+                        5
+                    );
+                if (
+                    !store.get(
+                        `servers.${i}.rcon.serverDownNotification.channel`
+                    )
+                )
+                    store.set(
+                        `servers.${i}.rcon.serverDownNotification.channel`,
                         ""
                     );
             }

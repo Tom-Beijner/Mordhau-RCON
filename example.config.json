@@ -62,6 +62,14 @@
                     ]
                 },
                 "saveAdminActivity": true,
+                "stats": {
+                    "adminActionWebhookChannel": "",
+                    "serverLagReportsWebhookChannel": ""
+                },
+                "serverDownNotification": {
+                    "timer": 5,
+                    "channel": ""
+                },
                 "logChannels": {
                     "chat": "",
                     "punishments": "",
@@ -72,10 +80,6 @@
                     "killstreak": "",
                     "adminCalls": "",
                     "warns": ""
-                },
-                "stats": {
-                    "adminActionWebhookChannel": "",
-                    "serverLagReportsWebhookChannel": ""
                 },
                 "ingameCommands": [
                     "timeleft",
