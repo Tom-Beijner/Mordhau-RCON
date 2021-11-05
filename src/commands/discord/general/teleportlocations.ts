@@ -67,7 +67,7 @@ export default class TeleportLocations extends SlashCommand {
                                     : ""
                             }\nCoordinates: X=${location.coordinates.x}, Y=${
                                 location.coordinates.y
-                            }, Z=${location.coordinates.y}`
+                            }, Z=${location.coordinates.z}`
                     )
                     .join("\n\n");
 
