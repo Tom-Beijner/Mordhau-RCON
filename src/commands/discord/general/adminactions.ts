@@ -79,7 +79,7 @@ export default class AdminActions extends SlashCommand {
             let adminList = [];
 
             if (options.server !== "all") {
-                const server = this.bot.servers.get(options.server);
+                var server = this.bot.servers.get(options.server);
                 if (!server) {
                     return ctx.editOriginal(
                         `Server not found, existing servers are: ${[
@@ -128,7 +128,13 @@ export default class AdminActions extends SlashCommand {
                         for (const command in adminServers[server].adminActions[
                             date
                         ]) {
-                            if (commands.find((c) => c.command === command))
+                            if (
+                                commands.find(
+                                    (c) =>
+                                        c.command === command &&
+                                        c.server === server
+                                )
+                            )
                                 continue;
 
                             commands.push({
@@ -141,13 +147,9 @@ export default class AdminActions extends SlashCommand {
             }
 
             if (
-                !commands.length ||
-                !commands.find(
-                    (c) =>
-                        c.command === options.command &&
-                        (c.server === options.server ||
-                            options.server === "all")
-                )
+                options.server !== "all" &&
+                (!commands.length ||
+                    !commands.find(async (c) => c.command === options.command))
             ) {
                 return ctx.editOriginal(
                     !commands.length
@@ -196,15 +198,10 @@ export default class AdminActions extends SlashCommand {
                                     .toISOString()
                                     .slice(0, 10)
                             ) {
-                                const commandUsage =
-                                    options.server !== "all"
-                                        ? actions[server].adminActions[date][
-                                              options.command
-                                          ] || 0
-                                        : (StatsConfig.get(
-                                              `admins.${adminID}.servers.${server}.adminActions.${date}.${options.command}`,
-                                              0
-                                          ) as number);
+                                const commandUsage = StatsConfig.get(
+                                    `admins.${adminID}.servers.${server}.adminActions.${date}.${options.command}`,
+                                    0
+                                ) as number;
 
                                 if (commandUsage) {
                                     commandUsages.push({
