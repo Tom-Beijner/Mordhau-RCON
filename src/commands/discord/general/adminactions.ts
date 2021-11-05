@@ -312,7 +312,7 @@ export default class AdminActions extends SlashCommand {
                             legend: { display: false },
                             title: {
                                 display: true,
-                                text: `Chart of ${options.command.toLowerCase()} usage usage on ${
+                                text: `Chart of ${options.command.toLowerCase()} usage on ${
                                     options.server
                                 } server${
                                     options.server === "all" ? "s" : ""
