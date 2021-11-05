@@ -350,6 +350,14 @@ export default class AdminActions extends SlashCommand {
                 "image/png"
             );
 
+            const imageURI = `adminActions_${options.server}_${
+                options.command
+            }_${currentDate}_(${pluralize(
+                "day",
+                options.pastdays,
+                true
+            )}).png`.replace(/ |\(|\)/g, "_");
+
             return ctx.editOriginal({
                 content: "",
                 embeds: [
@@ -360,13 +368,13 @@ export default class AdminActions extends SlashCommand {
                             options.server === "all" ? "s" : ""
                         } (past ${pluralize("day", options.pastdays, true)})`,
                         image: {
-                            url: `attachment://adminActions_${options.server}_${options.command}_${currentDate}.png`,
+                            url: `attachment://${imageURI}`,
                         },
                     },
                 ],
                 file: {
                     file: image,
-                    name: `adminActions_${options.server}_${options.command}_${currentDate}.png`,
+                    name: imageURI,
                 },
             });
         } catch (error) {
