@@ -83,7 +83,7 @@ export default class TeleportAdd extends SlashCommand {
             aliases: ((ctx.options.aliases as string) || "").length
                 ? (ctx.options.aliases as string)
                       .split("|")
-                      .map((alias) => alias.trim())
+                      .map((alias) => alias.toLowerCase().trim())
                 : [],
             coordinates: {
                 x: ctx.options.x as number,
@@ -97,15 +97,19 @@ export default class TeleportAdd extends SlashCommand {
         try {
             if (TeleportConfig.has(location)) return "Location already exist";
             if (
-                Object.values<Location>(
+                Object.entries<Location>(
                     TeleportConfig.get(`maps.${options.map}.locations`, {})
-                ).some((location) =>
-                    location?.aliases?.some(
+                ).some((location) => {
+                    const locationName = location[0];
+                    const locationData = location[1];
+
+                    return options.aliases.some(
                         (alias) =>
-                            location.aliases.includes(alias) ||
-                            location.aliases.includes(options.name)
-                    )
-                )
+                            locationName.toLowerCase() === alias ||
+                            locationData?.aliases?.includes(alias) ||
+                            locationData?.aliases?.includes(options.name)
+                    );
+                })
             )
                 return "A location is already using the name or alias";
 
