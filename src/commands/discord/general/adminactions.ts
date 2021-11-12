@@ -384,8 +384,6 @@ export default class AdminActions extends SlashCommand {
 
             for (let i = 0; i < adminActions.length; i++) {
                 const backgroundColors = [
-                    "#ffc312",
-                    "#12cbc4",
                     "#ed4c67",
                     "#f79f1f",
                     "#a3cb38",
