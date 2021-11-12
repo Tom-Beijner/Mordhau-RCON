@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import mongoose, { ObjectId } from "mongoose";
+import mongoose, { FilterQuery, ObjectId } from "mongoose";
 import infractionsSchema from "../models/infractionsSchema";
 import logSchema, { ILog, platforms } from "../models/logSchema";
 import warnsSchema from "../models/warnsSchema";
@@ -49,7 +49,8 @@ export default class Database {
 
     async getPlayerHistory(
         platformIDs: string[],
-        searchForAdmin?: boolean
+        searchForAdmin?: boolean,
+        filter: FilterQuery<ILog> = {}
     ): Promise<{
         ids: {
             playFabID?: string;
@@ -74,6 +75,7 @@ export default class Database {
                       },
                 { id: { $in: [...new Set(searchIDs)] } },
             ],
+            ...filter,
         });
 
         if (playerhistoryData.length) logger.debug("Bot", "History found");
