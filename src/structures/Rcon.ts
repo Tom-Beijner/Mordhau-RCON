@@ -65,7 +65,7 @@ export default class Rcon {
     currentName?: string;
     currentGamemode?: string;
     currentMap?: string;
-    maxPlayerCount: number = Infinity;
+    maxPlayerCount: number | string = "Unknown";
     statusMessageID?: string;
     timer: Timer = new Timer({ countdown: true });
 

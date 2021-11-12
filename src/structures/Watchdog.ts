@@ -264,8 +264,9 @@ export default class Watchdog {
                 : server.rcon.maxPlayerCount;
             const currentPlayerCount = players.length;
             const playerList = online
-                ? players.map((p) => `${p.id} - ${p.name}`).join("\n") ||
-                  "No players online"
+                ? players
+                      .map((p) => `${p.id.padEnd(17, " ")}- ${p.name}`)
+                      .join("\n") || "No players online"
                 : "Server offline";
             const passwordProtected = serverInfo
                 ? serverInfo.Tags.IsPasswordProtected === "true"
