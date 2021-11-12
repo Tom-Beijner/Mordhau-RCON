@@ -1,6 +1,7 @@
 import Chart from "chart.js";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import { subDays } from "date-fns";
+import { ObjectId } from "mongodb";
 import pluralize from "pluralize";
 import { CommandContext, CommandOptionType, SlashCreator } from "slash-create";
 import { LookupPlayer } from "../../../services/PlayFab";
@@ -102,7 +103,36 @@ export default class AdminActions extends SlashCommand {
             let adminActions: { id: string; name: string; usages: number }[] =
                 [];
             const currentDate = new Date().toISOString().slice(0, 10);
-            const commands: { server: string; command: string }[] = [];
+            const commands: { server: string; command: string }[] = [
+                { server: null, command: "punishments" },
+            ];
+
+            const punishments: string[] = (
+                await this.bot.database.Logs.distinct("type", {
+                    _id: {
+                        $gte: new ObjectId(
+                            Math.floor(
+                                subDays(
+                                    new Date(),
+                                    options.pastdays
+                                ).getTime() / 1000
+                            )
+                        ),
+                    },
+                    ...(options.server !== "all" && { server: options.server }),
+                })
+            ).map((type) => pluralize(type.toLowerCase()));
+
+            if (punishments.length) punishments.push("punishments");
+
+            for (let i = 0; i < punishments.length; i++) {
+                const punishment = punishments[i];
+
+                commands.push({
+                    server: options.server,
+                    command: punishment,
+                });
+            }
 
             for (let i = 0; i < adminList.length; i++) {
                 const adminID = adminList[i];
@@ -157,7 +187,7 @@ export default class AdminActions extends SlashCommand {
                     }
                 } else {
                     for (const date in StatsConfig.get(
-                        `admins.${adminID}.servers.${server}.adminActions`,
+                        `admins.${adminID}.servers.${server.name}.adminActions`,
                         {}
                     ) as {
                         [date: string]: {
@@ -165,7 +195,7 @@ export default class AdminActions extends SlashCommand {
                         };
                     }) {
                         for (const command in StatsConfig.get(
-                            `admins.${adminID}.servers.${server}.adminActions.${date}`,
+                            `admins.${adminID}.servers.${server.name}.adminActions.${date}`,
                             {}
                         ) as {
                             [command: string]: number;
@@ -201,7 +231,11 @@ export default class AdminActions extends SlashCommand {
                 )
             ) {
                 return ctx.editOriginal(
-                    !commands.length
+                    !commands.filter(
+                        (c) =>
+                            options.server === "all" ||
+                            c.server === options.server
+                    ).length
                         ? "No commands has been saved"
                         : `No admins found with ${
                               options.command
@@ -233,59 +267,96 @@ export default class AdminActions extends SlashCommand {
                 const inStatsFile = StatsConfig.get(`admins.${adminID}`);
 
                 if (inStatsFile) {
-                    const actions = StatsConfig.get(
-                        `admins.${adminID}.servers`,
-                        {}
-                    ) as {
-                        [server: string]: {
-                            adminActions: {
-                                [date: string]: {
-                                    [command: string]: number;
+                    if (
+                        ["punishments", ...punishments].includes(
+                            options.command
+                        )
+                    ) {
+                        adminActions.push({
+                            id: adminID,
+                            name: StatsConfig.get(`admins.${adminID}.name`),
+                            usages: (
+                                await this.bot.database.getPlayerHistory(
+                                    [adminID],
+                                    true,
+                                    {
+                                        _id: {
+                                            $gte: new ObjectId(
+                                                Math.floor(
+                                                    subDays(
+                                                        new Date(),
+                                                        options.pastdays
+                                                    ).getTime() / 1000
+                                                )
+                                            ),
+                                        },
+                                        ...("punishments" !==
+                                            options.command && {
+                                            type: new RegExp(
+                                                pluralize(options.command, 1),
+                                                "i"
+                                            ),
+                                        }),
+                                    }
+                                )
+                            ).history.length,
+                        });
+                    } else {
+                        const actions = StatsConfig.get(
+                            `admins.${adminID}.servers`,
+                            {}
+                        ) as {
+                            [server: string]: {
+                                adminActions: {
+                                    [date: string]: {
+                                        [command: string]: number;
+                                    };
                                 };
                             };
                         };
-                    };
 
-                    // Get last days and filter command by options.command and get command usage from server or get from all server if options.server is all
-                    const commandUsages: { id: string; usages: number }[] = [];
+                        // Get last days and filter command by options.command and get command usage from server or get from all server if options.server is all
+                        const commandUsages: { id: string; usages: number }[] =
+                            [];
 
-                    for (const server in actions) {
-                        for (const date in StatsConfig.get(
-                            `admins.${adminID}.servers.${server}.adminActions`,
-                            {}
-                        )) {
-                            if (
-                                new Date(date).toISOString().slice(0, 10) >=
-                                subDays(new Date(), options.pastdays)
-                                    .toISOString()
-                                    .slice(0, 10)
-                            ) {
-                                const commandUsage = StatsConfig.get(
-                                    `admins.${adminID}.servers.${server}.adminActions.${date}.${options.command}`,
-                                    0
-                                ) as number;
+                        for (const server in actions) {
+                            for (const date in StatsConfig.get(
+                                `admins.${adminID}.servers.${server}.adminActions`,
+                                {}
+                            )) {
+                                if (
+                                    new Date(date).toISOString().slice(0, 10) >=
+                                    subDays(new Date(), options.pastdays)
+                                        .toISOString()
+                                        .slice(0, 10)
+                                ) {
+                                    const commandUsage = StatsConfig.get(
+                                        `admins.${adminID}.servers.${server}.adminActions.${date}.${options.command}`,
+                                        0
+                                    ) as number;
 
-                                if (commandUsage) {
-                                    commandUsages.push({
-                                        id: adminID,
-                                        usages: commandUsage,
-                                    });
+                                    if (commandUsage) {
+                                        commandUsages.push({
+                                            id: adminID,
+                                            usages: commandUsage,
+                                        });
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    adminActions.push({
-                        id: adminID,
-                        name: StatsConfig.get(`admins.${adminID}.name`),
-                        usages: commandUsages
-                            .filter((c) => c.id === adminID)
-                            .reduce(
-                                (acc, commandUsages) =>
-                                    acc + commandUsages.usages,
-                                0
-                            ),
-                    });
+                        adminActions.push({
+                            id: adminID,
+                            name: StatsConfig.get(`admins.${adminID}.name`),
+                            usages: commandUsages
+                                .filter((c) => c.id === adminID)
+                                .reduce(
+                                    (acc, commandUsages) =>
+                                        acc + commandUsages.usages,
+                                    0
+                                ),
+                        });
+                    }
                 } else {
                     const admin =
                         this.bot.cachedPlayers.get(adminID) ||
@@ -340,6 +411,20 @@ export default class AdminActions extends SlashCommand {
                 );
             }
 
+            const title = `Chart of ${pluralize(
+                options.command.toLowerCase(),
+                1
+            )} usage on ${options.server} server${
+                options.server === "all" ? "s" : ""
+            } (past ${pluralize("day", options.pastdays, true)}${
+                options.command === "punishments"
+                    ? `, types: ${punishments
+                          .filter((p) => p !== "punishments")
+                          .sort()
+                          .join(", ")}`
+                    : ""
+            })`;
+
             const image = await chartJSNodeCanvas.renderToBuffer(
                 {
                     type: "bar",
@@ -369,15 +454,7 @@ export default class AdminActions extends SlashCommand {
                             legend: { display: false },
                             title: {
                                 display: true,
-                                text: `Chart of ${options.command.toLowerCase()} usage on ${
-                                    options.server
-                                } server${
-                                    options.server === "all" ? "s" : ""
-                                } (past ${pluralize(
-                                    "day",
-                                    options.pastdays,
-                                    true
-                                )})`,
+                                text: title,
                             },
                             datalabels: {
                                 anchor: "start",
@@ -407,9 +484,9 @@ export default class AdminActions extends SlashCommand {
                 "image/png"
             );
 
-            const imageURI = `adminActions_${options.server}_${
-                options.command
-            }_${currentDate}_(${pluralize(
+            const imageURI = `adminActions_${
+                options.server
+            }_${options.command.toLowerCase()}_${currentDate}_(${pluralize(
                 "day",
                 options.pastdays,
                 true
@@ -419,11 +496,7 @@ export default class AdminActions extends SlashCommand {
                 content: "",
                 embeds: [
                     {
-                        title: `Chart of ${options.command.toLowerCase()} usage on ${
-                            options.server
-                        } server${
-                            options.server === "all" ? "s" : ""
-                        } (past ${pluralize("day", options.pastdays, true)})`,
+                        title: title,
                         image: {
                             url: `attachment://${imageURI}`,
                         },
