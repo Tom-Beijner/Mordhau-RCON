@@ -1,3 +1,4 @@
+import Fuse from "fuse.js";
 import fetch from "node-fetch";
 import { PlayFab, PlayFabClient, PlayFabData } from "playfab-sdk";
 import { promisify } from "util";
@@ -145,22 +146,27 @@ export async function getServerInfo(server: {
     try {
         if (!server.name) return null;
 
-        const result = await GetServerList({
-            TagFilter: {
-                Includes: [
-                    {
-                        Data: {
-                            ServerName: server.name,
-                        },
-                    },
-                ],
-            },
-        });
+        // const result = await GetServerList({
+        //     TagFilter: {
+        //         Includes: [
+        //             {
+        //                 Data: {
+        //                     ServerName: server.name,
+        //                 },
+        //             },
+        //         ],
+        //     },
+        // });
 
-        const data = result.data.Games.find(
-            (s) => s.ServerIPV4Address === server.host
-            //  && s.ServerPort === server.port
-        );
+        // const data = result.data.Games.find(
+        //     (s) => s.ServerIPV4Address === server.host
+        //     //  && s.ServerPort === server.port
+        // );
+
+        const data = new Fuse((await GetServerList({})).data.Games, {
+            threshold: 0.4,
+            keys: ["Tags.ServerName", "ServerIPV4Address"],
+        }).search(`${server.name} ${server.host}`)[0]?.item;
 
         return data;
     } catch (error) {

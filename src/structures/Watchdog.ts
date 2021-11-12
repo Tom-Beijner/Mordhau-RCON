@@ -209,7 +209,22 @@ export default class Watchdog {
         try {
             const configServer = config
                 .get("servers")
-                .find((s) => s.name === server.name);
+                .find((s) => s.name === server.name) || {
+                rcon: {
+                    status: {
+                        updateInterval: 5,
+                        channel: "",
+                        showPlayerList: false,
+                        hideIPPort: false,
+                        fallbackValues: {
+                            serverName: "",
+                            serverPort: 0,
+                            maxPlayerCount: 0,
+                            passwordProtected: false,
+                        },
+                    },
+                },
+            };
             const channelID = configServer.rcon.status.channel;
             if (!channelID) {
                 return logger.debug(
@@ -1405,7 +1420,22 @@ export default class Watchdog {
         await this.loadRCONCommands();
 
         for (const [name, server] of this.servers) {
-            const s = config.get("servers").find((s) => s.name === name);
+            const s = config.get("servers").find((s) => s.name === name) || {
+                rcon: {
+                    status: {
+                        updateInterval: 5,
+                        channel: "",
+                        showPlayerList: false,
+                        hideIPPort: false,
+                        fallbackValues: {
+                            serverName: "",
+                            serverPort: 0,
+                            maxPlayerCount: 0,
+                            passwordProtected: false,
+                        },
+                    },
+                },
+            };
 
             server.rcon.initialize();
 
