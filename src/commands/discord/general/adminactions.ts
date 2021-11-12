@@ -123,22 +123,64 @@ export default class AdminActions extends SlashCommand {
                     };
                 };
 
-                for (const server in adminServers) {
-                    for (const date in adminServers[server].adminActions) {
-                        for (const command in adminServers[server].adminActions[
-                            date
-                        ]) {
+                if (options.server === "all") {
+                    for (const server in adminServers) {
+                        for (const date in StatsConfig.get(
+                            `admins.${adminID}.servers.${server}.adminActions`,
+                            {}
+                        ) as {
+                            [date: string]: {
+                                [command: string]: number;
+                            };
+                        }) {
+                            for (const command in StatsConfig.get(
+                                `admins.${adminID}.servers.${server}.adminActions.${date}`,
+                                {}
+                            ) as {
+                                [command: string]: number;
+                            }) {
+                                if (
+                                    commands.find(
+                                        (c) =>
+                                            c.command === command &&
+                                            c.server === server
+                                    )
+                                )
+                                    continue;
+
+                                commands.push({
+                                    server,
+                                    command,
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    for (const date in StatsConfig.get(
+                        `admins.${adminID}.servers.${server}.adminActions`,
+                        {}
+                    ) as {
+                        [date: string]: {
+                            [command: string]: number;
+                        };
+                    }) {
+                        for (const command in StatsConfig.get(
+                            `admins.${adminID}.servers.${server}.adminActions.${date}`,
+                            {}
+                        ) as {
+                            [command: string]: number;
+                        }) {
                             if (
                                 commands.find(
                                     (c) =>
                                         c.command === command &&
-                                        c.server === server
+                                        c.server === options.server
                                 )
                             )
                                 continue;
 
                             commands.push({
-                                server,
+                                server: options.server,
                                 command,
                             });
                         }
@@ -147,8 +189,16 @@ export default class AdminActions extends SlashCommand {
             }
 
             if (
-                !commands.length ||
-                !commands.find(async (c) => c.command === options.command)
+                !commands.filter(
+                    (c) =>
+                        options.server === "all" || c.server === options.server
+                ).length ||
+                !commands.find(
+                    (c) =>
+                        c.command === options.command &&
+                        (options.server === "all" ||
+                            c.server === options.server)
+                )
             ) {
                 return ctx.editOriginal(
                     !commands.length
@@ -157,12 +207,21 @@ export default class AdminActions extends SlashCommand {
                               options.command
                           } command usage for ${
                               options.server === "all"
-                                  ? "all servers"
-                                  : `${options.server} server`
+                                  ? "`all` servers"
+                                  : `\`${options.server}\` server`
                           } in the last ${
                               options.pastdays
-                          } days\n${`The saved commands are ${commands
-                              .map((c) => c.command)
+                          } days\n${`The saved commands are ${[
+                              ...new Set(
+                                  commands
+                                      .filter(
+                                          (c) =>
+                                              options.server === "all" ||
+                                              c.server === options.server
+                                      )
+                                      .map((c) => c.command)
+                              ),
+                          ]
                               .sort((a, b) => (a > b ? 1 : -1))
                               .join(", ")}`}`
                 );
