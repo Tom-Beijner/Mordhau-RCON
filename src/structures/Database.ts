@@ -78,8 +78,28 @@ export default class Database {
             ...filter,
         });
 
-        if (playerhistoryData.length) logger.debug("Bot", "History found");
-        else logger.debug("Bot", "No history data was found");
+        if (playerhistoryData.length)
+            logger.debug(
+                "Bot",
+                searchForAdmin
+                    ? `Punishment history (IDs: ${platforms
+                          .map((p) => `${p.platform}:${p.id}`)
+                          .join(",")})`
+                    : `History found (IDs: ${platforms
+                          .map((p) => `${p.platform}:${p.id}`)
+                          .join(",")})`
+            );
+        else
+            logger.debug(
+                "Bot",
+                searchForAdmin
+                    ? `No punishment history data was found (IDs: ${platforms
+                          .map((p) => `${p.platform}:${p.id}`)
+                          .join(",")})`
+                    : `No history data was found (IDs: ${platforms
+                          .map((p) => `${p.platform}:${p.id}`)
+                          .join(",")})`
+            );
 
         let previousNames: string[] | string = playerhistoryData
             .map((h) => h.player)
@@ -148,9 +168,22 @@ export default class Database {
             ],
         });
 
-        if (playerPunishmentData) logger.debug("Bot", "Punishment found");
-        else logger.debug("Bot", "No punishment data was found");
-
+        if (playerPunishmentData)
+            logger.debug(
+                "Bot",
+                searchForAdmin
+                    ? `Punishment history (IDs: ${searchIDs.join(",")})`
+                    : `History found (IDs: ${searchIDs.join(",")})`
+            );
+        else
+            logger.debug(
+                "Bot",
+                searchForAdmin
+                    ? `No punishment history data was found (IDs: ${searchIDs.join(
+                          ","
+                      )})`
+                    : `No history data was found (IDs: ${searchIDs.join(",")})`
+            );
         return playerPunishmentData;
     }
 
@@ -194,7 +227,10 @@ export default class Database {
         reason?: string;
         duration: BigNumber;
     }) {
-        logger.info("Bot", "Going to save current data");
+        logger.debug(
+            "Bot",
+            `Going to save punishment (Player: ${data.player}, Type: ${data.type}, Admin: ${data.admin}, Duration: ${data.duration}, Server: ${data.server})`
+        );
         if (process.env.NODE_ENV.trim() === "production")
             await this.Logs.create(data);
     }
