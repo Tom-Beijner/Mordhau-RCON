@@ -147,16 +147,19 @@ export default class AdminActions extends SlashCommand {
             }
 
             if (
-                options.server !== "all" &&
-                (!commands.length ||
-                    !commands.find(async (c) => c.command === options.command))
+                !commands.length ||
+                !commands.find(async (c) => c.command === options.command)
             ) {
                 return ctx.editOriginal(
                     !commands.length
                         ? "No commands has been saved"
                         : `No admins found with ${
                               options.command
-                          } command usage in the last ${
+                          } command usage for ${
+                              options.server === "all"
+                                  ? "all servers"
+                                  : `${options.server} server`
+                          } in the last ${
                               options.pastdays
                           } days\n${`The saved commands are ${commands
                               .map((c) => c.command)
