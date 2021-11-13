@@ -35,7 +35,7 @@ class Database {
     get Warns() {
         return warnsSchema_1.default;
     }
-    async getPlayerHistory(platformIDs, searchForAdmin) {
+    async getPlayerHistory(platformIDs, searchForAdmin, filter = {}) {
         var _a, _b;
         platformIDs = platformIDs.filter((p) => typeof p === "string");
         const platforms = platformIDs.map((id) => PlayerID_1.parsePlayerID(id));
@@ -51,11 +51,24 @@ class Database {
                     },
                 { id: { $in: [...new Set(searchIDs)] } },
             ],
+            ...filter,
         });
         if (playerhistoryData.length)
-            logger_1.default.debug("Bot", "History found");
+            logger_1.default.debug("Bot", searchForAdmin
+                ? `Punishment history (IDs: ${platforms
+                    .map((p) => `${p.platform}:${p.id}`)
+                    .join(",")})`
+                : `History found (IDs: ${platforms
+                    .map((p) => `${p.platform}:${p.id}`)
+                    .join(",")})`);
         else
-            logger_1.default.debug("Bot", "No history data was found");
+            logger_1.default.debug("Bot", searchForAdmin
+                ? `No punishment history data was found (IDs: ${platforms
+                    .map((p) => `${p.platform}:${p.id}`)
+                    .join(",")})`
+                : `No history data was found (IDs: ${platforms
+                    .map((p) => `${p.platform}:${p.id}`)
+                    .join(",")})`);
         let previousNames = playerhistoryData
             .map((h) => h.player)
             .filter((h) => typeof h === "string");
@@ -109,9 +122,13 @@ class Database {
             ],
         });
         if (playerPunishmentData)
-            logger_1.default.debug("Bot", "Punishment found");
+            logger_1.default.debug("Bot", searchForAdmin
+                ? `Punishment history (IDs: ${searchIDs.join(",")})`
+                : `History found (IDs: ${searchIDs.join(",")})`);
         else
-            logger_1.default.debug("Bot", "No punishment data was found");
+            logger_1.default.debug("Bot", searchForAdmin
+                ? `No punishment history data was found (IDs: ${searchIDs.join(",")})`
+                : `No history data was found (IDs: ${searchIDs.join(",")})`);
         return playerPunishmentData;
     }
     async deletePlayerPunishment(platformIDs, punishmentIDs, searchForAdmin) {
@@ -136,7 +153,7 @@ class Database {
         });
     }
     async updatePlayerHistory(data) {
-        logger_1.default.info("Bot", "Going to save current data");
+        logger_1.default.debug("Bot", `Going to save punishment (Player: ${data.player}, Type: ${data.type}, Admin: ${data.admin}, Duration: ${data.duration}, Server: ${data.server})`);
         if (process.env.NODE_ENV.trim() === "production")
             await this.Logs.create(data);
     }

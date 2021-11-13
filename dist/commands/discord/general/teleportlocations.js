@@ -48,7 +48,7 @@ class TeleportLocations extends SlashCommand_1.default {
                 Object.entries(locations)
                     .map(([name, location], index) => `${index + 1}.\nName: ${name}${location.aliases && location.aliases.length
                     ? `\nAliases: ${location.aliases.join(", ")}`
-                    : ""}\nCoordinates: X=${location.coordinates.x}, Y=${location.coordinates.y}, Z=${location.coordinates.y}`)
+                    : ""}\nCoordinates: X=${location.coordinates.x}, Y=${location.coordinates.y}, Z=${location.coordinates.z}`)
                     .join("\n\n");
             logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator} ran get teleport locations (Map: ${options.map})`);
             await ctx.send({

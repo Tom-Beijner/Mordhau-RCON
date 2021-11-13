@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getServerInfo = exports.LookupPlayer = exports.Login = exports.CreateAccount = exports.titleId = void 0;
+const fuse_js_1 = __importDefault(require("fuse.js"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const playfab_sdk_1 = require("playfab-sdk");
 const util_1 = require("util");
@@ -105,21 +106,14 @@ async function LookupPlayer(id) {
 }
 exports.LookupPlayer = LookupPlayer;
 async function getServerInfo(server) {
+    var _a;
     try {
         if (!server.name)
             return null;
-        const result = await GetServerList({
-            TagFilter: {
-                Includes: [
-                    {
-                        Data: {
-                            ServerName: server.name,
-                        },
-                    },
-                ],
-            },
-        });
-        const data = result.data.Games.find((s) => s.ServerIPV4Address === server.host);
+        const data = (_a = new fuse_js_1.default((await GetServerList({})).data.Games, {
+            threshold: 0.4,
+            keys: ["Tags.ServerName", "ServerIPV4Address"],
+        }).search(`${server.name} ${server.host}`)[0]) === null || _a === void 0 ? void 0 : _a.item;
         return data;
     }
     catch (error) {

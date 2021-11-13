@@ -70,7 +70,7 @@ class TeleportAdd extends SlashCommand_1.default {
             aliases: (ctx.options.aliases || "").length
                 ? ctx.options.aliases
                     .split("|")
-                    .map((alias) => alias.trim())
+                    .map((alias) => alias.toLowerCase().trim())
                 : [],
             coordinates: {
                 x: ctx.options.x,
@@ -82,10 +82,15 @@ class TeleportAdd extends SlashCommand_1.default {
         try {
             if (TeleportConfig_1.default.has(location))
                 return "Location already exist";
-            if (Object.values(TeleportConfig_1.default.get(`maps.${options.map}.locations`, {})).some((location) => {
-                var _a;
-                return (_a = location === null || location === void 0 ? void 0 : location.aliases) === null || _a === void 0 ? void 0 : _a.some((alias) => location.aliases.includes(alias) ||
-                    location.aliases.includes(options.name));
+            if (Object.entries(TeleportConfig_1.default.get(`maps.${options.map}.locations`, {})).some((location) => {
+                const locationName = location[0];
+                const locationData = location[1];
+                return options.aliases.some((alias) => {
+                    var _a, _b;
+                    return locationName.toLowerCase() === alias ||
+                        ((_a = locationData === null || locationData === void 0 ? void 0 : locationData.aliases) === null || _a === void 0 ? void 0 : _a.includes(alias)) ||
+                        ((_b = locationData === null || locationData === void 0 ? void 0 : locationData.aliases) === null || _b === void 0 ? void 0 : _b.includes(options.name));
+                });
             }))
                 return "A location is already using the name or alias";
             if (options.coordinates.x > Number.MAX_VALUE)

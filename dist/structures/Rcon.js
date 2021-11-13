@@ -8,6 +8,7 @@ const bignumber_js_1 = __importDefault(require("bignumber.js"));
 const crud_object_diff_1 = require("crud-object-diff");
 const date_fns_1 = require("date-fns");
 const deep_cleaner_1 = __importDefault(require("deep-cleaner"));
+const easytimer_js_1 = __importDefault(require("easytimer.js"));
 const fuse_js_1 = __importDefault(require("fuse.js"));
 const pluralize_1 = __importDefault(require("pluralize"));
 const rcon_1 = require("../rcon");
@@ -31,12 +32,34 @@ class Rcon {
         this.reconnecting = false;
         this.webhooks = new Map();
         this.admins = new Set();
-        this.maxPlayerCount = Infinity;
+        this.maxPlayerCount = "Unknown";
+        this.timer = new easytimer_js_1.default({ countdown: true });
         this.options = options;
         this.bot = bot;
         if (options.killstreaks.enabled)
             this.killStreak = new KillStreak_1.default(this, options.name);
         this.mapVote = new MapVote_1.default(this);
+        this.timer.on("targetAchieved", () => {
+            var _a, _b, _c, _d;
+            const channelID = (_b = (_a = Config_1.default
+                .get("servers")
+                .find((s) => s.name === this.options.name).rcon) === null || _a === void 0 ? void 0 : _a.serverDownNotification) === null || _b === void 0 ? void 0 : _b.channel;
+            if (!channelID)
+                return;
+            const channel = this.bot.client.getChannel(channelID);
+            if (!channel)
+                return;
+            this.bot.client.createMessage(channelID, {
+                content: `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))}`,
+                embed: {
+                    title: `Server **${this.options.name}** is down.`,
+                    description: `The server is down for more than **${pluralize_1.default("minute", (_d = (_c = Config_1.default
+                        .get("servers")
+                        .find((s) => s.name === this.options.name).rcon) === null || _c === void 0 ? void 0 : _c.serverDownNotification) === null || _d === void 0 ? void 0 : _d.timer, true)}**`,
+                    color: 0xff0000,
+                },
+            });
+        });
     }
     async banUser(server, admin, player, duration, reason, shouldSave = true) {
         if (!this.connected || !this.authenticated) {
@@ -604,9 +627,12 @@ class Rcon {
         });
         this.rcon.on("connect", () => {
             this.connected = true;
+            if (this.timer.isRunning())
+                this.timer.stop();
             logger_1.default.info("RCON", `Connection success (Server: ${this.options.name})`);
         });
         this.rcon.on("authenticated", async () => {
+            var _a;
             this.authenticated = true;
             logger_1.default.info("RCON", `Auth success (Server: ${this.options.name})`);
             await this.rcon.send("listen chat");
@@ -616,18 +642,50 @@ class Rcon {
             await this.rcon.send("listen punishment");
             await this.getServerInfo();
             await this.updateCache();
-            this.rcon.socket.once("end", async () => {
+            (_a = this.rcon.socket) === null || _a === void 0 ? void 0 : _a.once("end", async () => {
+                var _a, _b, _c, _d, _e, _f;
+                if (this.connected && this.authenticated)
+                    logger_1.default.info("RCON", `Disconnected from server (Server: ${this.options.name})`);
                 this.connected = false;
                 this.authenticated = false;
-                logger_1.default.info("RCON", `Disconnected from server (Server: ${this.options.name})`);
+                if (!this.timer.isRunning() &&
+                    ((_b = (_a = Config_1.default
+                        .get("servers")
+                        .find((s) => s.name === this.options.name).rcon) === null || _a === void 0 ? void 0 : _a.serverDownNotification) === null || _b === void 0 ? void 0 : _b.channel) &&
+                    ((_d = (_c = Config_1.default
+                        .get("servers")
+                        .find((s) => s.name === this.options.name).rcon) === null || _c === void 0 ? void 0 : _c.serverDownNotification) === null || _d === void 0 ? void 0 : _d.timer))
+                    this.timer.start({
+                        countdown: true,
+                        startValues: {
+                            minutes: (_f = (_e = Config_1.default
+                                .get("servers")
+                                .find((s) => s.name === this.options.name).rcon) === null || _e === void 0 ? void 0 : _e.serverDownNotification) === null || _f === void 0 ? void 0 : _f.timer,
+                        },
+                    });
                 await this.reconnect();
             });
             this.initiate = false;
         });
         this.rcon.on("end", async () => {
+            var _a, _b, _c, _d, _e, _f;
+            if (this.connected && this.authenticated)
+                logger_1.default.info("RCON", `Disconnected from server (Server: ${this.options.name})`);
             this.connected = false;
             this.authenticated = false;
-            logger_1.default.info("RCON", `Disconnected from server (Server: ${this.options.name})`);
+            if (!this.timer.isRunning() &&
+                ((_b = (_a = Config_1.default.get("servers").find((s) => s.name === this.options.name)
+                    .rcon) === null || _a === void 0 ? void 0 : _a.serverDownNotification) === null || _b === void 0 ? void 0 : _b.channel) &&
+                ((_d = (_c = Config_1.default.get("servers").find((s) => s.name === this.options.name)
+                    .rcon) === null || _c === void 0 ? void 0 : _c.serverDownNotification) === null || _d === void 0 ? void 0 : _d.timer))
+                this.timer.start({
+                    countdown: true,
+                    startValues: {
+                        minutes: (_f = (_e = Config_1.default
+                            .get("servers")
+                            .find((s) => s.name === this.options.name).rcon) === null || _e === void 0 ? void 0 : _e.serverDownNotification) === null || _f === void 0 ? void 0 : _f.timer,
+                    },
+                });
             await this.reconnect();
         });
         this.rcon.on("error", (error) => {

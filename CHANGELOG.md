@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.22.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.21.0...v1.22.0) (2021-11-13)
+
+
+### Features
+
+* added padding to the player list in status embed to keep the layout structure ([c57342f](https://github.com/Tom-Beijner/Mordhau-RCON/commit/c57342fc3b3ff1d16a9cdaa73653e922e00e1f46))
+* **adminActions:** added the ability to see punishments and types. also fixed a small bug ([acb2f42](https://github.com/Tom-Beijner/Mordhau-RCON/commit/acb2f420fed530aa3a34605498182648950f72b9))
+
+
+### Bug Fixes
+
+* **adminactions:** a graph would generate even if theres not valid command and is all servers ([83f46fa](https://github.com/Tom-Beijner/Mordhau-RCON/commit/83f46fa1a63e9dc98ed3da760e780f62c24fc42f))
+* **adminactions:** fix a bug where if a server name or command has a space it would break the embed ([3ab3120](https://github.com/Tom-Beijner/Mordhau-RCON/commit/3ab3120067b8c33dfbb0e8d995da073698ac849b))
+* **adminactions:** fix a bug where the list of commands would show each occurrance ([1941e9b](https://github.com/Tom-Beijner/Mordhau-RCON/commit/1941e9bd4f8e54a4b4fcb712bce3d93eaa96d646))
+* **adminactions:** fix the sorting of admins to be usage then alphabetically sorted ([d929343](https://github.com/Tom-Beijner/Mordhau-RCON/commit/d92934368c5e64fab09e9ff7f278022b88bc4ef3))
+* **adminactions:** rely on fetching directly from the stats file ([1acdf52](https://github.com/Tom-Beijner/Mordhau-RCON/commit/1acdf522f0908cb1f9bc5663721f8f533dc27f56))
+* **adminactions:** remove double usage word ([2782f39](https://github.com/Tom-Beijner/Mordhau-RCON/commit/2782f3963b634aea974ce37c39ace1bd3b169d17))
+* **autoupdater:** fix changelog not showing properly ([545403b](https://github.com/Tom-Beijner/Mordhau-RCON/commit/545403bc74dfae13b0c6c3c852d685b3e638707f))
+* **status:** fix a bug where the status embed wouldnt show the server, might also fixed embed crash ([5712429](https://github.com/Tom-Beijner/Mordhau-RCON/commit/5712429ca6f26542639d7350ffbf33d27dcc7849))
+* **teleportadd:** fix a bug where it wouldnt allow you to add a location ([80d4439](https://github.com/Tom-Beijner/Mordhau-RCON/commit/80d443973605a42ec7436744773ed33dcd9881a1))
+* **teleportlocations:** y value was returned instead of z ([1ad115f](https://github.com/Tom-Beijner/Mordhau-RCON/commit/1ad115f1661b7b8a5bb2ccfc1bf4977cf4175c1d))
+
 ## [1.21.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.20.10...v1.21.0) (2021-11-03)
 
 

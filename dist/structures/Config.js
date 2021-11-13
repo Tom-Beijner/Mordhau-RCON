@@ -287,6 +287,19 @@ exports.default = new conf_1.default({
                                     },
                                 },
                             },
+                            serverDownNotification: {
+                                type: "object",
+                                properties: {
+                                    timer: {
+                                        type: "number",
+                                        default: 5,
+                                    },
+                                    channel: {
+                                        type: "string",
+                                        default: "",
+                                    },
+                                },
+                            },
                             logChannels: {
                                 type: "object",
                                 properties: {
@@ -426,6 +439,10 @@ exports.default = new conf_1.default({
                                 adminActionWebhookChannel: "",
                                 serverLagReportsWebhookChannel: "",
                             },
+                            serverDownNotification: {
+                                timer: 5,
+                                channel: "",
+                            },
                             logChannels: {
                                 chat: "",
                                 punishments: "",
@@ -508,6 +525,10 @@ exports.default = new conf_1.default({
                         stats: {
                             adminActionWebhookChannel: "",
                             serverLagReportsWebhookChannel: "",
+                        },
+                        serverDownNotification: {
+                            timer: 5,
+                            channel: "",
                         },
                         logChannels: {
                             chat: "",
@@ -1166,6 +1187,10 @@ exports.default = new conf_1.default({
                         adminActionWebhookChannel: "",
                         serverLagReportsWebhookChannel: "",
                     },
+                    serverDownNotification: {
+                        timer: 5,
+                        channel: "",
+                    },
                     logChannels: {
                         chat: "",
                         punishments: "",
@@ -1387,6 +1412,15 @@ exports.default = new conf_1.default({
                     store.set(`servers.${i}.rcon.stats.adminActionWebhookChannel`, "");
                 if (!store.get(`servers.${i}.rcon.stats.serverLagReportsWebhookChannel`))
                     store.set(`servers.${i}.rcon.stats.serverLagReportsWebhookChannel`, "");
+            }
+        },
+        "1.20.11": (store) => {
+            const servers = store.get("servers");
+            for (let i = 0; i < servers.length; i++) {
+                if (!store.get(`servers.${i}.rcon.serverDownNotification.timer`))
+                    store.set(`servers.${i}.rcon.serverDownNotification.timer`, 5);
+                if (!store.get(`servers.${i}.rcon.serverDownNotification.channel`))
+                    store.set(`servers.${i}.rcon.serverDownNotification.channel`, "");
             }
         },
     },

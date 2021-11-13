@@ -559,7 +559,22 @@ class Watchdog {
         try {
             const configServer = Config_1.default
                 .get("servers")
-                .find((s) => s.name === server.name);
+                .find((s) => s.name === server.name) || {
+                rcon: {
+                    status: {
+                        updateInterval: 5,
+                        channel: "",
+                        showPlayerList: false,
+                        hideIPPort: false,
+                        fallbackValues: {
+                            serverName: "",
+                            serverPort: 0,
+                            maxPlayerCount: 0,
+                            passwordProtected: false,
+                        },
+                    },
+                },
+            };
             const channelID = configServer.rcon.status.channel;
             if (!channelID) {
                 return logger_1.default.debug("Server Status", `Skipping ${server.name} status message`);
@@ -586,8 +601,9 @@ class Watchdog {
                 : server.rcon.maxPlayerCount;
             const currentPlayerCount = players.length;
             const playerList = online
-                ? players.map((p) => `${p.id} - ${p.name}`).join("\n") ||
-                    "No players online"
+                ? players
+                    .map((p) => `${p.id.padEnd(17, " ")}- ${p.name}`)
+                    .join("\n") || "No players online"
                 : "Server offline";
             const passwordProtected = serverInfo
                 ? serverInfo.Tags.IsPasswordProtected === "true"
@@ -735,8 +751,13 @@ class Watchdog {
             allowedMentions: { everyone: false, users: false },
         })
             .withServer(new slash_create_1.GatewayServer((handler) => this.client.on("rawWS", (event) => {
-            if (event.t === "INTERACTION_CREATE")
-                handler(event.d);
+            try {
+                if (event.t === "INTERACTION_CREATE")
+                    handler(event.d);
+            }
+            catch (err) {
+                logger_1.default.error("Discord", `Error occurred while handling interaction (${error})`);
+            }
         })))
             .on("synced", () => {
             logger_1.default.info("Bot", "Synchronized all slash commands with Discord");
@@ -764,7 +785,22 @@ class Watchdog {
         this.antiSlur = new AutoMod_1.default(this);
         await this.loadRCONCommands();
         for (const [name, server] of this.servers) {
-            const s = Config_1.default.get("servers").find((s) => s.name === name);
+            const s = Config_1.default.get("servers").find((s) => s.name === name) || {
+                rcon: {
+                    status: {
+                        updateInterval: 5,
+                        channel: "",
+                        showPlayerList: false,
+                        hideIPPort: false,
+                        fallbackValues: {
+                            serverName: "",
+                            serverPort: 0,
+                            maxPlayerCount: 0,
+                            passwordProtected: false,
+                        },
+                    },
+                },
+            };
             server.rcon.initialize();
             if (!s.rcon.status.channel)
                 continue;

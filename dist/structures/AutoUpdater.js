@@ -10,6 +10,7 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const path_1 = __importDefault(require("path"));
 const pm2_1 = __importDefault(require("pm2"));
+const remove_markdown_1 = __importDefault(require("remove-markdown"));
 const util_1 = require("util");
 const logger_1 = __importDefault(require("../utils/logger"));
 const pm2ListPromise = util_1.promisify(pm2_1.default.list);
@@ -19,6 +20,7 @@ const downloadPromise = util_1.promisify(download_git_repo_1.default);
 const execPromise = util_1.promisify(child_process_1.exec);
 class AutoUpdater {
     constructor(config) {
+        this.initial = true;
         this.config = config;
     }
     async check() {
@@ -33,16 +35,17 @@ class AutoUpdater {
     }
     async compareVersions() {
         try {
-            logger_1.default.debug("Auto Updater", "Checking for updates...");
+            logger_1.default[this.initial ? "info" : "debug"]("Auto Updater", "Checking for updates...");
             const currentVersion = await this.readLocalVersion();
             const remoteVersion = await this.readRemoteVersion();
             const upToDate = currentVersion == remoteVersion;
             if (upToDate) {
-                logger_1.default.debug("Auto Updater", `Up to date! (${currentVersion})`);
+                logger_1.default[this.initial ? "info" : "debug"]("Auto Updater", `Up to date! (${currentVersion})`);
             }
             else {
                 logger_1.default.info("Auto Updater", `New update available: ${remoteVersion} (Current: ${currentVersion})`);
             }
+            this.initial = false;
             return { upToDate, currentVersion, remoteVersion };
         }
         catch (error) {
@@ -92,13 +95,11 @@ class AutoUpdater {
                     }
                 });
             });
-            const changelog = await fs_extra_1.default.readFile(path_1.default.join(app_root_path_1.default.path, ".autoUpdater", this.config.downloadSubdirectory, "CHANGELOG.md"), "utf8");
-            const latestVersion = changelog
-                .split("\n")
-                .find((line) => line.startsWith("## "))
-                .replace("## ", "");
+            const changelogFile = await fs_extra_1.default.readFile(path_1.default.join(app_root_path_1.default.path, ".autoUpdater", this.config.downloadSubdirectory, "CHANGELOG.md"), "utf8");
+            const currentChangelog = changelogFile.substring(changelogFile.indexOf("## ["));
+            const changelog = remove_markdown_1.default(currentChangelog.substring(0, currentChangelog.indexOf("## [", currentChangelog.indexOf("## [") + 1))).trim();
             logger_1.default.info("Auto Updater", "Finished installing update");
-            logger_1.default.info("Auto Updater", `Latest Update:\n${latestVersion}`);
+            logger_1.default.info("Auto Updater", `Changelog:\n${changelog}`);
             logger_1.default.info("Auto Updater", "Carefully read through the changelog and make any necessary changes");
             try {
                 await new Promise((resolve, reject) => {
