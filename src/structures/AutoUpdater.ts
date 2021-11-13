@@ -5,6 +5,7 @@ import fs from "fs-extra";
 import fetch from "node-fetch";
 import path from "path";
 import pm2 from "pm2";
+import removeMarkdown from "remove-markdown";
 import { promisify } from "util";
 import logger from "../utils/logger";
 
@@ -188,7 +189,7 @@ export default class AutoUpdater {
             // }
 
             // Read changelog file and take the latest version with its changes
-            const changelog = await fs.readFile(
+            const changelogFile = await fs.readFile(
                 path.join(
                     appRootPath.path,
                     ".autoUpdater",
@@ -198,24 +199,22 @@ export default class AutoUpdater {
                 "utf8"
             );
 
-            // get the latest version change from the changelog
-            const latestVersion = changelog
-                .split("\n")
-                .find((line) => line.startsWith("## "))
-                .replace("## ", "");
+            const currentChangelog = changelogFile.substring(
+                changelogFile.indexOf("## [")
+            );
 
-            // const changelog = removeMarkdown(
-            //     (
-            //         await fs.readFile(`${appRootPath}/CHANGELOG.md`, "utf8")
-            //     ).replace("\n", ""),
-            //     { stripListLeaders: false }
-            // ).split("\n") as string[];
-            // const firstOccurance = changelog.findIndex((string) =>
-            //     string.includes("[")
-            // );
+            const changelog = removeMarkdown(
+                currentChangelog.substring(
+                    0,
+                    currentChangelog.indexOf(
+                        "## [",
+                        currentChangelog.indexOf("## [") + 1
+                    )
+                )
+            ).trim();
 
             logger.info("Auto Updater", "Finished installing update");
-            logger.info("Auto Updater", `Latest Update:\n${latestVersion}`);
+            logger.info("Auto Updater", `Changelog:\n${changelog}`);
             // logger.info(
             //     "Auto Updater",
             //     `Latest Update:\n${changelog
