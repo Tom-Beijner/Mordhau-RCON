@@ -1,9 +1,9 @@
 {
     "apps": [
         {
-            "name": "Mordhau-Logger",
-            "script": "node",
-            "args": "./dist/index.js",
+            "name": "Mordhau RCON",
+            "script": "npm",
+            "args": "run start",
             "env": {
                 "NODE_ENV": "production"
             }
