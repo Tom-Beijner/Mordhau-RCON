@@ -26,9 +26,9 @@ export default class Unwarn extends BaseRCONCommand {
 
         const name = ctx.args.join(" ");
         const ingamePlayer = await ctx.rcon.getIngamePlayer(name);
-        const player = this.bot.cachedPlayers.get(ingamePlayer?.id) || {
+        const player = this.bot.cachedPlayers.get(ingamePlayer?.id || name) || {
             server: ctx.rcon.options.name,
-            ...(await LookupPlayer(ingamePlayer?.id)),
+            ...(await LookupPlayer(ingamePlayer?.id || name)),
         };
 
         if (!player?.id) {
