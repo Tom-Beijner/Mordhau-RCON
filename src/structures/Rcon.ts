@@ -170,6 +170,8 @@ export default class Rcon {
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) banned player ${player.id} (Duration: ${duration}, Reason: ${reason})`;
         // const lineDate = new Date();
 
+        this.say(`${player.name} has been banned by an admin.`);
+
         if (!shouldSave) return;
 
         this.bot.logHandler.banHandler.execute(
@@ -211,6 +213,8 @@ export default class Rcon {
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) unbanned player ${player.id}`;
         // const lineDate = new Date();
 
+        this.say(`${player.name} has been unbanned by an admin.`);
+
         if (!shouldSave) return;
 
         this.bot.logHandler.unbanHandler.execute(
@@ -251,6 +255,8 @@ export default class Rcon {
         // const lineDate = new Date();
 
         // this.bot.logHandler.kickHandler.parse(line, server, lineDate, player);
+
+        this.say(`${player.name} has been kicked by an admin.`);
 
         if (!shouldSave) return;
 
@@ -310,6 +316,8 @@ export default class Rcon {
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) muted player ${player.id} (Duration: ${duration})`;
         // const lineDate = new Date();
 
+        this.say(`${player.name} has been muted by an admin.`);
+
         if (!shouldSave) return;
 
         this.bot.logHandler.muteHandler.execute(
@@ -355,6 +363,8 @@ export default class Rcon {
         if (!result.includes("processed successfully")) {
             return result;
         }
+
+        this.say(`${player.name} has been unmuted by an admin.`);
 
         if (!shouldSave) return;
 
@@ -1355,6 +1365,8 @@ export default class Rcon {
                         this.options.name
                     );
 
+                this.say(`${player.name} has been banned by an admin.`);
+
                 return this.bot.logHandler.banHandler.execute(
                     this.options.name,
                     date,
@@ -1371,6 +1383,8 @@ export default class Rcon {
                         player,
                         this.options.name
                     );
+
+                this.say(`${player.name} has been unbanned by an admin.`);
 
                 return this.bot.logHandler.unbanHandler.execute(
                     this.options.name,
