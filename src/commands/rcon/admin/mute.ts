@@ -14,8 +14,7 @@ export default class Mute extends BaseRCONCommand {
                 {
                     names: ["duration", "d"],
                     type: "positiveInteger",
-                    help: "Duration of the ban",
-                    default: "0",
+                    help: "Duration of the mute",
                 },
             ],
         });
@@ -24,6 +23,9 @@ export default class Mute extends BaseRCONCommand {
     async execute(ctx: RCONCommandContext) {
         if (!ctx.args.length)
             return await ctx.say("Provide a player name or id");
+        if (!ctx.opts.duration) {
+            return await ctx.say("Provide a duration");
+        }
 
         const admin = ctx.bot.cachedPlayers.get(ctx.player.id) || {
             server: ctx.rcon.options.name,
