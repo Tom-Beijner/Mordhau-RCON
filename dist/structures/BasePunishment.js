@@ -156,7 +156,9 @@ class BasePunishment {
                 const admin = h.admin;
                 const date = new Date(h.date);
                 let historyDuration;
-                if (!h.duration || h.duration.isEqualTo(0))
+                if (!h.duration ||
+                    h.duration.isEqualTo(0) ||
+                    h.duration.isNaN())
                     historyDuration = "PERMANENT";
                 else {
                     historyDuration = pluralize_1.default("minute", h.duration.toNumber(), true);
@@ -173,9 +175,9 @@ class BasePunishment {
                     `Admin: ${admin}`,
                     `Offense: ${h.reason || "None given"}`,
                     ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(type)
-                        ? `Duration: ${historyDuration} ${((_e = h.duration) === null || _e === void 0 ? void 0 : _e.isEqualTo(0))
+                        ? `Duration: ${historyDuration}${((_e = h.duration) === null || _e === void 0 ? void 0 : _e.isEqualTo(0))
                             ? ""
-                            : `(Un${["BAN", "GLOBAL BAN"].includes(type)
+                            : ` (Un${["BAN", "GLOBAL BAN"].includes(type)
                                 ? "banned"
                                 : "muted"} ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(date, h.duration.toNumber()), { addSuffix: true })})`}`
                         : undefined,

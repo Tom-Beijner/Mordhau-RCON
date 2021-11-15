@@ -22,9 +22,9 @@ class Unmute extends BaseRCONCommands_1.default {
         };
         const name = ctx.args.join(" ");
         const ingamePlayer = await ctx.rcon.getIngamePlayer(name);
-        const player = this.bot.cachedPlayers.get(ingamePlayer === null || ingamePlayer === void 0 ? void 0 : ingamePlayer.id) || {
+        const player = this.bot.cachedPlayers.get((ingamePlayer === null || ingamePlayer === void 0 ? void 0 : ingamePlayer.id) || name) || {
             server: ctx.rcon.options.name,
-            ...(await PlayFab_1.LookupPlayer(ingamePlayer === null || ingamePlayer === void 0 ? void 0 : ingamePlayer.id)),
+            ...(await PlayFab_1.LookupPlayer((ingamePlayer === null || ingamePlayer === void 0 ? void 0 : ingamePlayer.id) || name)),
         };
         if (!(player === null || player === void 0 ? void 0 : player.id)) {
             return await ctx.say("Invalid player provided");

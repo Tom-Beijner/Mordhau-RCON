@@ -226,6 +226,7 @@ class Watchdog {
                         });
                         continue;
                     }
+                    server.rcon.say(`${player.name} has been globally banned by an admin.`);
                     servers.push({
                         name: serverName,
                         data: {
@@ -286,6 +287,7 @@ class Watchdog {
                         });
                         continue;
                     }
+                    server.rcon.say(`${player.name} has been globally muted by an admin.`);
                     servers.push({
                         name: serverName,
                         data: {
@@ -332,6 +334,7 @@ class Watchdog {
                         });
                         continue;
                     }
+                    server.rcon.say(`${player.name} has been globally unbanned by an admin.`);
                     servers.push({
                         name: serverName,
                         data: {
@@ -378,6 +381,7 @@ class Watchdog {
                         });
                         continue;
                     }
+                    server.rcon.say(`${player.name} has been globally unmuted by an admin.`);
                     servers.push({
                         name: serverName,
                         data: {

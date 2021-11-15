@@ -105,7 +105,9 @@ class History extends SlashCommand_1.default {
                     if (type === "BAN")
                         pastBansAmount++;
                     let historyDuration;
-                    if (!h.duration || h.duration.isEqualTo(0))
+                    if (!h.duration ||
+                        h.duration.isEqualTo(0) ||
+                        h.duration.isNaN())
                         historyDuration = "PERMANENT";
                     else {
                         historyDuration = pluralize_1.default("minute", h.duration.toNumber(), true);

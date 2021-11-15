@@ -70,6 +70,7 @@ class Rcon {
         if (!result.includes("processed successfully")) {
             return result;
         }
+        this.say(`${player.name} has been banned by an admin.`);
         if (!shouldSave)
             return;
         this.bot.logHandler.banHandler.execute(server, new Date(), player, admin, duration, reason);
@@ -83,6 +84,7 @@ class Rcon {
         if (!result.includes("processed successfully")) {
             return result;
         }
+        this.say(`${player.name} has been unbanned by an admin.`);
         if (!shouldSave)
             return;
         this.bot.logHandler.unbanHandler.execute(server, new Date(), player, admin);
@@ -96,6 +98,7 @@ class Rcon {
         if (!result.includes("succeeded")) {
             return result;
         }
+        this.say(`${player.name} has been kicked by an admin.`);
         if (!shouldSave)
             return;
         this.bot.logHandler.kickHandler.execute(server, new Date(), player, admin, null, reason);
@@ -109,6 +112,7 @@ class Rcon {
         if (!result.includes("processed successfully")) {
             return result;
         }
+        this.say(`${player.name} has been muted by an admin.`);
         if (!shouldSave)
             return;
         this.bot.logHandler.muteHandler.execute(server, new Date(), player, admin, duration);
@@ -122,6 +126,7 @@ class Rcon {
         if (!result.includes("processed successfully")) {
             return result;
         }
+        this.say(`${player.name} has been unmuted by an admin.`);
         if (!shouldSave)
             return;
         this.bot.logHandler.unmuteHandler.execute(server, new Date(), player, admin);
@@ -559,11 +564,13 @@ class Rcon {
             case "banned": {
                 if (Config_1.default.get("syncServerPunishments"))
                     return this.bot.rcon.globalBan(admin, player, duration, reason, this.options.name);
+                this.say(`${player.name} has been banned by an admin.`);
                 return this.bot.logHandler.banHandler.execute(this.options.name, date, player, admin, duration, reason);
             }
             case "unbanned": {
                 if (Config_1.default.get("syncServerPunishments"))
                     return this.bot.rcon.globalUnban(admin, player, this.options.name);
+                this.say(`${player.name} has been unbanned by an admin.`);
                 return this.bot.logHandler.unbanHandler.execute(this.options.name, date, player, admin);
             }
             case "muted": {
@@ -635,11 +642,26 @@ class Rcon {
             var _a;
             this.authenticated = true;
             logger_1.default.info("RCON", `Auth success (Server: ${this.options.name})`);
-            await this.rcon.send("listen chat");
-            await this.rcon.send("listen matchstate");
-            await this.rcon.send("listen killfeed");
-            await this.rcon.send("listen login");
-            await this.rcon.send("listen punishment");
+            const broadcastEvents = [
+                "chat",
+                "matchstate",
+                "killfeed",
+                "login",
+                "punishment",
+            ];
+            const currentBroadcastEvents = await this.send("listenstatus");
+            const missingBroadcastEvents = broadcastEvents.filter((event) => !currentBroadcastEvents.includes(event));
+            if (broadcastEvents.toString() !== missingBroadcastEvents.toString()) {
+                logger_1.default.debug("RCON", `Already listening to ${broadcastEvents
+                    .filter((event) => currentBroadcastEvents.includes(event))
+                    .join(", ")} by default, will request to listen for: ${missingBroadcastEvents}`);
+            }
+            else {
+                logger_1.default.debug("RCON", "Not listening to events by default");
+            }
+            for (const event of missingBroadcastEvents) {
+                await this.rcon.send(`listen ${event}`);
+            }
             await this.getServerInfo();
             await this.updateCache();
             (_a = this.rcon.socket) === null || _a === void 0 ? void 0 : _a.once("end", async () => {
