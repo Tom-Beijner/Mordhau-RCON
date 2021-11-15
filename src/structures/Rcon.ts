@@ -1496,11 +1496,38 @@ export default class Rcon {
 
             logger.info("RCON", `Auth success (Server: ${this.options.name})`);
 
-            await this.rcon.send("listen chat");
-            await this.rcon.send("listen matchstate");
-            await this.rcon.send("listen killfeed");
-            await this.rcon.send("listen login");
-            await this.rcon.send("listen punishment");
+            const broadcastEvents = [
+                "chat",
+                "matchstate",
+                "killfeed",
+                "login",
+                "punishment",
+            ];
+            const currentBroadcastEvents = await this.send("listenstatus");
+            const missingBroadcastEvents = broadcastEvents.filter(
+                (event) => !currentBroadcastEvents.includes(event)
+            );
+
+            if (
+                broadcastEvents.toString() !== missingBroadcastEvents.toString()
+            ) {
+                logger.debug(
+                    "RCON",
+                    `Already listening to ${broadcastEvents
+                        .filter((event) =>
+                            currentBroadcastEvents.includes(event)
+                        )
+                        .join(
+                            ", "
+                        )} by default, will request to listen for: ${missingBroadcastEvents}`
+                );
+            } else {
+                logger.debug("RCON", "Not listening to events by default");
+            }
+
+            for (const event of missingBroadcastEvents) {
+                await this.rcon.send(`listen ${event}`);
+            }
 
             await this.getServerInfo();
 
