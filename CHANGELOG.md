@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.23.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.22.0...v1.23.0) (2021-11-15)
+
+
+### Features
+
+* make in-game commands ban and mute require a duration to prevent no prefix accidents ([7f9bd52](https://github.com/Tom-Beijner/Mordhau-RCON/commit/7f9bd52da6aa214c8b9e07203bb43f5fa39c313c))
+* punishments are now announced (also goes for global punishments) ([47a247a](https://github.com/Tom-Beijner/Mordhau-RCON/commit/47a247aad4a18618cde859b884cae4f886554a43))
+* **rcon:** toggle broadcast events by comparing the default provided from the server ([64dc626](https://github.com/Tom-Beijner/Mordhau-RCON/commit/64dc62685b61ef9fe394bf6a1d9d7ee3372f732b))
+
+
+### Bug Fixes
+
+* fix a bug where total duration would say NaN (for punishments log and history command) ([02338b9](https://github.com/Tom-Beijner/Mordhau-RCON/commit/02338b949722e59acc4a4828a65dca49d65a572c))
+* fix a bug where you wouldn't be able to punish a player who's not in the server with their ID ([fbbcede](https://github.com/Tom-Beijner/Mordhau-RCON/commit/fbbcede564fc798ea297179a2c00df7ba973f170))
+* small bug if like a permanent mute as issued there would be a space after ([f1cb5e2](https://github.com/Tom-Beijner/Mordhau-RCON/commit/f1cb5e2cdf16e7ac6d10ff25062382acfc86f675))
+
 ## [1.22.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.21.0...v1.22.0) (2021-11-13)
 
 
