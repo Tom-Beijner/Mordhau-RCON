@@ -353,10 +353,10 @@ export default abstract class BasePunishment {
                         ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(
                             type
                         )
-                            ? `Duration: ${historyDuration} ${
+                            ? `Duration: ${historyDuration}${
                                   h.duration?.isEqualTo(0)
                                       ? ""
-                                      : `(Un${
+                                      : ` (Un${
                                             ["BAN", "GLOBAL BAN"].includes(type)
                                                 ? "banned"
                                                 : "muted"
