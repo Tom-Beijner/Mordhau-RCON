@@ -320,7 +320,11 @@ export default abstract class BasePunishment {
                 const date = new Date(h.date);
 
                 let historyDuration: string;
-                if (!h.duration || h.duration.isEqualTo(0))
+                if (
+                    !h.duration ||
+                    h.duration.isEqualTo(0) ||
+                    h.duration.isNaN()
+                )
                     historyDuration = "PERMANENT";
                 else {
                     historyDuration = pluralize(

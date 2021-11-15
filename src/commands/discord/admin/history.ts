@@ -7,7 +7,7 @@ import {
     ApplicationCommandPermissionType,
     CommandContext,
     CommandOptionType,
-    SlashCreator
+    SlashCreator,
 } from "slash-create";
 import { LookupPlayer } from "../../../services/PlayFab";
 import config, { Role } from "../../../structures/Config";
@@ -137,7 +137,11 @@ export default class History extends SlashCommand {
                     if (type === "BAN") pastBansAmount++;
 
                     let historyDuration: string;
-                    if (!h.duration || h.duration.isEqualTo(0))
+                    if (
+                        !h.duration ||
+                        h.duration.isEqualTo(0) ||
+                        h.duration.isNaN()
+                    )
                         historyDuration = "PERMANENT";
                     else {
                         historyDuration = pluralize(
