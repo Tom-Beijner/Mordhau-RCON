@@ -2,8 +2,8 @@
     "apps": [
         {
             "name": "Mordhau RCON",
-            "script": "npm",
-            "args": "start",
+            "script": "node",
+            "args": "./dist/index.js",
             "env": {
                 "NODE_ENV": "production"
             }
