@@ -3,7 +3,7 @@
         {
             "name": "Mordhau RCON",
             "script": "npm",
-            "args": "run start",
+            "args": "start",
             "env": {
                 "NODE_ENV": "production"
             }
