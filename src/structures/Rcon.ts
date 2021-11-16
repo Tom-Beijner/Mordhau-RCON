@@ -716,7 +716,7 @@ export default class Rcon {
 
     async getIngamePlayer(id: string) {
         return new Fuse(await this.getIngamePlayers(), {
-            threshold: 0.4,
+            threshold: 0.2,
             minMatchCharLength: 2,
             keys: [
                 {
@@ -728,7 +728,7 @@ export default class Rcon {
                     weight: 1,
                 },
             ],
-        }).search(id)[0]?.item;
+        }).search({ $or: [{ name: id }, { id: `${id}` }] })[0]?.item;
 
         // return matchSorter(await this.getIngamePlayers(), id, {
         //     keys: ["id", "name"],
