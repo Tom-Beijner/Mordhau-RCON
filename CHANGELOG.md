@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.24.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.23.0...v1.24.0) (2021-11-16)
+
+
+### Features
+
+* the bot won't send the same message in same channel (for punishments and addadmin/removeadmin) ([1641aec](https://github.com/Tom-Beijner/Mordhau-RCON/commit/1641aec9a603f92285cafd8244ab795af37999ae))
+
+
+### Bug Fixes
+
+* fix player search in-game chat ([da1ec8c](https://github.com/Tom-Beijner/Mordhau-RCON/commit/da1ec8cb0ac825425f6b8a5c7ff1695a420caf34))
+* **pm2:** potential fix for pm2 issue ([ae35bc7](https://github.com/Tom-Beijner/Mordhau-RCON/commit/ae35bc7f9d231eb3cc480308785f00ce812c4db4))
+* revert pm2 ([b0489a4](https://github.com/Tom-Beijner/Mordhau-RCON/commit/b0489a4ccb9166c183c6c4531cae7482a3e3e21d))
+
 ## [1.23.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.22.0...v1.23.0) (2021-11-15)
 
 

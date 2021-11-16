@@ -300,7 +300,7 @@ class Rcon {
     async getIngamePlayer(id) {
         var _a;
         return (_a = new fuse_js_1.default(await this.getIngamePlayers(), {
-            threshold: 0.4,
+            threshold: 0.2,
             minMatchCharLength: 2,
             keys: [
                 {
@@ -312,7 +312,7 @@ class Rcon {
                     weight: 1,
                 },
             ],
-        }).search(id)[0]) === null || _a === void 0 ? void 0 : _a.item;
+        }).search({ $or: [{ name: id }, { id: `${id}` }] })[0]) === null || _a === void 0 ? void 0 : _a.item;
     }
     async teleportPlayer(id, coords) {
         try {

@@ -399,6 +399,7 @@ class Watchdog {
             },
             globalAddAdmin: async (player) => {
                 const servers = [];
+                const webhookURLs = [];
                 for (const [serverName, server] of this.servers) {
                     if (server.rcon.admins.has(player.id) ||
                         !server.rcon.connected ||
@@ -429,7 +430,10 @@ class Watchdog {
                         });
                         continue;
                     }
-                    Discord_1.sendWebhookMessage(server.rcon.webhooks.get("activity"), `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})) was given admin privileges (Reason: Global Add Admin)`);
+                    if (server.rcon.webhooks.get("activity") &&
+                        !webhookURLs.includes(server.rcon.webhooks.get("activity"))) {
+                        webhookURLs.push(server.rcon.webhooks.get("activity"));
+                    }
                     servers.push({
                         name: serverName,
                         data: {
@@ -438,10 +442,14 @@ class Watchdog {
                         },
                     });
                 }
+                for (let i = 0; i < webhookURLs.length; i++) {
+                    Discord_1.sendWebhookMessage(webhookURLs[i], `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})) was given admin privileges (Reason: Global Add Admin)`);
+                }
                 return servers;
             },
             globalRemoveAdmin: async (player) => {
                 const servers = [];
+                const webhookURLs = [];
                 for (const [serverName, server] of this.servers) {
                     if (!server.rcon.admins.has(player.id) ||
                         !server.rcon.connected ||
@@ -472,7 +480,10 @@ class Watchdog {
                         });
                         continue;
                     }
-                    Discord_1.sendWebhookMessage(server.rcon.webhooks.get("activity"), `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})) had their admin privileges removed (Reason: Global Remove Admin)`);
+                    if (server.rcon.webhooks.get("activity") &&
+                        !webhookURLs.includes(server.rcon.webhooks.get("activity"))) {
+                        webhookURLs.push(server.rcon.webhooks.get("activity"));
+                    }
                     servers.push({
                         name: serverName,
                         data: {
@@ -480,6 +491,9 @@ class Watchdog {
                             failed: false,
                         },
                     });
+                }
+                for (let i = 0; i < webhookURLs.length; i++) {
+                    Discord_1.sendWebhookMessage(webhookURLs[i], `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})) had their admin privileges removed (Reason: Global Remove Admin)`);
                 }
                 return servers;
             },
