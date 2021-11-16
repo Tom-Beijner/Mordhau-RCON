@@ -1155,6 +1155,7 @@ export default class Watchdog {
                 name: string;
                 data: { result: string; failed: boolean };
             }[] = [];
+            const webhookURLs = [];
 
             for (const [serverName, server] of this.servers) {
                 if (
@@ -1196,8 +1197,25 @@ export default class Watchdog {
                     continue;
                 }
 
+                if (
+                    server.rcon.webhooks.get("activity") &&
+                    !webhookURLs.includes(server.rcon.webhooks.get("activity"))
+                ) {
+                    webhookURLs.push(server.rcon.webhooks.get("activity"));
+                }
+
+                servers.push({
+                    name: serverName,
+                    data: {
+                        result,
+                        failed: false,
+                    },
+                });
+            }
+
+            for (let i = 0; i < webhookURLs.length; i++) {
                 sendWebhookMessage(
-                    server.rcon.webhooks.get("activity"),
+                    webhookURLs[i],
                     `${flatMap(
                         (config.get("discord.roles") as Role[]).filter(
                             (role) => role.receiveMentions
@@ -1208,14 +1226,6 @@ export default class Watchdog {
                         true
                     )})) was given admin privileges (Reason: Global Add Admin)`
                 );
-
-                servers.push({
-                    name: serverName,
-                    data: {
-                        result,
-                        failed: false,
-                    },
-                });
             }
 
             return servers;
@@ -1229,6 +1239,7 @@ export default class Watchdog {
                 name: string;
                 data: { result: string; failed: boolean };
             }[] = [];
+            const webhookURLs = [];
 
             for (const [serverName, server] of this.servers) {
                 if (
@@ -1269,8 +1280,25 @@ export default class Watchdog {
                     continue;
                 }
 
+                if (
+                    server.rcon.webhooks.get("activity") &&
+                    !webhookURLs.includes(server.rcon.webhooks.get("activity"))
+                ) {
+                    webhookURLs.push(server.rcon.webhooks.get("activity"));
+                }
+
+                servers.push({
+                    name: serverName,
+                    data: {
+                        result,
+                        failed: false,
+                    },
+                });
+            }
+
+            for (let i = 0; i < webhookURLs.length; i++) {
                 sendWebhookMessage(
-                    server.rcon.webhooks.get("activity"),
+                    webhookURLs[i],
                     `${flatMap(
                         (config.get("discord.roles") as Role[]).filter(
                             (role) => role.receiveMentions
@@ -1281,14 +1309,6 @@ export default class Watchdog {
                         true
                     )})) had their admin privileges removed (Reason: Global Remove Admin)`
                 );
-
-                servers.push({
-                    name: serverName,
-                    data: {
-                        result,
-                        failed: false,
-                    },
-                });
             }
 
             return servers;

@@ -487,11 +487,21 @@ export default abstract class BasePunishment {
         if (server) {
             sendWebhookEmbed(server.rcon.webhooks.get("punishments"), payload);
         } else {
+            const webhookURLs = [];
+
             for (const [serverName, server] of this.bot.servers) {
-                sendWebhookEmbed(
-                    server.rcon.webhooks.get("punishments"),
-                    payload
-                );
+                if (
+                    server.rcon.webhooks.get("punishments") &&
+                    !webhookURLs.includes(
+                        server.rcon.webhooks.get("punishments")
+                    )
+                ) {
+                    webhookURLs.push(server.rcon.webhooks.get("punishments"));
+                }
+            }
+
+            for (let i = 0; i < webhookURLs.length; i++) {
+                sendWebhookEmbed(webhookURLs[i], payload);
             }
         }
 
