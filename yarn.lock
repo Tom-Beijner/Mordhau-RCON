@@ -4942,6 +4942,7 @@ __metadata:
     retext-english: ^3.0.4
     retext-profanities: ^6.1.0
     retext-stringify: ^2.0.4
+    rimraf: ^3.0.2
     slash-create: ^4.3.0
     standard-version: ^9.3.2
     steamid: ^2.0.0
