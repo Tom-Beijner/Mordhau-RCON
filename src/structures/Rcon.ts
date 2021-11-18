@@ -1877,19 +1877,23 @@ export default class Rcon {
                 );
             }
 
-            // Match waiting to start
-            if (data.startsWith("Match: Waiting to start")) {
-                this.onMatchWaitingToStart();
-            }
+            if (data.startsWith("MatchState: ")) {
+                logger.debug("MatchState", data.replace("MatchState: ", ""));
 
-            // Match start
-            if (data.includes("MatchState: In progress")) {
-                this.onMatchStart();
-            }
+                // Match waiting to start
+                if (data.startsWith("Waiting to start")) {
+                    this.onMatchWaitingToStart();
+                }
 
-            // Match change map, match end
-            if (data.includes("MatchState: Leaving map")) {
-                this.onMatchChangeMap();
+                // Match start
+                if (data.includes("In progress")) {
+                    this.onMatchStart();
+                }
+
+                // Match change map, match end
+                if (data.includes("Leaving map")) {
+                    this.onMatchChangeMap();
+                }
             }
 
             // // Match change map
