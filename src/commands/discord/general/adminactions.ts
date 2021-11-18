@@ -21,7 +21,7 @@ const chartJSNodeCanvas = new ChartJSNodeCanvas({
 
 Chart.defaults.color = "#fff";
 Chart.defaults.font = {
-    family: "sans-serif",
+    // family: "sans-serif",
     size: 16,
 };
 
