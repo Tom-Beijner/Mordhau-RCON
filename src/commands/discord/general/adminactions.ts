@@ -20,10 +20,10 @@ const chartJSNodeCanvas = new ChartJSNodeCanvas({
 });
 
 Chart.defaults.color = "#fff";
-Chart.defaults.font = {
-    // family: "sans-serif",
-    size: 16,
-};
+// Chart.defaults.font = {
+// family: "sans-serif",
+// size: 16,
+// };
 
 export default class AdminActions extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -409,10 +409,13 @@ export default class AdminActions extends SlashCommand {
                 );
             }
 
-            const title = `Chart of ${pluralize(
-                options.command.toLowerCase(),
-                1
-            )} usage on ${options.server} server${
+            const title = `Chart of ${
+                ["punishments", ...punishments].includes(
+                    options.command.toLowerCase()
+                )
+                    ? pluralize(options.command.toLowerCase(), 1)
+                    : options.command.toLowerCase()
+            } usage on ${options.server} server${
                 options.server === "all" ? "s" : ""
             } (past ${pluralize("day", options.pastdays, true)}${
                 options.command === "punishments"
