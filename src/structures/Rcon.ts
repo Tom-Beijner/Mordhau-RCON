@@ -1892,6 +1892,21 @@ export default class Rcon {
                 if (data.includes("Leaving map")) {
                     this.onMatchChangeMap();
                 }
+
+                if (this.webhooks.get("activity")) {
+                    await sendWebhookMessage(
+                        this.webhooks.get("activity"),
+                        `**${data}**${
+                            data.includes("Leaving map")
+                                ? `, ${pluralize(
+                                      "player",
+                                      this.tempCurrentPlayers.length,
+                                      true
+                                  )} still on server`
+                                : ""
+                        }`
+                    );
+                }
             }
 
             // // Match change map
