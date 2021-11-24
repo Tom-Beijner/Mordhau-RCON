@@ -354,7 +354,9 @@ export default abstract class BasePunishment {
                             type
                         )
                             ? `Duration: ${historyDuration}${
-                                  h.duration?.isEqualTo(0)
+                                  !h.duration ||
+                                  h.duration.isEqualTo(0) ||
+                                  h.duration.isNaN()
                                       ? ""
                                       : ` (Un${
                                             ["BAN", "GLOBAL BAN"].includes(type)

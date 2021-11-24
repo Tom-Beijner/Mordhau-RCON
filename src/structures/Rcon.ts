@@ -45,6 +45,7 @@ export default class Rcon {
         }
     > = new Map();
     admins: Set<string> = new Set();
+    tempCurrentPlayers: string[] = [];
     options: {
         adminListSaving: boolean;
         ignoreGlobalPunishments: boolean;
@@ -796,7 +797,9 @@ export default class Rcon {
         await this.saveAdmins();
     }
 
-    onMatchWaitingToStart() {}
+    onMatchWaitingToStart() {
+        this.tempCurrentPlayers = [];
+    }
 
     async onMatchStart() {
         await this.updateCache();
@@ -844,7 +847,11 @@ export default class Rcon {
         }
     }
 
-    onMatchChangeMap() {
+    async onMatchChangeMap() {
+        this.tempCurrentPlayers = (await this.getIngamePlayers()).map(
+            (p) => p.id
+        );
+
         this.mapVote.onMatchEnd();
     }
 
@@ -996,22 +1003,29 @@ export default class Rcon {
                 new BigNumber(0)
             );
 
-        logger.info(
-            "Server",
-            `${admin ? "Admin" : "Player"} ${player.name} (${outputPlayerIDs(
-                player.ids
-            )}) has joined the server (Server: ${server}${
-                bans > 0
-                    ? `, Bans: ${bans}, Total Duration: ${pluralize(
-                          "minute",
-                          totalDuration.toNumber(),
-                          true
-                      )}`
-                    : ""
-            })`
-        );
+        if (!this.tempCurrentPlayers.includes(player.id)) {
+            logger.info(
+                "Server",
+                `${admin ? "Admin" : "Player"} ${
+                    player.name
+                } (${outputPlayerIDs(
+                    player.ids
+                )}) has joined the server (Server: ${server}${
+                    bans > 0
+                        ? `, Bans: ${bans}, Total Duration: ${pluralize(
+                              "minute",
+                              totalDuration.toNumber(),
+                              true
+                          )}`
+                        : ""
+                })`
+            );
+        }
 
-        if (process.env.NODE_ENV.trim() === "production")
+        if (
+            process.env.NODE_ENV.trim() === "production" &&
+            !this.tempCurrentPlayers.includes(player.id)
+        )
             sendWebhookMessage(
                 this.webhooks.get("activity"),
                 `${admin ? "Admin" : "Player"} ${removeMentions(
@@ -1040,20 +1054,25 @@ export default class Rcon {
             );
         }
 
-        logger.info(
-            "Server",
-            `Naughty ${admin ? "admin" : "player"} ${
-                player.name
-            } (${outputPlayerIDs(
-                player.ids
-            )}) has joined with ${bans} bans a total duration of ${pluralize(
-                "minute",
-                totalDuration.toNumber(),
-                true
-            )} (Server: ${server})`
-        );
+        if (!this.tempCurrentPlayers.includes(player.id)) {
+            logger.info(
+                "Server",
+                `Naughty ${admin ? "admin" : "player"} ${
+                    player.name
+                } (${outputPlayerIDs(
+                    player.ids
+                )}) has joined with ${bans} bans a total duration of ${pluralize(
+                    "minute",
+                    totalDuration.toNumber(),
+                    true
+                )} (Server: ${server})`
+            );
+        }
 
-        if (process.env.NODE_ENV.trim() === "production")
+        if (
+            process.env.NODE_ENV.trim() === "production" &&
+            !this.tempCurrentPlayers.includes(player.id)
+        )
             sendWebhookMessage(
                 this.webhooks.get("wanted"),
                 `Naughty ${admin ? "admin" : "player"} ${removeMentions(
@@ -1860,19 +1879,23 @@ export default class Rcon {
                 );
             }
 
-            // Match waiting to start
-            if (data.startsWith("Match: Waiting to start")) {
-                this.onMatchWaitingToStart();
-            }
+            if (data.startsWith("MatchState: ")) {
+                logger.debug("MatchState", data.replace("MatchState: ", ""));
 
-            // Match start
-            if (data.includes("MatchState: In progress")) {
-                this.onMatchStart();
-            }
+                // Match waiting to start
+                if (data.startsWith("Waiting to start")) {
+                    this.onMatchWaitingToStart();
+                }
 
-            // Match change map, match end
-            if (data.includes("MatchState: Leaving map")) {
-                this.onMatchChangeMap();
+                // Match start
+                if (data.includes("In progress")) {
+                    this.onMatchStart();
+                }
+
+                // Match change map, match end
+                if (data.includes("Leaving map")) {
+                    this.onMatchChangeMap();
+                }
             }
 
             // // Match change map
