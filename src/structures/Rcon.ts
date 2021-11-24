@@ -380,7 +380,9 @@ export default class Rcon {
         return await this.rcon.send(message);
     }
 
-    async say(message: string) {
+    async say(message: string, messageType?: "adminchat") {
+        if (messageType) return await this.rcon.send(`customsay ${message}`);
+
         return await this.rcon.send(`say ${message}`);
     }
 
