@@ -124,7 +124,7 @@ class BasePunishment {
         });
     }
     async sendMessage(data) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f;
         let duration = !((_a = data.duration) === null || _a === void 0 ? void 0 : _a.isEqualTo(0)) && ((_b = data.duration) === null || _b === void 0 ? void 0 : _b.toString());
         if ((_c = data.duration) === null || _c === void 0 ? void 0 : _c.isEqualTo(0)) {
             duration = "PERMANENT";
@@ -175,7 +175,9 @@ class BasePunishment {
                     `Admin: ${admin}`,
                     `Offense: ${h.reason || "None given"}`,
                     ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(type)
-                        ? `Duration: ${historyDuration}${((_e = h.duration) === null || _e === void 0 ? void 0 : _e.isEqualTo(0))
+                        ? `Duration: ${historyDuration}${!h.duration ||
+                            h.duration.isEqualTo(0) ||
+                            h.duration.isNaN()
                             ? ""
                             : ` (Un${["BAN", "GLOBAL BAN"].includes(type)
                                 ? "banned"
@@ -199,13 +201,13 @@ class BasePunishment {
         ].filter((line) => typeof line !== "undefined");
         let color;
         if (["BAN", "GLOBAL BAN"].includes(data.type)) {
-            message.push(`**Offense**: \`${data.reason || "None given"}\``, `**Duration**: \`${duration}${((_f = data.duration) === null || _f === void 0 ? void 0 : _f.isEqualTo(0))
+            message.push(`**Offense**: \`${data.reason || "None given"}\``, `**Duration**: \`${duration}${((_e = data.duration) === null || _e === void 0 ? void 0 : _e.isEqualTo(0))
                 ? ""
                 : ` (Unbanned ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(new Date(), new bignumber_js_1.default(data.duration).toNumber()), { addSuffix: true })})`}\``);
             color = data.type === "BAN" ? 15158332 : 10038562;
         }
         if (["MUTE", "GLOBAL MUTE"].includes(data.type)) {
-            message.push(`**Duration**: \`${duration} ${((_g = data.duration) === null || _g === void 0 ? void 0 : _g.isEqualTo(0))
+            message.push(`**Duration**: \`${duration} ${((_f = data.duration) === null || _f === void 0 ? void 0 : _f.isEqualTo(0))
                 ? ""
                 : `(Unmuted ${date_fns_1.formatDistanceToNow(date_fns_1.addMinutes(new Date(), new bignumber_js_1.default(data.duration).toNumber()), { addSuffix: true })})`}\``);
             color = data.type === "MUTE" ? 3447003 : 2123412;

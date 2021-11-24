@@ -22,10 +22,6 @@ const chartJSNodeCanvas = new chartjs_node_canvas_1.ChartJSNodeCanvas({
     },
 });
 chart_js_1.default.defaults.color = "#fff";
-chart_js_1.default.defaults.font = {
-    family: "sans-serif",
-    size: 16,
-};
 class AdminActions extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
         super(creator, bot, {
@@ -245,7 +241,9 @@ class AdminActions extends SlashCommand_1.default {
                 ];
                 backgroundColor.push(backgroundColors[Math.floor(Math.random() * backgroundColors.length)]);
             }
-            const title = `Chart of ${pluralize_1.default(options.command.toLowerCase(), 1)} usage on ${options.server} server${options.server === "all" ? "s" : ""} (past ${pluralize_1.default("day", options.pastdays, true)}${options.command === "punishments"
+            const title = `Chart of ${["punishments", ...punishments].includes(options.command.toLowerCase())
+                ? pluralize_1.default(options.command.toLowerCase(), 1)
+                : options.command.toLowerCase()} usage on ${options.server} server${options.server === "all" ? "s" : ""} (past ${pluralize_1.default("day", options.pastdays, true)}${options.command === "punishments"
                 ? `, types: ${punishments
                     .filter((p) => p !== "punishments")
                     .sort()

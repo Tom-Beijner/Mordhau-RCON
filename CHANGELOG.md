@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.25.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.24.0...v1.25.0) (2021-11-24)
+
+
+### Features
+
+* add adminchat rcon message type ([bd23d77](https://github.com/Tom-Beijner/Mordhau-RCON/commit/bd23d779879cd0f4906bdd9649b2b603160e9f19))
+* announce punishments to adminchat ([d111edd](https://github.com/Tom-Beijner/Mordhau-RCON/commit/d111eddb82e6e7d70672c40225455475329ba123))
+* match state now gets logged to activity channel (1 small bug is present) ([8fe66df](https://github.com/Tom-Beijner/Mordhau-RCON/commit/8fe66dfdda58cea5c4ba36458e7b09cbaf6f5c89))
+* status embed playerlist is now dynamic length check ([9a26ecb](https://github.com/Tom-Beijner/Mordhau-RCON/commit/9a26ecb32289b28f128a224f97eed11411f15fc4))
+
+
+### Bug Fixes
+
+* **adminactions:** fix a small plural bug ([ca68f3f](https://github.com/Tom-Beijner/Mordhau-RCON/commit/ca68f3f2eb9c85da00d01c71d4051d11ae48f455))
+* **adminactions:** potential font fix ([9a9d081](https://github.com/Tom-Beijner/Mordhau-RCON/commit/9a9d081631aa29a34ad2bdc3a22ffcac2013375e))
+* fix a bug where if duration was null it would not be able to print out a history message ([774afdc](https://github.com/Tom-Beijner/Mordhau-RCON/commit/774afdc26c31c77fdbad1572bcae221786f775dd))
+* remove punishment announcement for kicks and mute, to avoid duplicated messages ([8ef4e5f](https://github.com/Tom-Beijner/Mordhau-RCON/commit/8ef4e5f048cfd2790ffa009b77deb1c59a80178f))
+
 ## [1.24.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.23.0...v1.24.0) (2021-11-16)
 
 

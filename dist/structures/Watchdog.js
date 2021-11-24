@@ -618,9 +618,10 @@ class Watchdog {
                 ? configServer.rcon.status.fallbackValues.maxPlayerCount
                 : server.rcon.maxPlayerCount;
             const currentPlayerCount = players.length;
+            const longestIDLength = Math.max(...players.map((p) => p.id.length));
             const playerList = online
                 ? players
-                    .map((p) => `${p.id.padEnd(17, " ")}- ${p.name}`)
+                    .map((p) => `${p.id.padEnd(longestIDLength + 1, " ")}- ${p.name}`)
                     .join("\n") || "No players online"
                 : "Server offline";
             const passwordProtected = serverInfo

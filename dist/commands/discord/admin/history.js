@@ -54,7 +54,6 @@ class History extends SlashCommand_1.default {
         });
     }
     async run(ctx) {
-        var _a;
         await ctx.defer();
         const options = {
             type: ctx.options.type.toLowerCase(),
@@ -139,7 +138,9 @@ class History extends SlashCommand_1.default {
                             "GLOBAL BAN",
                             "GLOBAL MUTE",
                         ].includes(type)
-                            ? `Duration: ${historyDuration} ${((_a = h.duration) === null || _a === void 0 ? void 0 : _a.isEqualTo(0))
+                            ? `Duration: ${historyDuration} ${!h.duration ||
+                                h.duration.isEqualTo(0) ||
+                                h.duration.isNaN()
                                 ? ""
                                 : `(Un${["BAN", "GLOBAL BAN"].includes(type)
                                     ? "banned"

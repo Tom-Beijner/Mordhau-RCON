@@ -32,6 +32,7 @@ class Rcon {
         this.reconnecting = false;
         this.webhooks = new Map();
         this.admins = new Set();
+        this.tempCurrentPlayers = [];
         this.maxPlayerCount = "Unknown";
         this.timer = new easytimer_js_1.default({ countdown: true });
         this.options = options;
@@ -71,6 +72,9 @@ class Rcon {
             return result;
         }
         this.say(`${player.name} has been banned by an admin.`);
+        this.say(`${player.name} has been banned for ${duration && !duration.isEqualTo(0) && !duration.isNaN()
+            ? pluralize_1.default("minute", duration.toNumber(), true)
+            : "PERMANENTLY"} by ${admin.name} (${admin.id}).\nReason: ${reason || "none given"}`, "adminchat");
         if (!shouldSave)
             return;
         this.bot.logHandler.banHandler.execute(server, new Date(), player, admin, duration, reason);
@@ -85,6 +89,7 @@ class Rcon {
             return result;
         }
         this.say(`${player.name} has been unbanned by an admin.`);
+        this.say(`${player.name} has been unbanned by ${admin.name} (${admin.id}).`, "adminchat");
         if (!shouldSave)
             return;
         this.bot.logHandler.unbanHandler.execute(server, new Date(), player, admin);
@@ -98,7 +103,7 @@ class Rcon {
         if (!result.includes("succeeded")) {
             return result;
         }
-        this.say(`${player.name} has been kicked by an admin.`);
+        this.say(`${player.name} has been kicked by ${admin.name} (${admin.id}).\nReason: ${reason || "none give"}`, "adminchat");
         if (!shouldSave)
             return;
         this.bot.logHandler.kickHandler.execute(server, new Date(), player, admin, null, reason);
@@ -112,7 +117,7 @@ class Rcon {
         if (!result.includes("processed successfully")) {
             return result;
         }
-        this.say(`${player.name} has been muted by an admin.`);
+        this.say(`${player.name} has been muted by ${admin.name} (${admin.id}).`, "adminchat");
         if (!shouldSave)
             return;
         this.bot.logHandler.muteHandler.execute(server, new Date(), player, admin, duration);
@@ -127,6 +132,7 @@ class Rcon {
             return result;
         }
         this.say(`${player.name} has been unmuted by an admin.`);
+        this.say(`${player.name} has been unmuted by ${admin.name} (${admin.id}).`, "adminchat");
         if (!shouldSave)
             return;
         this.bot.logHandler.unmuteHandler.execute(server, new Date(), player, admin);
@@ -134,7 +140,9 @@ class Rcon {
     async send(message) {
         return await this.rcon.send(message);
     }
-    async say(message) {
+    async say(message, messageType) {
+        if (messageType)
+            return await this.rcon.send(`customsay ${messageType} ${message}`);
         return await this.rcon.send(`say ${message}`);
     }
     async changeMap(map) {
@@ -339,7 +347,9 @@ class Rcon {
         await this.saveIngamePlayers();
         await this.saveAdmins();
     }
-    onMatchWaitingToStart() { }
+    onMatchWaitingToStart() {
+        this.tempCurrentPlayers = [];
+    }
     async onMatchStart() {
         await this.updateCache();
         this.mapVote.onMatchStart();
@@ -370,7 +380,8 @@ class Rcon {
             }
         }
     }
-    onMatchChangeMap() {
+    async onMatchChangeMap() {
+        this.tempCurrentPlayers = (await this.getIngamePlayers()).map((p) => p.id);
         this.mapVote.onMatchEnd();
     }
     async onJoin(id) {
@@ -429,10 +440,13 @@ class Rcon {
         const totalDuration = history
             .filter((h) => !new bignumber_js_1.default(h.duration).isNaN())
             .reduce((a, b) => a.plus(new bignumber_js_1.default(b.duration)), new bignumber_js_1.default(0));
-        logger_1.default.info("Server", `${admin ? "Admin" : "Player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has joined the server (Server: ${server}${bans > 0
-            ? `, Bans: ${bans}, Total Duration: ${pluralize_1.default("minute", totalDuration.toNumber(), true)}`
-            : ""})`);
-        if (process.env.NODE_ENV.trim() === "production")
+        if (!this.tempCurrentPlayers.includes(player.id)) {
+            logger_1.default.info("Server", `${admin ? "Admin" : "Player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has joined the server (Server: ${server}${bans > 0
+                ? `, Bans: ${bans}, Total Duration: ${pluralize_1.default("minute", totalDuration.toNumber(), true)}`
+                : ""})`);
+        }
+        if (process.env.NODE_ENV.trim() === "production" &&
+            !this.tempCurrentPlayers.includes(player.id))
             Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${admin ? "Admin" : "Player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has joined the server (Server: ${server}${bans > 0
                 ? `, Bans: ${bans}, Total Duration: ${pluralize_1.default("minute", totalDuration.toNumber(), true)}`
                 : ""})`);
@@ -442,8 +456,11 @@ class Rcon {
             this.bot.naughtyPlayers.set(player.id, this.bot.cachedPlayers.get(player.id) ||
                 (await this.getPlayerToCache(player.id)));
         }
-        logger_1.default.info("Server", `Naughty ${admin ? "admin" : "player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has joined with ${bans} bans a total duration of ${pluralize_1.default("minute", totalDuration.toNumber(), true)} (Server: ${server})`);
-        if (process.env.NODE_ENV.trim() === "production")
+        if (!this.tempCurrentPlayers.includes(player.id)) {
+            logger_1.default.info("Server", `Naughty ${admin ? "admin" : "player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has joined with ${bans} bans a total duration of ${pluralize_1.default("minute", totalDuration.toNumber(), true)} (Server: ${server})`);
+        }
+        if (process.env.NODE_ENV.trim() === "production" &&
+            !this.tempCurrentPlayers.includes(player.id))
             Discord_1.sendWebhookMessage(this.webhooks.get("wanted"), `Naughty ${admin ? "admin" : "player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has joined with ${bans} bans a total duration of ${pluralize_1.default("minute", totalDuration.toNumber(), true)} (Server: ${server})`);
     }
     async onLeave(id) {
@@ -565,22 +582,28 @@ class Rcon {
                 if (Config_1.default.get("syncServerPunishments"))
                     return this.bot.rcon.globalBan(admin, player, duration, reason, this.options.name);
                 this.say(`${player.name} has been banned by an admin.`);
+                this.say(`${player.name} has been banned for ${duration && !duration.isEqualTo(0) && !duration.isNaN()
+                    ? pluralize_1.default("minute", duration.toNumber(), true)
+                    : "PERMANENTLY"} by ${admin.name} (${admin.id}).\nReason: ${reason || "none given"}`, "adminchat");
                 return this.bot.logHandler.banHandler.execute(this.options.name, date, player, admin, duration, reason);
             }
             case "unbanned": {
                 if (Config_1.default.get("syncServerPunishments"))
                     return this.bot.rcon.globalUnban(admin, player, this.options.name);
                 this.say(`${player.name} has been unbanned by an admin.`);
+                this.say(`${player.name} has been unbanned by ${admin.name} (${admin.id}).`, "adminchat");
                 return this.bot.logHandler.unbanHandler.execute(this.options.name, date, player, admin);
             }
             case "muted": {
                 if (Config_1.default.get("syncServerPunishments"))
                     return this.bot.rcon.globalMute(admin, player, duration, this.options.name);
+                this.say(`${player.name} has been muted by ${admin.name} (${admin.id}).`, "adminchat");
                 return this.bot.logHandler.muteHandler.execute(this.options.name, date, player, admin, duration);
             }
             case "unmuted": {
                 if (Config_1.default.get("syncServerPunishments"))
                     return this.bot.rcon.globalUnmute(admin, player, this.options.name);
+                this.say(`${player.name} has been unmuted by ${admin.name} (${admin.id}).`, "adminchat");
                 return this.bot.logHandler.unmuteHandler.execute(this.options.name, date, player, admin);
             }
         }
@@ -811,14 +834,22 @@ class Rcon {
                 logger_1.default.info("Ingame Command", `${player.name} ran ${command.meta.name}`);
                 command.execute(new RCONCommandContext_1.default(command, this.bot, this, player, message, args));
             }
-            if (data.startsWith("Match: Waiting to start")) {
-                this.onMatchWaitingToStart();
-            }
-            if (data.includes("MatchState: In progress")) {
-                this.onMatchStart();
-            }
-            if (data.includes("MatchState: Leaving map")) {
-                this.onMatchChangeMap();
+            if (data.startsWith("MatchState: ")) {
+                logger_1.default.debug("MatchState", data.replace("MatchState: ", ""));
+                if (data.startsWith("Waiting to start")) {
+                    this.onMatchWaitingToStart();
+                }
+                if (data.includes("In progress")) {
+                    this.onMatchStart();
+                }
+                if (data.includes("Leaving map")) {
+                    this.onMatchChangeMap();
+                }
+                if (this.webhooks.get("activity")) {
+                    await Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `**${data}**${data.includes("Leaving map")
+                        ? `, ${pluralize_1.default("player", this.tempCurrentPlayers.length, true)} still on server`
+                        : ""}`);
+                }
             }
             if (data.includes("Killfeed:") && data.includes("killed")) {
                 function parseMessage(message) {
