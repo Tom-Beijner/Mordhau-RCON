@@ -257,8 +257,6 @@ export default class Rcon {
 
         // this.bot.logHandler.kickHandler.parse(line, server, lineDate, player);
 
-        this.say(`${player.name} has been kicked by an admin.`);
-
         if (!shouldSave) return;
 
         this.bot.logHandler.kickHandler.execute(
@@ -316,8 +314,6 @@ export default class Rcon {
 
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) muted player ${player.id} (Duration: ${duration})`;
         // const lineDate = new Date();
-
-        this.say(`${player.name} has been muted by an admin.`);
 
         if (!shouldSave) return;
 
