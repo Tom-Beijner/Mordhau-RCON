@@ -173,6 +173,17 @@ export default class Rcon {
 
         this.say(`${player.name} has been banned by an admin.`);
 
+        this.say(
+            `${player.name} has been banned for ${
+                duration && !duration.isEqualTo(0) && !duration.isNaN()
+                    ? pluralize("minute", duration.toNumber(), true)
+                    : "PERMANENTLY"
+            } by ${admin.name} (${admin.id}).\nReason: ${
+                reason || "none given"
+            }`,
+            "adminchat"
+        );
+
         if (!shouldSave) return;
 
         this.bot.logHandler.banHandler.execute(
@@ -216,6 +227,11 @@ export default class Rcon {
 
         this.say(`${player.name} has been unbanned by an admin.`);
 
+        this.say(
+            `${player.name} has been unbanned by ${admin.name} (${admin.id}).`,
+            "adminchat"
+        );
+
         if (!shouldSave) return;
 
         this.bot.logHandler.unbanHandler.execute(
@@ -256,6 +272,13 @@ export default class Rcon {
         // const lineDate = new Date();
 
         // this.bot.logHandler.kickHandler.parse(line, server, lineDate, player);
+
+        this.say(
+            `${player.name} has been kicked by ${admin.name} (${
+                admin.id
+            }).\nReason: ${reason || "none give"}`,
+            "adminchat"
+        );
 
         if (!shouldSave) return;
 
@@ -315,6 +338,11 @@ export default class Rcon {
         // const line = `LogMordhauPlayerController: Display: Admin ${admin.name} (${admin.id}) muted player ${player.id} (Duration: ${duration})`;
         // const lineDate = new Date();
 
+        this.say(
+            `${player.name} has been muted by ${admin.name} (${admin.id}).`,
+            "adminchat"
+        );
+
         if (!shouldSave) return;
 
         this.bot.logHandler.muteHandler.execute(
@@ -363,6 +391,11 @@ export default class Rcon {
 
         this.say(`${player.name} has been unmuted by an admin.`);
 
+        this.say(
+            `${player.name} has been unmuted by ${admin.name} (${admin.id}).`,
+            "adminchat"
+        );
+
         if (!shouldSave) return;
 
         this.bot.logHandler.unmuteHandler.execute(
@@ -378,7 +411,8 @@ export default class Rcon {
     }
 
     async say(message: string, messageType?: "adminchat") {
-        if (messageType) return await this.rcon.send(`customsay ${message}`);
+        if (messageType)
+            return await this.rcon.send(`customsay ${messageType} ${message}`);
 
         return await this.rcon.send(`say ${message}`);
     }
@@ -1384,6 +1418,17 @@ export default class Rcon {
 
                 this.say(`${player.name} has been banned by an admin.`);
 
+                this.say(
+                    `${player.name} has been banned for ${
+                        duration && !duration.isEqualTo(0) && !duration.isNaN()
+                            ? pluralize("minute", duration.toNumber(), true)
+                            : "PERMANENTLY"
+                    } by ${admin.name} (${admin.id}).\nReason: ${
+                        reason || "none given"
+                    }`,
+                    "adminchat"
+                );
+
                 return this.bot.logHandler.banHandler.execute(
                     this.options.name,
                     date,
@@ -1403,6 +1448,11 @@ export default class Rcon {
 
                 this.say(`${player.name} has been unbanned by an admin.`);
 
+                this.say(
+                    `${player.name} has been unbanned by ${admin.name} (${admin.id}).`,
+                    "adminchat"
+                );
+
                 return this.bot.logHandler.unbanHandler.execute(
                     this.options.name,
                     date,
@@ -1419,6 +1469,11 @@ export default class Rcon {
                         this.options.name
                     );
 
+                this.say(
+                    `${player.name} has been muted by ${admin.name} (${admin.id}).`,
+                    "adminchat"
+                );
+
                 return this.bot.logHandler.muteHandler.execute(
                     this.options.name,
                     date,
@@ -1434,6 +1489,11 @@ export default class Rcon {
                         player,
                         this.options.name
                     );
+
+                this.say(
+                    `${player.name} has been unmuted by ${admin.name} (${admin.id}).`,
+                    "adminchat"
+                );
 
                 return this.bot.logHandler.unmuteHandler.execute(
                     this.options.name,
