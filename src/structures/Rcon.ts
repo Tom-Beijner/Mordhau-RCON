@@ -411,8 +411,9 @@ export default class Rcon {
     }
 
     async say(message: string, messageType?: "adminchat") {
-        if (messageType)
-            return await this.rcon.send(`customsay ${messageType} ${message}`);
+        if (messageType) return;
+        // if (messageType)
+        //     return await this.rcon.send(`customsay ${messageType} ${message}`);
 
         return await this.rcon.send(`say ${message}`);
     }
