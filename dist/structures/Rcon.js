@@ -142,7 +142,7 @@ class Rcon {
     }
     async say(message, messageType) {
         if (messageType)
-            return await this.rcon.send(`customsay ${messageType} ${message}`);
+            return;
         return await this.rcon.send(`say ${message}`);
     }
     async changeMap(map) {
