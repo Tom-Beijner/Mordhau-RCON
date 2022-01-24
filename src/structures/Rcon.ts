@@ -69,6 +69,8 @@ export default class Rcon {
     maxPlayerCount: number | string = "Unknown";
     statusMessageID?: string;
     timer: Timer = new Timer({ countdown: true });
+    currentMatchState: "waiting-to-start" | "in-progress" | "leaving-map" =
+        "waiting-to-start";
 
     constructor(
         bot: Watchdog,
@@ -1939,18 +1941,32 @@ export default class Rcon {
             if (data.startsWith("MatchState: ")) {
                 logger.debug("MatchState", data.replace("MatchState: ", ""));
 
+                // Prevent spam
+                if (
+                    this.currentMatchState !== "waiting-to-start" &&
+                    !data.startsWith("Leaving map")
+                ) {
+                    return;
+                }
+
                 // Match waiting to start
                 if (data.startsWith("Waiting to start")) {
+                    this.currentMatchState = "waiting-to-start";
+
                     this.onMatchWaitingToStart();
                 }
 
                 // Match start
                 if (data.includes("In progress")) {
+                    this.currentMatchState = "in-progress";
+
                     this.onMatchStart();
                 }
 
                 // Match change map, match end
                 if (data.includes("Leaving map")) {
+                    this.currentMatchState = "leaving-map";
+
                     this.onMatchChangeMap();
                 }
 
