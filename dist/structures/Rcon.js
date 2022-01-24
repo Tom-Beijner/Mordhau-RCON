@@ -35,6 +35,7 @@ class Rcon {
         this.tempCurrentPlayers = [];
         this.maxPlayerCount = "Unknown";
         this.timer = new easytimer_js_1.default({ countdown: true });
+        this.currentMatchState = "waiting-to-start";
         this.options = options;
         this.bot = bot;
         if (options.killstreaks.enabled)
@@ -153,7 +154,6 @@ class Rcon {
             .split("\n")
             .map((stat) => stat.split(": ")[1]);
         this.hostname = hostname;
-        this.currentName = name === null || name === void 0 ? void 0 : name.toLowerCase();
         this.currentGamemode = gamemode === null || gamemode === void 0 ? void 0 : gamemode.toLowerCase();
         this.currentMap = currentMap === null || currentMap === void 0 ? void 0 : currentMap.toLowerCase();
         return {
@@ -836,13 +836,20 @@ class Rcon {
             }
             if (data.startsWith("MatchState: ")) {
                 logger_1.default.debug("MatchState", data.replace("MatchState: ", ""));
+                if (this.currentMatchState !== "waiting-to-start" &&
+                    !data.startsWith("Leaving map")) {
+                    return;
+                }
                 if (data.startsWith("Waiting to start")) {
+                    this.currentMatchState = "waiting-to-start";
                     this.onMatchWaitingToStart();
                 }
                 if (data.includes("In progress")) {
+                    this.currentMatchState = "in-progress";
                     this.onMatchStart();
                 }
                 if (data.includes("Leaving map")) {
+                    this.currentMatchState = "leaving-map";
                     this.onMatchChangeMap();
                 }
                 if (this.webhooks.get("activity")) {

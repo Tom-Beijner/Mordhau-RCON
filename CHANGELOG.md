@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.26.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.25.1...v1.26.0) (2022-01-24)
+
+
+### Features
+
+* make the status embed use cache data to hopefully prevent ? replaced symbols ([be42789](https://github.com/Tom-Beijner/Mordhau-RCON/commit/be427898ccf8340b72291912ed5321f8343ab522))
+
+
+### Bug Fixes
+
+* matchstate spam ([ea08e25](https://github.com/Tom-Beijner/Mordhau-RCON/commit/ea08e25730b9ff336ad801c749620973679b06c6))
+
 ### [1.25.1](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.25.0...v1.25.1) (2021-11-30)
 
 

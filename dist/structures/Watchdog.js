@@ -606,6 +606,7 @@ class Watchdog {
                 port: configServer.rcon.status.fallbackValues.serverPort,
             });
             if (serverInfo) {
+                server.rcon.serverName = serverInfo.Tags.ServerName;
                 server.rcon.maxPlayerCount = parseInt(serverInfo.Tags.MaxPlayers);
             }
             const adress = serverInfo
@@ -621,7 +622,13 @@ class Watchdog {
             const longestIDLength = Math.max(...players.map((p) => p.id.length));
             const playerList = online
                 ? players
-                    .map((p) => `${p.id.padEnd(longestIDLength + 1, " ")}- ${p.name}`)
+                    .map((p) => {
+                    const player = this.cachedPlayers.get(p.id) || {
+                        name: p.name,
+                        id: p.id,
+                    };
+                    return `${p.id.padEnd(longestIDLength + 1, " ")}- ${player.name}`;
+                })
                     .join("\n") || "No players online"
                 : "Server offline";
             const passwordProtected = serverInfo
