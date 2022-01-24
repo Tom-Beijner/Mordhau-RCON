@@ -88,6 +88,16 @@ export default class messageCreate extends BaseEvent {
                         `admins.${admin.id}.name`,
                         admin.name
                     );
+
+                    // if (["add admin", "remove admin"].includes(command.toLocaleLowerCase())) {
+                    //     const target = lines
+                    //         .find((l) => l.includes("**Details:**"))
+                    //         .split("**Details:** ")[1].split("=")[1].replace(new RegExp(/\*/g), "");
+                    //     const targetPlayer = bot.cachedPlayers.get(target) ||
+                    //     (await LookupPlayer(target));
+
+                        
+                    // }
                 }
             }
         } else if (

@@ -63,7 +63,7 @@ export default class Rcon {
     mapVote: MapVote;
     hostname?: string;
     country?: string;
-    currentName?: string;
+    serverName?: string;
     currentGamemode?: string;
     currentMap?: string;
     maxPlayerCount: number | string = "Unknown";
@@ -432,7 +432,6 @@ export default class Rcon {
             .map((stat) => stat.split(": ")[1]);
 
         this.hostname = hostname;
-        this.currentName = name?.toLowerCase();
         this.currentGamemode = gamemode?.toLowerCase();
         this.currentMap = currentMap?.toLowerCase();
 
@@ -2099,6 +2098,10 @@ export default class Rcon {
                         "RCON",
                         `Keepalive success (Server: ${this.options.name})`
                     );
+
+                    // // Use old admin save method if activity
+                    // if (!config.get("servers").find((s) => s.name === this.options.name).rcon
+                    // ?.stats?.adminActionWebhookChannel) this.saveAdmins();
 
                     this.saveAdmins();
                 })
