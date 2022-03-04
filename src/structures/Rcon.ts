@@ -904,10 +904,32 @@ export default class Rcon {
     async onJoin(id: string) {
         const server = this.options.name;
 
-        const player =
-            this.bot.cachedPlayers.get(id) || (await this.getPlayerToCache(id));
-
+        const player = await this.getPlayerToCache(id);
         const admin = this.admins.has(player.id);
+
+        if (this.options.automod) {
+            const profaneWords = await this.bot.antiSlur.getSlurs(
+                this,
+                player,
+                player.name
+            );
+
+            if (profaneWords.length > 0) {
+                await this.kickUser(
+                    this.options.name,
+                    {
+                        ids: { playFabID: "1337" },
+                        id: "1337",
+                        name: this.options.name,
+                    },
+                    player,
+                    `Your username contains profane words (${profaneWords.join(
+                        ", "
+                    )}), change your username.`
+                );
+                return;
+            }
+        }
 
         if (
             admin &&
@@ -1869,8 +1891,9 @@ export default class Rcon {
                     )}): \`${message}\` (Server: ${this.options.name})`
                 );
 
-                if (this.options.automod)
+                if (this.options.automod) {
                     await this.bot.antiSlur.check(this, player, message);
+                }
                 // }
 
                 if (!message.startsWith(config.get("ingamePrefix"))) return;
@@ -2027,13 +2050,21 @@ export default class Rcon {
                     // const loserID = regexParsed[2];
 
                     const modifiedMessage = message
-                        .replace(/(?<=\()(?:[^()]+|\([^)]+\))+|\)| \(/g, "")
+                        .replace(/(?<=\()(?:[^()]+|\([^)]+\))/g, "")
+                        .replace(/\(|\)/g, "")
                         .split(" killed ");
 
                     const winnerID = modifiedMessage[0];
                     const loserID = modifiedMessage[1];
 
-                    if (!winnerID || !loserID) return;
+                    if (!winnerID || !loserID) {
+                        logger.debug(
+                            `RCON - ${this.options.region.toUpperCase()}`,
+                            `Failed to parse kill message (WinnerID: ${winnerID}, LoserID: ${loserID})`
+                        );
+
+                        return null;
+                    }
 
                     return {
                         winnerID,
@@ -2042,7 +2073,6 @@ export default class Rcon {
                 }
 
                 const message = data.split(": ")[2];
-                if (!message) return;
 
                 const killFeed = parseMessage(message);
 
@@ -2054,22 +2084,10 @@ export default class Rcon {
                 data.includes("committed suicide")
             ) {
                 function parseMessage(message: string): string | null {
-                    // 909275ECE8FEDDB ([NFD] Schweppes) killed 7443E1C34D59DDEC (]ppp[ Rift)
-                    // const regex = new RegExp(/(.+) \(.+\) committed suicide/g);
-                    // const regexParsed = regex.exec(message);
-
-                    // if (!regexParsed) {
-                    //     logger.error(
-                    //         "Bot",
-                    //         `Failed to parse the regex for killstreak suicide ${message}`
-                    //     );
-                    //     return;
-                    // }
-
-                    // const playerID = regexParsed[1];
-
+                    // 909275ECE8FEDDB ([NFD] Schweppes) committed suicide
                     const modifiedMessage = message
-                        .replace(/(?<=\()(?:[^()]+|\([^)]+\))+|\)| \(/g, "")
+                        .replace(/(?<=\()(?:[^()]+|\([^)]+\))/g, "")
+                        .replace(/\(|\)/g, "")
                         .split(" ");
 
                     const playerID = modifiedMessage[0];
@@ -2078,7 +2096,6 @@ export default class Rcon {
                 }
 
                 const message = data.split(": ")[2];
-                if (!message) return;
 
                 const playerID = parseMessage(message);
 

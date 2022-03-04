@@ -386,8 +386,19 @@ class Rcon {
     }
     async onJoin(id) {
         const server = this.options.name;
-        const player = this.bot.cachedPlayers.get(id) || (await this.getPlayerToCache(id));
+        const player = await this.getPlayerToCache(id);
         const admin = this.admins.has(player.id);
+        if (this.options.automod) {
+            const profaneWords = await this.bot.antiSlur.getSlurs(this, player, player.name);
+            if (profaneWords.length > 0) {
+                await this.kickUser(this.options.name, {
+                    ids: { playFabID: "1337" },
+                    id: "1337",
+                    name: this.options.name,
+                }, player, `Your username contains profane words (${profaneWords.join(", ")}), change your username.`);
+                return;
+            }
+        }
         if (admin &&
             Config_1.default.get("servers").find((s) => s.name === this.options.name).rcon
                 .saveAdminActivity) {
@@ -794,8 +805,9 @@ class Rcon {
                     return;
                 const admin = this.admins.has(player.id);
                 await Discord_1.sendWebhookMessage(this.webhooks.get("chat"), `${admin ? "Admin" : "Player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}): \`${message}\` (Server: ${this.options.name})`);
-                if (this.options.automod)
+                if (this.options.automod) {
                     await this.bot.antiSlur.check(this, player, message);
+                }
                 if (!message.startsWith(Config_1.default.get("ingamePrefix")))
                     return;
                 const args = message
@@ -861,20 +873,21 @@ class Rcon {
             if (data.includes("Killfeed:") && data.includes("killed")) {
                 function parseMessage(message) {
                     const modifiedMessage = message
-                        .replace(/(?<=\()(?:[^()]+|\([^)]+\))+|\)| \(/g, "")
+                        .replace(/(?<=\()(?:[^()]+|\([^)]+\))/g, "")
+                        .replace(/\(|\)/g, "")
                         .split(" killed ");
                     const winnerID = modifiedMessage[0];
                     const loserID = modifiedMessage[1];
-                    if (!winnerID || !loserID)
-                        return;
+                    if (!winnerID || !loserID) {
+                        logger_1.default.debug(`RCON - ${this.options.region.toUpperCase()}`, `Failed to parse kill message (WinnerID: ${winnerID}, LoserID: ${loserID})`);
+                        return null;
+                    }
                     return {
                         winnerID,
                         loserID,
                     };
                 }
                 const message = data.split(": ")[2];
-                if (!message)
-                    return;
                 const killFeed = parseMessage(message);
                 if (!killFeed)
                     return;
@@ -884,14 +897,13 @@ class Rcon {
                 data.includes("committed suicide")) {
                 function parseMessage(message) {
                     const modifiedMessage = message
-                        .replace(/(?<=\()(?:[^()]+|\([^)]+\))+|\)| \(/g, "")
+                        .replace(/(?<=\()(?:[^()]+|\([^)]+\))/g, "")
+                        .replace(/\(|\)/g, "")
                         .split(" ");
                     const playerID = modifiedMessage[0];
                     return playerID;
                 }
                 const message = data.split(": ")[2];
-                if (!message)
-                    return;
                 const playerID = parseMessage(message);
                 this.onSuicide(playerID);
             }
