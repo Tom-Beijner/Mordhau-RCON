@@ -396,6 +396,7 @@ class Rcon {
                     id: "1337",
                     name: this.options.name,
                 }, player, `Your username contains profane words (${profaneWords.join(", ")}), change it.`);
+                Discord_1.sendWebhookMessage(this.webhooks.get("automod"), `Kicked ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for having a username with profane words (${profaneWords.join(", ")}).`);
                 return;
             }
         }

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.27.4](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.27.3...v1.27.4) (2022-03-04)
+
+
+### Bug Fixes
+
+* not logging username automod check ([f804bb9](https://github.com/Tom-Beijner/Mordhau-RCON/commit/f804bb90744795d811f76e4534400d4dfddb64ac))
+
 ### [1.27.3](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.27.2...v1.27.3) (2022-03-04)
 
 
