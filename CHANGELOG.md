@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.27.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.26.0...v1.27.0) (2022-03-04)
+
+
+### Features
+
+* **automod:** username check for banned words ([f5fb10a](https://github.com/Tom-Beijner/Mordhau-RCON/commit/f5fb10a9ee7a01b3117579e58196eb422ed5a2f9))
+
+
+### Bug Fixes
+
+* parsing issue (brackets, a port from another project) ([c66a2b8](https://github.com/Tom-Beijner/Mordhau-RCON/commit/c66a2b84b9c86f2ca3b2c02c32f72bf4fba53cc1))
+
 ## [1.26.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.25.1...v1.26.0) (2022-01-24)
 
 
