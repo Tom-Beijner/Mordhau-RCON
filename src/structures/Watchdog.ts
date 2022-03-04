@@ -264,7 +264,7 @@ export default class Watchdog {
                 port: configServer.rcon.status.fallbackValues.serverPort,
             });
             if (serverInfo) {
-                server.rcon.serverName = serverInfo.Tags.ServerName
+                server.rcon.serverName = serverInfo.Tags.ServerName;
                 server.rcon.maxPlayerCount = parseInt(
                     serverInfo.Tags.MaxPlayers
                 );
@@ -1396,9 +1396,9 @@ export default class Watchdog {
 
         this.setCacheMaxSize(config.get("servers").length);
 
-        await CreateAccount();
+        await CreateAccount(config.get("mordhau.accountId"));
 
-        const error = await Login();
+        const error = await Login(config.get("mordhau.accountId"));
         if (error) logger.error("PlayFab", error);
 
         this.slashCreator = new SlashCreator({

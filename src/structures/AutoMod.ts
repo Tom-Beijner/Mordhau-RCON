@@ -136,6 +136,25 @@ export default class AutoMod {
         return sendWebhookMessage(webhookCredentials, message);
     }
 
+    public async getSlurs(
+        rcon: Rcon,
+        player: {
+            ids: { playFabID: string; steamID: string };
+            id: string;
+            name: string;
+        },
+        message: string
+    ) {
+        if (config.get("automod.adminsBypass") && rcon.admins.has(player.id))
+            return;
+
+        const result = await this.stringChecker.process(message);
+
+        if (!result.messages.length) return;
+
+        return result.messages.map((word) => word.ruleId);
+    }
+
     public async check(
         rcon: Rcon,
         player: {

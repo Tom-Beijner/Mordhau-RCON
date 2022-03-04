@@ -766,8 +766,8 @@ class Watchdog {
             updateAgeOnGet: true,
         });
         this.setCacheMaxSize(Config_1.default.get("servers").length);
-        await PlayFab_1.CreateAccount();
-        const error = await PlayFab_1.Login();
+        await PlayFab_1.CreateAccount(Config_1.default.get("mordhau.accountId"));
+        const error = await PlayFab_1.Login(Config_1.default.get("mordhau.accountId"));
         if (error)
             logger_1.default.error("PlayFab", error);
         this.slashCreator = new slash_create_1.SlashCreator({

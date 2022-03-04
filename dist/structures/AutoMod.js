@@ -113,6 +113,14 @@ class AutoMod {
     sendMessage(webhookCredentials, message) {
         return Discord_1.sendWebhookMessage(webhookCredentials, message);
     }
+    async getSlurs(rcon, player, message) {
+        if (Config_1.default.get("automod.adminsBypass") && rcon.admins.has(player.id))
+            return;
+        const result = await this.stringChecker.process(message);
+        if (!result.messages.length)
+            return;
+        return result.messages.map((word) => word.ruleId);
+    }
     async check(rcon, player, message) {
         var _a;
         if (Config_1.default.get("automod.adminsBypass") && rcon.admins.has(player.id))

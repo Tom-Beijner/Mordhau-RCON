@@ -395,7 +395,7 @@ class Rcon {
                     ids: { playFabID: "1337" },
                     id: "1337",
                     name: this.options.name,
-                }, player, `Your username contains profane words (${profaneWords.join(", ")}), change your username.`);
+                }, player, `Your username contains profane words (${profaneWords.join(", ")}), change it.`);
                 return;
             }
         }
