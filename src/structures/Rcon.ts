@@ -925,7 +925,7 @@ export default class Rcon {
                     player,
                     `Your username contains profane words (${profaneWords.join(
                         ", "
-                    )}), change your username.`
+                    )}), change it.`
                 );
                 return;
             }
