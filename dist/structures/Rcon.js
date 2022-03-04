@@ -390,7 +390,7 @@ class Rcon {
         const admin = this.admins.has(player.id);
         if (this.options.automod) {
             const profaneWords = await this.bot.antiSlur.getSlurs(this, player, player.name);
-            if (profaneWords.length > 0) {
+            if (profaneWords && (profaneWords === null || profaneWords === void 0 ? void 0 : profaneWords.length) > 0) {
                 await this.kickUser(this.options.name, {
                     ids: { playFabID: "1337" },
                     id: "1337",

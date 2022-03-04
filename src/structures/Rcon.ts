@@ -914,7 +914,7 @@ export default class Rcon {
                 player.name
             );
 
-            if (profaneWords.length > 0) {
+            if (profaneWords && profaneWords?.length > 0) {
                 await this.kickUser(
                     this.options.name,
                     {
