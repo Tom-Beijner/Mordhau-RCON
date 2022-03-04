@@ -6,17 +6,17 @@ interface IPlayerPlatformData {
     id: string;
 }
 
-function parsePlayerID(id: string): IPlayerPlatformData {
-    function SteamID64(id: string): string | null {
-        try {
-            const steam = new SteamID(id);
-            if (!steam.isValid()) return;
-            return steam.getSteamID64();
-        } catch {
-            return;
-        }
+function SteamID64(id: string): string | null {
+    try {
+        const steam = new SteamID(id);
+        if (!steam.isValid()) return;
+        return steam.getSteamID64();
+    } catch {
+        return;
     }
+}
 
+function parsePlayerID(id: string): IPlayerPlatformData {
     const steamID64 = SteamID64(id);
 
     if (steamID64) {
@@ -55,4 +55,4 @@ function outputPlayerIDs(
         .join(", ");
 }
 
-export { parsePlayerID, outputPlayerIDs };
+export { SteamID64, parsePlayerID, outputPlayerIDs };

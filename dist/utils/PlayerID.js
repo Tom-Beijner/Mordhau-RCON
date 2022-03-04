@@ -3,20 +3,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.outputPlayerIDs = exports.parsePlayerID = void 0;
+exports.outputPlayerIDs = exports.parsePlayerID = exports.SteamID64 = void 0;
 const steamid_1 = __importDefault(require("steamid"));
-function parsePlayerID(id) {
-    function SteamID64(id) {
-        try {
-            const steam = new steamid_1.default(id);
-            if (!steam.isValid())
-                return;
-            return steam.getSteamID64();
-        }
-        catch {
+function SteamID64(id) {
+    try {
+        const steam = new steamid_1.default(id);
+        if (!steam.isValid())
             return;
-        }
+        return steam.getSteamID64();
     }
+    catch {
+        return;
+    }
+}
+exports.SteamID64 = SteamID64;
+function parsePlayerID(id) {
     const steamID64 = SteamID64(id);
     if (steamID64) {
         return {
