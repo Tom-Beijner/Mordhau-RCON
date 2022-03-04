@@ -875,7 +875,8 @@ class Rcon {
                     const modifiedMessage = message
                         .replace(/(?<=\()(?:[^()]+|\([^)]+\))/g, "")
                         .replace(/\(|\)/g, "")
-                        .split(" killed ");
+                        .split(" killed ")
+                        .map((id) => id.trim());
                     const winnerID = modifiedMessage[0];
                     const loserID = modifiedMessage[1];
                     if (!winnerID || !loserID) {
