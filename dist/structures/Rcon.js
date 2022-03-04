@@ -879,7 +879,7 @@ class Rcon {
                     const winnerID = modifiedMessage[0];
                     const loserID = modifiedMessage[1];
                     if (!winnerID || !loserID) {
-                        logger_1.default.debug(`RCON - ${this.options.region.toUpperCase()}`, `Failed to parse kill message (WinnerID: ${winnerID}, LoserID: ${loserID})`);
+                        logger_1.default.debug("RCON", `Failed to parse kill message (WinnerID: ${winnerID}, LoserID: ${loserID})`);
                         return null;
                     }
                     return {

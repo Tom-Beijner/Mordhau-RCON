@@ -2059,7 +2059,7 @@ export default class Rcon {
 
                     if (!winnerID || !loserID) {
                         logger.debug(
-                            `RCON - ${this.options.region.toUpperCase()}`,
+                            "RCON",
                             `Failed to parse kill message (WinnerID: ${winnerID}, LoserID: ${loserID})`
                         );
 
