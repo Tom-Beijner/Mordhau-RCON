@@ -927,6 +927,16 @@ export default class Rcon {
                         ", "
                     )}), change it.`
                 );
+
+                sendWebhookMessage(
+                    this.webhooks.get("automod"),
+                    `Kicked ${player.name} (${outputPlayerIDs(
+                        player.ids,
+                        true
+                    )}) for having a username with profane words (${profaneWords.join(
+                        ", "
+                    )}).`
+                );
                 return;
             }
         }
