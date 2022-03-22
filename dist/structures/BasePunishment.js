@@ -12,6 +12,7 @@ const PlayFab_1 = require("../services/PlayFab");
 const Config_1 = __importDefault(require("../structures/Config"));
 const Hastebin_1 = require("../utils/Hastebin");
 const logger_1 = __importDefault(require("../utils/logger"));
+const parseOut_1 = __importDefault(require("../utils/parseOut"));
 const PlayerID_1 = require("../utils/PlayerID");
 const RemoveMentions_1 = __importDefault(require("../utils/RemoveMentions"));
 class BasePunishment {
@@ -230,11 +231,11 @@ class BasePunishment {
                 {
                     name: "Player",
                     value: [
-                        `**Name**: \`${data.player.name}\``,
+                        `**Name**: \`${parseOut_1.default(data.player.name)}\``,
                         `**PlayFabID**: \`${data.player.ids.playFabID}\``,
                         `**SteamID**: [${data.player.ids.steamID}](<http://steamcommunity.com/profiles/${data.player.ids.steamID}>)`,
                         `**Previous Names**: \`${data.previousNames.length
-                            ? data.previousNames
+                            ? parseOut_1.default(data.previousNames)
                             : "None"}\``,
                         `**Total Duration**: \`${pluralize_1.default("minute", totalDuration.toNumber(), true)}\``,
                     ].join("\n"),
@@ -254,13 +255,14 @@ class BasePunishment {
             Discord_1.sendWebhookEmbed(server.rcon.webhooks.get("punishments"), payload);
         }
         else {
-            const webhookURLs = [];
+            let webhookURLs = [];
             for (const [serverName, server] of this.bot.servers) {
                 if (server.rcon.webhooks.get("punishments") &&
                     !webhookURLs.includes(server.rcon.webhooks.get("punishments"))) {
                     webhookURLs.push(server.rcon.webhooks.get("punishments"));
                 }
             }
+            webhookURLs = [...new Set(webhookURLs)];
             for (let i = 0; i < webhookURLs.length; i++) {
                 Discord_1.sendWebhookEmbed(webhookURLs[i], payload);
             }

@@ -521,6 +521,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/remove-markdown@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@types/remove-markdown@npm:0.3.1"
+  checksum: a673aafa3a3722d959b4ad1d4e95b33f04f037a8bb95a82e843d6005b12b51f9b1bfd5954cd5c8707fbbb2f1d8865f7e632f02f99389ab83d0dcfd2cb1920dbb
+  languageName: node
+  linkType: hard
+
 "@types/responselike@npm:^1.0.0":
   version: 1.0.0
   resolution: "@types/responselike@npm:1.0.0"
@@ -4905,6 +4912,7 @@ __metadata:
     "@types/node": ^16.4.10
     "@types/node-fetch": ^2.5.12
     "@types/pluralize": ^0.0.29
+    "@types/remove-markdown": ^0.3.1
     "@types/steamid": ^1.1.0
     "@types/walk": ^2.3.1
     "@types/winston": ^2.4.4
