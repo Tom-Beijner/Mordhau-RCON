@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Discord_1 = require("../services/Discord");
 const Config_1 = __importDefault(require("../structures/Config"));
 const logger_1 = __importDefault(require("../utils/logger"));
-const RemoveMentions_1 = __importDefault(require("../utils/RemoveMentions"));
+const parseOut_1 = __importDefault(require("../utils/parseOut"));
 class KillStreak {
     constructor(rcon, serverName) {
         this.cache = {
@@ -18,7 +18,7 @@ class KillStreak {
         this.serverName = serverName;
     }
     sendMessage(message) {
-        return Discord_1.sendWebhookMessage(this.rcon.webhooks.get("killstreak"), `${RemoveMentions_1.default(message)} (Server: ${this.serverName})`);
+        return Discord_1.sendWebhookMessage(this.rcon.webhooks.get("killstreak"), `${parseOut_1.default(message)} (Server: ${this.serverName})`);
     }
     getKillstreak(id) {
         return (this.cache.players.get(id) || { kills: 0 }).kills;

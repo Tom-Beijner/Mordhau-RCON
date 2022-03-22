@@ -14,7 +14,6 @@ const Hastebin_1 = require("../utils/Hastebin");
 const logger_1 = __importDefault(require("../utils/logger"));
 const parseOut_1 = __importDefault(require("../utils/parseOut"));
 const PlayerID_1 = require("../utils/PlayerID");
-const RemoveMentions_1 = __importDefault(require("../utils/RemoveMentions"));
 class BasePunishment {
     constructor(bot, type) {
         this.bot = bot;
@@ -131,7 +130,7 @@ class BasePunishment {
             duration = "PERMANENT";
             if (["BAN", "GLOBAL BAN"].includes(data.type)) {
                 const server = this.bot.servers.get(data.server);
-                const payload = `${RemoveMentions_1.default(data.player.name)} (${PlayerID_1.outputPlayerIDs(data.player.ids, true)}) ${data.global ? "globally" : `in ${data.server}`}`;
+                const payload = `${parseOut_1.default(data.player.name)} (${PlayerID_1.outputPlayerIDs(data.player.ids, true)}) ${data.global ? "globally" : `in ${data.server}`}`;
                 if (server) {
                     Discord_1.sendWebhookMessage(server.rcon.webhooks.get("permanent"), payload);
                 }

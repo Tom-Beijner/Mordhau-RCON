@@ -6,14 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ComponentConfirmation = exports.mentionRole = exports.sendWebhookEmbed = exports.sendWebhookMessage = void 0;
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const slash_create_1 = require("slash-create");
-const parseOut_1 = __importDefault(require("../utils/parseOut"));
-async function sendWebhookMessage(webhookCredentials, content) {
+async function sendWebhookMessage(webhookCredentials, content, options = {}) {
     if (!webhookCredentials)
         return "Webhook endpoint not provided";
     const body = {
-        content: parseOut_1.default(content),
+        content,
         allowed_mentions: {
             parse: [],
+            ...options,
         },
     };
     return await send(webhookCredentials, body);

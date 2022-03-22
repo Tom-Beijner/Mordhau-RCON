@@ -10,8 +10,8 @@ const PlayFab_1 = require("../../../services/PlayFab");
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
 const logger_1 = __importDefault(require("../../../utils/logger"));
+const parseOut_1 = __importDefault(require("../../../utils/parseOut"));
 const PlayerID_1 = require("../../../utils/PlayerID");
-const RemoveMentions_1 = __importDefault(require("../../../utils/RemoveMentions"));
 class ResetWarnings extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
         super(creator, bot, {
@@ -67,7 +67,7 @@ class ResetWarnings extends SlashCommand_1.default {
                     return;
                 await this.bot.database.Warns.deleteOne({ id: player.id });
                 for (const [serverName, server] of this.bot.servers) {
-                    Discord_1.sendWebhookMessage(server.rcon.webhooks.get("warns"), `${ctx.member.displayName}#${ctx.member.user.discriminator} (${ctx.member.id}) reset ${RemoveMentions_1.default(player.name)}'s (${PlayerID_1.outputPlayerIDs(player.ids, true)}) warnings (Previous warnings: ${playerWarns.infractions - 1})`);
+                    Discord_1.sendWebhookMessage(server.rcon.webhooks.get("warns"), `${ctx.member.displayName}#${ctx.member.user.discriminator} (${ctx.member.id}) reset ${parseOut_1.default(player.name)}'s (${PlayerID_1.outputPlayerIDs(player.ids, true)}) warnings (Previous warnings: ${playerWarns.infractions - 1})`);
                 }
                 logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator} reset ${player.name}'s (${player.id}) warnings (Previous warnings: ${playerWarns.infractions - 1})`);
                 await btnCtx.editParent({

@@ -13,6 +13,7 @@ const retext_stringify_1 = __importDefault(require("retext-stringify"));
 const unified_1 = __importDefault(require("unified"));
 const Discord_1 = require("../services/Discord");
 const logger_1 = __importDefault(require("../utils/logger"));
+const parseOut_1 = __importDefault(require("../utils/parseOut"));
 const PlayerID_1 = require("../utils/PlayerID");
 const Config_1 = __importDefault(require("./Config"));
 class AutoMod {
@@ -232,7 +233,7 @@ class AutoMod {
                     ? "ned"
                     : ["warn", "kick"].includes(punishment.type)
                         ? "ed"
-                        : "d"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for profane message (Server: ${rcon.options.name}${duration
+                        : "d"} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for profane message (Server: ${rcon.options.name}${duration
                     ? `, Duration: ${pluralize_1.default("minute", duration.toNumber(), true)}`
                     : ""}, Threshold: ${infractionsThreshhold}, Messages: ${playerMessages.infractions}, Profane words: ${allProfaneWords})`);
                 logger_1.default.info(this.options.name, `${punishment.type === "globalban"

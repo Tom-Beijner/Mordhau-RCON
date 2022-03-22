@@ -10,8 +10,8 @@ const PlayFab_1 = require("../../../services/PlayFab");
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
 const logger_1 = __importDefault(require("../../../utils/logger"));
+const parseOut_1 = __importDefault(require("../../../utils/parseOut"));
 const PlayerID_1 = require("../../../utils/PlayerID");
-const RemoveMentions_1 = __importDefault(require("../../../utils/RemoveMentions"));
 class Unwarn extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
         super(creator, bot, {
@@ -90,7 +90,7 @@ class Unwarn extends SlashCommand_1.default {
                 await this.bot.database.Warns.updateOne({ id: player.id }, {
                     $inc: { infractions: -1 },
                 });
-                Discord_1.sendWebhookMessage(server.rcon.webhooks.get("warns"), `${ctx.member.displayName}#${ctx.member.user.discriminator} (${ctx.member.id}) unwarned ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) (Warnings: ${playerWarns.infractions - 1})`);
+                Discord_1.sendWebhookMessage(server.rcon.webhooks.get("warns"), `${ctx.member.displayName}#${ctx.member.user.discriminator} (${ctx.member.id}) unwarned ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) (Warnings: ${playerWarns.infractions - 1})`);
                 logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator} unwarned ${player.name} (${player.id}) (Server: ${server.rcon.options.name}, Warnings: ${playerWarns.infractions - 1})`);
                 await btnCtx.editParent({
                     embeds: [

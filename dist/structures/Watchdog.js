@@ -38,8 +38,8 @@ const Config_1 = __importDefault(require("../structures/Config"));
 const Hastebin_1 = require("../utils/Hastebin");
 const logger_1 = __importDefault(require("../utils/logger"));
 const MordhauAPI_1 = __importDefault(require("../utils/MordhauAPI"));
+const parseOut_1 = __importDefault(require("../utils/parseOut"));
 const PlayerID_1 = require("../utils/PlayerID");
-const RemoveMentions_1 = __importDefault(require("../utils/RemoveMentions"));
 const AutoMod_1 = __importDefault(require("./AutoMod"));
 const AutoUpdater_1 = __importDefault(require("./AutoUpdater"));
 const Database_1 = __importDefault(require("./Database"));
@@ -443,7 +443,9 @@ class Watchdog {
                     });
                 }
                 for (let i = 0; i < webhookURLs.length; i++) {
-                    Discord_1.sendWebhookMessage(webhookURLs[i], `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})) was given admin privileges (Reason: Global Add Admin)`);
+                    Discord_1.sendWebhookMessage(webhookURLs[i], `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})) was given admin privileges (Reason: Global Add Admin)`, {
+                        roles: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids),
+                    });
                 }
                 return servers;
             },
@@ -493,7 +495,9 @@ class Watchdog {
                     });
                 }
                 for (let i = 0; i < webhookURLs.length; i++) {
-                    Discord_1.sendWebhookMessage(webhookURLs[i], `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})) had their admin privileges removed (Reason: Global Remove Admin)`);
+                    Discord_1.sendWebhookMessage(webhookURLs[i], `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})) had their admin privileges removed (Reason: Global Remove Admin)`, {
+                        roles: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids),
+                    });
                 }
                 return servers;
             },

@@ -12,8 +12,8 @@ const PlayFab_1 = require("../../../services/PlayFab");
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
 const logger_1 = __importDefault(require("../../../utils/logger"));
+const parseOut_1 = __importDefault(require("../../../utils/parseOut"));
 const PlayerID_1 = require("../../../utils/PlayerID");
-const RemoveMentions_1 = __importDefault(require("../../../utils/RemoveMentions"));
 class Warn extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
         super(creator, bot, {
@@ -183,7 +183,7 @@ class Warn extends SlashCommand_1.default {
                         ? "ned"
                         : ["warn", "kick"].includes(punishment.type)
                             ? "ed"
-                            : "d"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for reaching warn threshold (Server: ${server.rcon.options.name}, Admin: ${ctx.member.displayName}#${ctx.member.user.discriminator} (${ctx.member.id})${duration
+                            : "d"} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for reaching warn threshold (Server: ${server.rcon.options.name}, Admin: ${ctx.member.displayName}#${ctx.member.user.discriminator} (${ctx.member.id})${duration
                         ? `, Duration: ${pluralize_1.default("minute", duration.toNumber(), true)}`
                         : ""}, Threshold: ${infractionsThreshhold}, Warnings: ${playerWarns.infractions})`);
                     logger_1.default.info("Warn", `${punishment.type === "globalban"

@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Discord_1 = require("../../../services/Discord");
 const PlayFab_1 = require("../../../services/PlayFab");
 const BaseRCONCommands_1 = __importDefault(require("../../../structures/BaseRCONCommands"));
+const parseOut_1 = __importDefault(require("../../../utils/parseOut"));
 const PlayerID_1 = require("../../../utils/PlayerID");
-const RemoveMentions_1 = __importDefault(require("../../../utils/RemoveMentions"));
 class Unwarn extends BaseRCONCommands_1.default {
     constructor(bot, commandName) {
         super(bot, {
@@ -40,7 +40,7 @@ class Unwarn extends BaseRCONCommands_1.default {
         await this.bot.database.Warns.updateOne({ id: player.id }, {
             $inc: { infractions: -1 },
         });
-        Discord_1.sendWebhookMessage(ctx.rcon.webhooks.get("warns"), `${RemoveMentions_1.default(admin.name)} (${PlayerID_1.outputPlayerIDs(admin.ids, true)}) unwarned ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) (Warnings: ${playerWarns.infractions - 1})`);
+        Discord_1.sendWebhookMessage(ctx.rcon.webhooks.get("warns"), `${parseOut_1.default(admin.name)} (${PlayerID_1.outputPlayerIDs(admin.ids, true)}) unwarned ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) (Warnings: ${playerWarns.infractions - 1})`);
     }
 }
 exports.default = Unwarn;

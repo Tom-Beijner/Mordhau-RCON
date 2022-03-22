@@ -17,8 +17,8 @@ const PlayFab_1 = require("../services/PlayFab");
 const Config_1 = __importDefault(require("../structures/Config"));
 const utils_1 = require("../utils");
 const logger_1 = __importDefault(require("../utils/logger"));
+const parseOut_1 = __importDefault(require("../utils/parseOut"));
 const PlayerID_1 = require("../utils/PlayerID");
-const RemoveMentions_1 = __importDefault(require("../utils/RemoveMentions"));
 const AdminActivityConfig_1 = __importDefault(require("./AdminActivityConfig"));
 const KillStreak_1 = __importDefault(require("./KillStreak"));
 const MapVote_1 = __importDefault(require("./MapVote"));
@@ -221,11 +221,13 @@ class Rcon {
                 ? `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(affectedPlayers
                     .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
                     .join(", "))})`
-                : RemoveMentions_1.default(affectedPlayers
-                    .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)})`)
-                    .join(", "))} was given admin privileges on without permission${Config_1.default.get("adminListSaving.rollbackAdmins")
+                : affectedPlayers
+                    .map((player) => `${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})`)
+                    .join(", ")} was given admin privileges on without permission${Config_1.default.get("adminListSaving.rollbackAdmins")
                 ? ", they've been removed"
-                : ""} (Server: ${this.options.name})`);
+                : ""} (Server: ${this.options.name})`, {
+                roles: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids),
+            });
         }
         if (unauthorizedRemovedAdmins === null || unauthorizedRemovedAdmins === void 0 ? void 0 : unauthorizedRemovedAdmins.length) {
             for (let i = 0; i < unauthorizedRemovedAdmins.length; i++) {
@@ -252,11 +254,13 @@ class Rcon {
                 ? `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(affectedAdmins
                     .map((admin) => `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids)})`)
                     .join(", "))})`
-                : RemoveMentions_1.default(affectedAdmins
+                : parseOut_1.default(affectedAdmins
                     .map((admin) => `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids, true)})`)
                     .join(", "))}  had their privileges removed without permission${Config_1.default.get("adminListSaving.rollbackAdmins")
                 ? ", they've been added back"
-                : ""} (Server: ${this.options.name})`);
+                : ""} (Server: ${this.options.name})`, {
+                roles: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids),
+            });
         }
         logger_1.default.warn("RCON", "Investigate this!");
     }
@@ -396,7 +400,7 @@ class Rcon {
                     id: "1337",
                     name: this.options.name,
                 }, player, `Your username contains profane words (${profaneWords.join(", ")}), change it.`);
-                Discord_1.sendWebhookMessage(this.webhooks.get("automod"), `Kicked ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for having a username with profane words (${profaneWords.join(", ")}).`);
+                Discord_1.sendWebhookMessage(this.webhooks.get("automod"), `Kicked ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) for having a username with profane words (${profaneWords.join(", ")}).`);
                 return;
             }
         }
@@ -459,7 +463,7 @@ class Rcon {
         }
         if (process.env.NODE_ENV.trim() === "production" &&
             !this.tempCurrentPlayers.includes(player.id))
-            Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${admin ? "Admin" : "Player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has joined the server (Server: ${server}${bans > 0
+            Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${admin ? "Admin" : "Player"} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has joined the server (Server: ${server}${bans > 0
                 ? `, Bans: ${bans}, Total Duration: ${pluralize_1.default("minute", totalDuration.toNumber(), true)}`
                 : ""})`);
         if (bans < 3)
@@ -473,7 +477,7 @@ class Rcon {
         }
         if (process.env.NODE_ENV.trim() === "production" &&
             !this.tempCurrentPlayers.includes(player.id))
-            Discord_1.sendWebhookMessage(this.webhooks.get("wanted"), `Naughty ${admin ? "admin" : "player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has joined with ${bans} bans a total duration of ${pluralize_1.default("minute", totalDuration.toNumber(), true)} (Server: ${server})`);
+            Discord_1.sendWebhookMessage(this.webhooks.get("wanted"), `Naughty ${admin ? "admin" : "player"} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has joined with ${bans} bans a total duration of ${pluralize_1.default("minute", totalDuration.toNumber(), true)} (Server: ${server})`);
     }
     async onLeave(id) {
         const server = this.options.name;
@@ -531,13 +535,13 @@ class Rcon {
         if (punishedPlayer) {
             logger_1.default.info("Server", `${admin ? "Admin" : "Player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has been punished (Type: ${punishedPlayer.punishment}, Admin: ${punishedPlayer.admin.name}, Server: ${server})`);
             if (process.env.NODE_ENV.trim() === "production") {
-                Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${admin ? "Admin" : "Player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has been punished (Type: ${punishedPlayer.punishment}, Admin: ${punishedPlayer.admin.name}, Server: ${server})`);
+                Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${admin ? "Admin" : "Player"} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has been punished (Type: ${punishedPlayer.punishment}, Admin: ${parseOut_1.default(punishedPlayer.admin.name)}, Server: ${server})`);
             }
         }
         else {
             logger_1.default.info("Server", `${admin ? "Admin" : "Player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has left the server (Server: ${server})`);
             if (process.env.NODE_ENV.trim() === "production") {
-                Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${admin ? "Admin" : "Player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has left the server (Server: ${server})`);
+                Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${admin ? "Admin" : "Player"} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has left the server (Server: ${server})`);
             }
         }
         const naughtyPlayer = this.bot.naughtyPlayers.has(player.id);
@@ -545,11 +549,11 @@ class Rcon {
             if (process.env.NODE_ENV.trim() === "production") {
                 if (!punishedPlayer) {
                     logger_1.default.info("Server", `Naughty ${admin ? "admin" : "player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) left the server (Server: ${server})`);
-                    Discord_1.sendWebhookMessage(this.webhooks.get("wanted"), `Naughty ${admin ? "admin" : "player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) left the server (Server: ${server})`);
+                    Discord_1.sendWebhookMessage(this.webhooks.get("wanted"), `Naughty ${admin ? "admin" : "player"} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) left the server (Server: ${server})`);
                 }
                 else {
                     logger_1.default.info("Server", `Naughty ${admin ? "admin" : "player"} ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) has been punished (Type: ${punishedPlayer.punishment}, Admin: ${punishedPlayer.admin.name}, Server: ${server})`);
-                    Discord_1.sendWebhookMessage(this.webhooks.get("wanted"), `Naughty ${admin ? "admin" : "player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has been punished (Type: ${punishedPlayer.punishment}, Admin: ${RemoveMentions_1.default(punishedPlayer.admin.name)}, Server: ${server})`);
+                    Discord_1.sendWebhookMessage(this.webhooks.get("wanted"), `Naughty ${admin ? "admin" : "player"} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) has been punished (Type: ${punishedPlayer.punishment}, Admin: ${parseOut_1.default(punishedPlayer.admin.name)}, Server: ${server})`);
                 }
             }
         }
@@ -561,7 +565,7 @@ class Rcon {
             (await this.getPlayerToCache(playerID));
         if (this.options.adminListSaving && !this.admins.has(adminID)) {
             await this.saveAdmins();
-            Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `Unauthorized admin ${RemoveMentions_1.default(admin.name)} (${PlayerID_1.outputPlayerIDs(admin.ids, true)}) ${punishment} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})${["banned", "muted"].includes(punishment)
+            Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `Unauthorized admin ${parseOut_1.default(admin.name)} (${PlayerID_1.outputPlayerIDs(admin.ids, true)}) ${punishment} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})${["banned", "muted"].includes(punishment)
                 ? " and the punishment has beeen reverted"
                 : ""}`);
             switch (punishment) {
@@ -805,7 +809,7 @@ class Rcon {
                 if (!player)
                     return;
                 const admin = this.admins.has(player.id);
-                await Discord_1.sendWebhookMessage(this.webhooks.get("chat"), `${admin ? "Admin" : "Player"} ${RemoveMentions_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}): \`${message}\` (Server: ${this.options.name})`);
+                await Discord_1.sendWebhookMessage(this.webhooks.get("chat"), `${admin ? "Admin" : "Player"} ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}): \`${parseOut_1.default(message)}\` (Server: ${this.options.name})`);
                 if (this.options.automod) {
                     await this.bot.antiSlur.check(this, player, message);
                 }
