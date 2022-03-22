@@ -6,8 +6,9 @@ import {
     MessageInteractionContext,
     MessageOptions,
 } from "slash-create";
-import {} from "slash-create/lib/creator";
+
 import { Embed } from "../structures/DiscordEmbed";
+import parseOut from "../utils/parseOut";
 
 // Cant get type from slash-create so made a hack
 type ComponentRegisterCallback = (ctx: ComponentContext) => void;
@@ -19,7 +20,10 @@ export async function sendWebhookMessage(
     if (!webhookCredentials) return "Webhook endpoint not provided";
 
     const body = {
-        content,
+        content: parseOut(content),
+        allowed_mentions: {
+            parse: [],
+        },
     };
 
     return await send(webhookCredentials, body);
@@ -33,6 +37,9 @@ export async function sendWebhookEmbed(
 
     const body = {
         embeds: [embed],
+        allowed_mentions: {
+            parse: [],
+        },
     };
 
     return await send(webhookCredentials, body);

@@ -8,6 +8,7 @@ import { LookupPlayer } from "../services/PlayFab";
 import config from "../structures/Config";
 import { hastebin } from "../utils/Hastebin";
 import logger from "../utils/logger";
+import parseOut from "../utils/parseOut";
 import { outputPlayerIDs, parsePlayerID } from "../utils/PlayerID";
 import removeMentions from "../utils/RemoveMentions";
 import Watchdog from "./Watchdog";
@@ -459,12 +460,12 @@ export default abstract class BasePunishment {
                 {
                     name: "Player",
                     value: [
-                        `**Name**: \`${data.player.name}\``,
+                        `**Name**: \`${parseOut(data.player.name)}\``,
                         `**PlayFabID**: \`${data.player.ids.playFabID}\``,
                         `**SteamID**: [${data.player.ids.steamID}](<http://steamcommunity.com/profiles/${data.player.ids.steamID}>)`,
                         `**Previous Names**: \`${
                             data.previousNames.length
-                                ? data.previousNames
+                                ? parseOut(data.previousNames)
                                 : "None"
                         }\``,
                         `**Total Duration**: \`${pluralize(
@@ -489,7 +490,7 @@ export default abstract class BasePunishment {
         if (server) {
             sendWebhookEmbed(server.rcon.webhooks.get("punishments"), payload);
         } else {
-            const webhookURLs = [];
+            let webhookURLs = [];
 
             for (const [serverName, server] of this.bot.servers) {
                 if (
@@ -501,6 +502,8 @@ export default abstract class BasePunishment {
                     webhookURLs.push(server.rcon.webhooks.get("punishments"));
                 }
             }
+
+            webhookURLs = [...new Set(webhookURLs)];
 
             for (let i = 0; i < webhookURLs.length; i++) {
                 sendWebhookEmbed(webhookURLs[i], payload);
