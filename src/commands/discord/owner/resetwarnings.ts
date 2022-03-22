@@ -14,6 +14,7 @@ import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import logger from "../../../utils/logger";
+import parseOut from "../../../utils/parseOut";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 import removeMentions from "../../../utils/RemoveMentions";
 
@@ -103,7 +104,7 @@ export default class ResetWarnings extends SlashCommand {
                             server.rcon.webhooks.get("warns"),
                             `${ctx.member.displayName}#${
                                 ctx.member.user.discriminator
-                            } (${ctx.member.id}) reset ${removeMentions(
+                            } (${ctx.member.id}) reset ${parseOut(
                                 player.name
                             )}'s (${outputPlayerIDs(
                                 player.ids,

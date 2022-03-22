@@ -1,6 +1,7 @@
 import { sendWebhookMessage } from "../services/Discord";
 import config from "../structures/Config";
 import logger from "../utils/logger";
+import parseOut from "../utils/parseOut";
 import removeMentions from "../utils/RemoveMentions";
 import Rcon from "./Rcon";
 
@@ -31,7 +32,7 @@ export default class KillStreak {
     public sendMessage(message: string) {
         return sendWebhookMessage(
             this.rcon.webhooks.get("killstreak"),
-            `${removeMentions(message)} (Server: ${this.serverName})`
+            `${parseOut(message)} (Server: ${this.serverName})`
         );
     }
 

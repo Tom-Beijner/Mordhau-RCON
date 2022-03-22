@@ -15,6 +15,7 @@ import config, { Role } from "../structures/Config";
 import { hastebin } from "../utils/Hastebin";
 import logger from "../utils/logger";
 import MordhauAPI from "../utils/MordhauAPI";
+import parseOut from "../utils/parseOut";
 import { outputPlayerIDs } from "../utils/PlayerID";
 import removeMentions from "../utils/RemoveMentions";
 import AntiSlur from "./AutoMod";
@@ -1234,10 +1235,18 @@ export default class Watchdog {
                             (role) => role.receiveMentions
                         ),
                         (role) => role.Ids.map((id) => mentionRole(id))
-                    )} ${removeMentions(player.name)} (${outputPlayerIDs(
+                    )} ${parseOut(player.name)} (${outputPlayerIDs(
                         player.ids,
                         true
-                    )})) was given admin privileges (Reason: Global Add Admin)`
+                    )})) was given admin privileges (Reason: Global Add Admin)`,
+                    {
+                        roles: flatMap(
+                            (config.get("discord.roles") as Role[]).filter(
+                                (role) => role.receiveMentions
+                            ),
+                            (role) => role.Ids
+                        ),
+                    }
                 );
             }
 
@@ -1317,10 +1326,18 @@ export default class Watchdog {
                             (role) => role.receiveMentions
                         ),
                         (role) => role.Ids.map((id) => mentionRole(id))
-                    )} ${removeMentions(player.name)} (${outputPlayerIDs(
+                    )} ${parseOut(player.name)} (${outputPlayerIDs(
                         player.ids,
                         true
-                    )})) had their admin privileges removed (Reason: Global Remove Admin)`
+                    )})) had their admin privileges removed (Reason: Global Remove Admin)`,
+                    {
+                        roles: flatMap(
+                            (config.get("discord.roles") as Role[]).filter(
+                                (role) => role.receiveMentions
+                            ),
+                            (role) => role.Ids
+                        ),
+                    }
                 );
             }
 

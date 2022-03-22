@@ -3,6 +3,7 @@ import { LookupPlayer } from "../../../services/PlayFab";
 import BaseRCONCommand from "../../../structures/BaseRCONCommands";
 import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
+import parseOut from "../../../utils/parseOut";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 import removeMentions from "../../../utils/RemoveMentions";
 
@@ -54,10 +55,10 @@ export default class Unwarn extends BaseRCONCommand {
 
         sendWebhookMessage(
             ctx.rcon.webhooks.get("warns"),
-            `${removeMentions(admin.name)} (${outputPlayerIDs(
+            `${parseOut(admin.name)} (${outputPlayerIDs(
                 admin.ids,
                 true
-            )}) unwarned ${removeMentions(player.name)} (${outputPlayerIDs(
+            )}) unwarned ${parseOut(player.name)} (${outputPlayerIDs(
                 player.ids,
                 true
             )}) (Warnings: ${playerWarns.infractions - 1})`

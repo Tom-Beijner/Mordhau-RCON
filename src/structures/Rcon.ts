@@ -12,6 +12,7 @@ import { LookupPlayer } from "../services/PlayFab";
 import config, { Role } from "../structures/Config";
 import { hastebin } from "../utils";
 import logger from "../utils/logger";
+import parseOut from "../utils/parseOut";
 import { outputPlayerIDs } from "../utils/PlayerID";
 import removeMentions from "../utils/RemoveMentions";
 import AdminActivityConfig from "./AdminActivityConfig";
@@ -576,22 +577,27 @@ export default class Rcon {
                                   )
                                   .join(", ")
                           )})`
-                        : removeMentions(
-                              affectedPlayers
-                                  .map(
-                                      (player) =>
-                                          `${player.name} (${outputPlayerIDs(
-                                              player.ids,
-                                              true
-                                          )})`
-                                  )
-                                  .join(", ")
-                          )
+                        : affectedPlayers
+                              .map(
+                                  (player) =>
+                                      `${parseOut(
+                                          player.name
+                                      )} (${outputPlayerIDs(player.ids, true)})`
+                              )
+                              .join(", ")
                 } was given admin privileges on without permission${
                     config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been removed"
                         : ""
-                } (Server: ${this.options.name})`
+                } (Server: ${this.options.name})`,
+                {
+                    roles: flatMap(
+                        (config.get("discord.roles") as Role[]).filter(
+                            (role) => role.receiveMentions
+                        ),
+                        (role) => role.Ids
+                    ),
+                }
             );
         }
         if (unauthorizedRemovedAdmins?.length) {
@@ -668,7 +674,7 @@ export default class Rcon {
                                   )
                                   .join(", ")
                           )})`
-                        : removeMentions(
+                        : parseOut(
                               affectedAdmins
                                   .map(
                                       (admin) =>
@@ -683,7 +689,15 @@ export default class Rcon {
                     config.get("adminListSaving.rollbackAdmins")
                         ? ", they've been added back"
                         : ""
-                } (Server: ${this.options.name})`
+                } (Server: ${this.options.name})`,
+                {
+                    roles: flatMap(
+                        (config.get("discord.roles") as Role[]).filter(
+                            (role) => role.receiveMentions
+                        ),
+                        (role) => role.Ids
+                    ),
+                }
             );
         }
 
@@ -930,7 +944,7 @@ export default class Rcon {
 
                 sendWebhookMessage(
                     this.webhooks.get("automod"),
-                    `Kicked ${player.name} (${outputPlayerIDs(
+                    `Kicked ${parseOut(player.name)} (${outputPlayerIDs(
                         player.ids,
                         true
                     )}) for having a username with profane words (${profaneWords.join(
@@ -1092,7 +1106,7 @@ export default class Rcon {
         )
             sendWebhookMessage(
                 this.webhooks.get("activity"),
-                `${admin ? "Admin" : "Player"} ${removeMentions(
+                `${admin ? "Admin" : "Player"} ${parseOut(
                     player.name
                 )} (${outputPlayerIDs(
                     player.ids,
@@ -1139,7 +1153,7 @@ export default class Rcon {
         )
             sendWebhookMessage(
                 this.webhooks.get("wanted"),
-                `Naughty ${admin ? "admin" : "player"} ${removeMentions(
+                `Naughty ${admin ? "admin" : "player"} ${parseOut(
                     player.name
                 )} (${outputPlayerIDs(
                     player.ids,
@@ -1241,14 +1255,16 @@ export default class Rcon {
             if (process.env.NODE_ENV.trim() === "production") {
                 sendWebhookMessage(
                     this.webhooks.get("activity"),
-                    `${admin ? "Admin" : "Player"} ${removeMentions(
+                    `${admin ? "Admin" : "Player"} ${parseOut(
                         player.name
                     )} (${outputPlayerIDs(
                         player.ids,
                         true
                     )}) has been punished (Type: ${
                         punishedPlayer.punishment
-                    }, Admin: ${punishedPlayer.admin.name}, Server: ${server})`
+                    }, Admin: ${parseOut(
+                        punishedPlayer.admin.name
+                    )}, Server: ${server})`
                 );
             }
         } else {
@@ -1267,7 +1283,7 @@ export default class Rcon {
             if (process.env.NODE_ENV.trim() === "production") {
                 sendWebhookMessage(
                     this.webhooks.get("activity"),
-                    `${admin ? "Admin" : "Player"} ${removeMentions(
+                    `${admin ? "Admin" : "Player"} ${parseOut(
                         player.name
                     )} (${outputPlayerIDs(
                         player.ids,
@@ -1293,7 +1309,7 @@ export default class Rcon {
 
                     sendWebhookMessage(
                         this.webhooks.get("wanted"),
-                        `Naughty ${admin ? "admin" : "player"} ${removeMentions(
+                        `Naughty ${admin ? "admin" : "player"} ${parseOut(
                             player.name
                         )} (${outputPlayerIDs(
                             player.ids,
@@ -1316,14 +1332,14 @@ export default class Rcon {
 
                     sendWebhookMessage(
                         this.webhooks.get("wanted"),
-                        `Naughty ${admin ? "admin" : "player"} ${removeMentions(
+                        `Naughty ${admin ? "admin" : "player"} ${parseOut(
                             player.name
                         )} (${outputPlayerIDs(
                             player.ids,
                             true
                         )}) has been punished (Type: ${
                             punishedPlayer.punishment
-                        }, Admin: ${removeMentions(
+                        }, Admin: ${parseOut(
                             punishedPlayer.admin.name
                         )}, Server: ${server})`
                     );
@@ -1356,14 +1372,13 @@ export default class Rcon {
 
             sendWebhookMessage(
                 this.webhooks.get("activity"),
-                `Unauthorized admin ${removeMentions(
-                    admin.name
-                )} (${outputPlayerIDs(
+                `Unauthorized admin ${parseOut(admin.name)} (${outputPlayerIDs(
                     admin.ids,
                     true
-                )}) ${punishment} ${removeMentions(
-                    player.name
-                )} (${outputPlayerIDs(player.ids, true)})${
+                )}) ${punishment} ${parseOut(player.name)} (${outputPlayerIDs(
+                    player.ids,
+                    true
+                )})${
                     ["banned", "muted"].includes(punishment)
                         ? " and the punishment has beeen reverted"
                         : ""
@@ -1893,12 +1908,11 @@ export default class Rcon {
 
                 await sendWebhookMessage(
                     this.webhooks.get("chat"),
-                    `${admin ? "Admin" : "Player"} ${removeMentions(
+                    `${admin ? "Admin" : "Player"} ${parseOut(
                         player.name
-                    )} (${outputPlayerIDs(
-                        player.ids,
-                        true
-                    )}): \`${message}\` (Server: ${this.options.name})`
+                    )} (${outputPlayerIDs(player.ids, true)}): \`${parseOut(
+                        message
+                    )}\` (Server: ${this.options.name})`
                 );
 
                 if (this.options.automod) {

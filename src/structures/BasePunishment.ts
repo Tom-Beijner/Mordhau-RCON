@@ -284,7 +284,7 @@ export default abstract class BasePunishment {
 
             if (["BAN", "GLOBAL BAN"].includes(data.type)) {
                 const server = this.bot.servers.get(data.server);
-                const payload = `${removeMentions(
+                const payload = `${parseOut(
                     data.player.name
                 )} (${outputPlayerIDs(data.player.ids, true)}) ${
                     data.global ? "globally" : `in ${data.server}`

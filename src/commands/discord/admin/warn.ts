@@ -15,6 +15,7 @@ import config, { InfractionThreshold, Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
 import logger from "../../../utils/logger";
+import parseOut from "../../../utils/parseOut";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 import removeMentions from "../../../utils/RemoveMentions";
 
@@ -341,7 +342,7 @@ export default class Warn extends SlashCommand {
                                 : ["warn", "kick"].includes(punishment.type)
                                 ? "ed"
                                 : "d"
-                        } ${removeMentions(player.name)} (${outputPlayerIDs(
+                        } ${parseOut(player.name)} (${outputPlayerIDs(
                             player.ids,
                             true
                         )}) for reaching warn threshold (Server: ${

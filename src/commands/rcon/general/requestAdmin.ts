@@ -2,6 +2,7 @@ import { sendWebhookMessage } from "../../../services/Discord";
 import BaseRCONCommand from "../../../structures/BaseRCONCommands";
 import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
+import parseOut from "../../../utils/parseOut";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 import removeMentions from "../../../utils/RemoveMentions";
 
@@ -22,12 +23,12 @@ export default class RequestAdmin extends BaseRCONCommand {
 
         sendWebhookMessage(
             ctx.rcon.webhooks.get("adminCalls"),
-            `${removeMentions(player.name)} (${outputPlayerIDs(
+            `${parseOut(player.name)} (${outputPlayerIDs(
                 player.ids,
                 true
             )}) requested admins${
                 ctx.args.length
-                    ? ` with the message \`${ctx.args.join(" ")}\``
+                    ? ` with the message \`${parseOut(ctx.args.join(" "))}\``
                     : ""
             } (Server: ${player.server})`
         );

@@ -8,6 +8,7 @@ import config, { InfractionThreshold } from "../../../structures/Config";
 import RCONCommandContext from "../../../structures/RCONCommandContext";
 import Watchdog from "../../../structures/Watchdog";
 import logger from "../../../utils/logger";
+import parseOut from "../../../utils/parseOut";
 import { outputPlayerIDs } from "../../../utils/PlayerID";
 import removeMentions from "../../../utils/RemoveMentions";
 
@@ -266,12 +267,12 @@ export default class Warn extends BaseRCONCommand {
                             : ["warn", "kick"].includes(punishment.type)
                             ? "ed"
                             : "d"
-                    } ${removeMentions(player.name)} (${outputPlayerIDs(
+                    } ${parseOut(player.name)} (${outputPlayerIDs(
                         player.ids,
                         true
                     )}) for reaching warn threshold (Server: ${
                         ctx.rcon.options.name
-                    }, Admin: ${removeMentions(admin.name)} (${outputPlayerIDs(
+                    }, Admin: ${parseOut(admin.name)} (${outputPlayerIDs(
                         admin.ids,
                         true
                     )})${

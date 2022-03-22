@@ -8,6 +8,7 @@ import stringify from "retext-stringify";
 import unified, { Processor, Settings } from "unified";
 import { sendWebhookMessage } from "../services/Discord";
 import logger from "../utils/logger";
+import parseOut from "../utils/parseOut";
 import { outputPlayerIDs } from "../utils/PlayerID";
 import config, { InfractionThreshold } from "./Config";
 import Rcon from "./Rcon";
@@ -397,7 +398,7 @@ export default class AutoMod {
                             : ["warn", "kick"].includes(punishment.type)
                             ? "ed"
                             : "d"
-                    } ${player.name} (${outputPlayerIDs(
+                    } ${parseOut(player.name)} (${outputPlayerIDs(
                         player.ids,
                         true
                     )}) for profane message (Server: ${rcon.options.name}${
