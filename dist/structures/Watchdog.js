@@ -45,6 +45,7 @@ const AutoUpdater_1 = __importDefault(require("./AutoUpdater"));
 const Database_1 = __importDefault(require("./Database"));
 const DiscordEmbed_1 = __importDefault(require("./DiscordEmbed"));
 const Rcon_1 = __importDefault(require("./Rcon"));
+const Whitelist_1 = __importDefault(require("./Whitelist"));
 class Watchdog {
     constructor(token) {
         this.startTime = Date.now();
@@ -779,6 +780,7 @@ class Watchdog {
             publicKey: Config_1.default.get("bot.publicKey"),
             token: this.token,
             allowedMentions: { everyone: false, users: false },
+            client: this.client
         })
             .withServer(new slash_create_1.GatewayServer((handler) => this.client.on("rawWS", (event) => {
             try {
@@ -792,9 +794,10 @@ class Watchdog {
             .on("synced", () => {
             logger_1.default.info("Bot", "Synchronized all slash commands with Discord");
         })
-            .on("commandError", (command, err, ctx) => {
-            logger_1.default.error("Bot", `Error occurred while running command (Command: ${command.commandName}, Error: ${err.message || err})`);
+            .on("commandError", (command, error, ctx) => {
+            logger_1.default.error("Bot", `Error occurred while running command (Command: ${command.commandName}, Error: ${error.message || error})`);
         })
+            .on("error", (error) => logger_1.default.error("Bot", `Error occurred (Error: ${error.message || error})`))
             .on("debug", (message) => logger_1.default.debug("Bot", message));
         this.client.once("ready", () => this.onInstanceUpdate());
         this.client.on("guildCreate", () => this.onInstanceUpdate());
@@ -813,6 +816,7 @@ class Watchdog {
         }
         logger_1.default.info("Bot", `Loaded ${pluralize_1.default("server", Config_1.default.get("servers").length, true)}`);
         this.antiSlur = new AutoMod_1.default(this);
+        this.whitelist = new Whitelist_1.default(this);
         await this.loadRCONCommands();
         for (const [name, server] of this.servers) {
             const s = Config_1.default.get("servers").find((s) => s.name === name) || {
@@ -915,9 +919,7 @@ class Watchdog {
             });
             walker.on("end", () => {
                 this.slashCreator.syncCommands({
-                    syncPermissions: true,
                     syncGuilds: true,
-                    skipGuildErrors: true,
                 });
                 resolve();
             });

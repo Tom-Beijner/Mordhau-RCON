@@ -53,7 +53,9 @@ class TeleportEdit extends SlashCommand_1.default {
                     type: slash_create_1.CommandOptionType.STRING,
                 },
             ],
-            defaultPermission: false,
+            dmPermission: false,
+            guildIDs: bot.client.guilds.map((guild) => guild.id),
+            requiredPermissions: [],
             permissions: Object.assign({}, ...bot.client.guilds.map((guild) => ({
                 [guild.id]: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.commands.includes(commandName)), (role) => role.Ids.map((id) => ({
                     type: slash_create_1.ApplicationCommandPermissionType.ROLE,
@@ -62,6 +64,11 @@ class TeleportEdit extends SlashCommand_1.default {
                 }))),
             }))),
         });
+    }
+    hasPermission(ctx) {
+        return ctx.member.roles.some((r) => Config_1.default.get("discord.roles")
+            .filter((role) => role.commands.includes(this.commandName))
+            .find((role) => role.Ids.includes(r)));
     }
     async run(ctx) {
         await ctx.defer();

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.28.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.27.7...v1.28.0) (2022-05-02)
+
+
+### Features
+
+* whitelist and updated all commands ([44fe643](https://github.com/Tom-Beijner/Mordhau-RCON/commit/44fe6433ddd8ddfc710dc03d4a61d0d4a2fe34de))
+
 ### [1.27.7](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.27.6...v1.27.7) (2022-03-22)
 
 
