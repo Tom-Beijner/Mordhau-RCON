@@ -37,22 +37,22 @@ export default class Say extends SlashCommand {
             dmPermission: false,
             guildIDs: bot.client.guilds.map((guild) => guild.id),
             requiredPermissions: [],
-            permissions: Object.assign(
-                {},
-                ...bot.client.guilds.map((guild) => ({
-                    [guild.id]: flatMap(
-                        (config.get("discord.roles") as Role[]).filter((role) =>
-                            role.commands.includes(commandName)
-                        ),
-                        (role) =>
-                            role.Ids.map((id) => ({
-                                type: ApplicationCommandPermissionType.ROLE,
-                                id,
-                                permission: true,
-                            }))
-                    ),
-                }))
-            ),
+            // permissions: Object.assign(
+            //     {},
+            //     ...bot.client.guilds.map((guild) => ({
+            //         [guild.id]: flatMap(
+            //             (config.get("discord.roles") as Role[]).filter((role) =>
+            //                 role.commands.includes(commandName)
+            //             ),
+            //             (role) =>
+            //                 role.Ids.map((id) => ({
+            //                     type: ApplicationCommandPermissionType.ROLE,
+            //                     id,
+            //                     permission: true,
+            //                 }))
+            //         ),
+            //     }))
+            // ),
         });
     }
 
