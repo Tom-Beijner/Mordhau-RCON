@@ -217,13 +217,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@discordjs/collection@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "@discordjs/collection@npm:0.2.1"
-  checksum: e68d4bbf83b03bc18c7648d0f5c5669d1f1a394596bc2fcbb907284cff65657b28dbf165a1b8ccae20b6bc0726bc8a0a276d8adba8f9413502bb19d61b98598f
-  languageName: node
-  linkType: hard
-
 "@endemolshinegroup/cosmiconfig-typescript-loader@npm:^3.0.2":
   version: 3.0.2
   resolution: "@endemolshinegroup/cosmiconfig-typescript-loader@npm:3.0.2"
@@ -4367,13 +4360,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.uniq@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "lodash.uniq@npm:4.5.0"
-  checksum: a4779b57a8d0f3c441af13d9afe7ecff22dd1b8ce1129849f71d9bbc8e8ee4e46dfb4b7c28f7ad3d67481edd6e51126e4e2a6ee276e25906d10f7140187c392d
-  languageName: node
-  linkType: hard
-
 "lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.19, lodash@npm:^4.17.21, lodash@npm:^4.2.1":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
@@ -4951,7 +4937,7 @@ __metadata:
     retext-profanities: ^6.1.0
     retext-stringify: ^2.0.4
     rimraf: ^3.0.2
-    slash-create: ^4.3.0
+    slash-create: ^5.5.3
     standard-version: ^9.3.2
     steamid: ^2.0.0
     table: ^6.7.2
@@ -6203,13 +6189,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"require-all@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "require-all@npm:3.0.0"
-  checksum: f2d652d6bca4201bda1ff2f7d4f46a3edd136cc6fd81d38caff50eaa4669ae7ae459f32a06b0892e754bf0f7aae21fbe69172409dff1abd78be5c12cab750a01
-  languageName: node
-  linkType: hard
-
 "require-at@npm:^1.0.6":
   version: 1.0.6
   resolution: "require-at@npm:1.0.6"
@@ -6597,15 +6576,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slash-create@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "slash-create@npm:4.3.0"
+"slash-create@npm:^5.5.3":
+  version: 5.5.3
+  resolution: "slash-create@npm:5.5.3"
   dependencies:
-    "@discordjs/collection": ^0.2.1
     eventemitter3: ^4.0.7
     lodash.isequal: ^4.5.0
-    lodash.uniq: ^4.5.0
-    require-all: ^3.0.0
     tweetnacl: ^1.0.3
   peerDependencies:
     express: ^4.17.1
@@ -6615,7 +6591,7 @@ __metadata:
       optional: true
     fastify:
       optional: true
-  checksum: f94f15b6689fec7e46d7ddb3788671d5eef9386516fdbda9f4919bca81c15db78054976af4bfbf4e97a226a4eda2cf2d77905d766924e47614fb07da3c968248
+  checksum: abf5476f766d266f11320fe119b4d8fe051b511bf762464e01c596620c5057235c7819a3585a3c1e98c5e1c33958fae099dff0ef5d1cb600397e7146e9f456fd
   languageName: node
   linkType: hard
 

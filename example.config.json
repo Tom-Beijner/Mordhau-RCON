@@ -226,7 +226,8 @@
                     "unban",
                     "unmute",
                     "warn",
-                    "unwarn"
+                    "unwarn",
+                    "whitelist"
                 ],
                 "receiveMentions": false
             },
@@ -262,6 +263,7 @@
                     "removeadmin",
                     "globaladdadmin",
                     "globalremoveadmin",
+                    "whitelist",
                     "rcon",
                     "update"
                 ],

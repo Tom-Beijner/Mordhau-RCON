@@ -8,6 +8,7 @@ import path, { resolve as res } from "path";
 import pluralize from "pluralize";
 import { GatewayServer, SlashCreator } from "slash-create";
 import { walk } from "walk";
+
 import LogHandler from "../handlers/logHandler";
 import { mentionRole, sendWebhookMessage } from "../services/Discord";
 import { CreateAccount, getServerInfo, Login } from "../services/PlayFab";
@@ -17,7 +18,6 @@ import logger from "../utils/logger";
 import MordhauAPI from "../utils/MordhauAPI";
 import parseOut from "../utils/parseOut";
 import { outputPlayerIDs } from "../utils/PlayerID";
-import removeMentions from "../utils/RemoveMentions";
 import AntiSlur from "./AutoMod";
 import AutoUpdater from "./AutoUpdater";
 import BaseEvent from "./BaseEvent";
@@ -25,6 +25,7 @@ import BaseRCONCommand from "./BaseRCONCommands";
 import Database from "./Database";
 import DiscordEmbed from "./DiscordEmbed";
 import Rcon from "./Rcon";
+import Whitelist from "./Whitelist";
 
 interface Iids {
     playFabID: string;
@@ -51,6 +52,7 @@ export default class Watchdog {
     > = new Map();
     public mordhau = MordhauAPI;
     public antiSlur: AntiSlur;
+    public whitelist: Whitelist;
 
     // public requestingPlayers: LRU<
     //     string,
@@ -1423,6 +1425,7 @@ export default class Watchdog {
             publicKey: config.get("bot.publicKey"),
             token: this.token,
             allowedMentions: { everyone: false, users: false },
+            client: this.client
         })
             .withServer(
                 new GatewayServer((handler) =>
@@ -1446,14 +1449,20 @@ export default class Watchdog {
                     "Synchronized all slash commands with Discord"
                 );
             })
-            .on("commandError", (command, err, ctx) => {
+            .on("commandError", (command, error, ctx) => {
                 logger.error(
                     "Bot",
                     `Error occurred while running command (Command: ${
                         command.commandName
-                    }, Error: ${err.message || err})`
+                    }, Error: ${error.message || error})`
                 );
             })
+            .on("error", (error) =>
+                logger.error(
+                    "Bot",
+                    `Error occurred (Error: ${error.message || error})`
+                )
+            )
             .on("debug", (message) => logger.debug("Bot", message));
 
         this.client.once("ready", () => this.onInstanceUpdate());
@@ -1482,6 +1491,8 @@ export default class Watchdog {
         );
 
         this.antiSlur = new AntiSlur(this);
+
+        this.whitelist = new Whitelist(this);
 
         await this.loadRCONCommands();
 
@@ -1702,9 +1713,9 @@ export default class Watchdog {
             walker.on("end", () => {
                 this.slashCreator.syncCommands({
                     // deleteCommands: true,
-                    syncPermissions: true,
+                    // syncPermissions: true,
                     syncGuilds: true,
-                    skipGuildErrors: true,
+                    // skipGuildErrors: true,
                 });
 
                 resolve();

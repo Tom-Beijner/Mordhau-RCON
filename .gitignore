@@ -135,3 +135,4 @@ save
 teleportLocations.json
 adminActivity.json
 stats.json
+whitelist.json

@@ -921,6 +921,8 @@ export default class Rcon {
         const player = await this.getPlayerToCache(id);
         const admin = this.admins.has(player.id);
 
+        if (await this.bot.whitelist.check(this, player)) return;
+
         if (this.options.automod) {
             const profaneWords = await this.bot.antiSlur.getSlurs(
                 this,

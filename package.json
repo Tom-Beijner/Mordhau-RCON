@@ -62,7 +62,7 @@
         "retext-english": "^3.0.4",
         "retext-profanities": "^6.1.0",
         "retext-stringify": "^2.0.4",
-        "slash-create": "^4.3.0",
+        "slash-create": "^5.5.3",
         "steamid": "^2.0.0",
         "table": "^6.7.2",
         "typed-emitter": "^1.3.1",

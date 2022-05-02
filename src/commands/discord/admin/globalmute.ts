@@ -34,7 +34,9 @@ export default class GlobalMute extends SlashCommand {
                     type: CommandOptionType.INTEGER,
                 },
             ],
-            defaultPermission: false,
+            dmPermission: false,
+            guildIDs: bot.client.guilds.map((guild) => guild.id),
+            requiredPermissions: [],
             permissions: Object.assign(
                 {},
                 ...bot.client.guilds.map((guild) => ({
@@ -52,6 +54,37 @@ export default class GlobalMute extends SlashCommand {
                 }))
             ),
         });
+    }
+
+    hasPermission(ctx: CommandContext): string | boolean {
+        // const permissions = Object.assign(
+        //     {},
+        //     ...this.bot.client.guilds.map((guild) => ({
+        //         [guild.id]: flatMap(
+        //             (config.get("discord.roles") as Role[]).filter((role) =>
+        //                 role.commands.includes(this.commandName)
+        //             ),
+        //             (role) =>
+        //                 role.Ids.map((id) => ({
+        //                     type: ApplicationCommandPermissionType.ROLE,
+        //                     id,
+        //                     permission: true,
+        //                 }))
+        //         ),
+        //     }))
+        // );
+
+        // return (
+        //     permissions[ctx.guildID]?.some((permission) =>
+        //         ctx.member.roles.includes(permission.id)
+        //     ) ?? false
+        // );
+
+        return ctx.member.roles.some((r) =>
+            (config.get("discord.roles") as Role[])
+                .filter((role) => role.commands.includes(this.commandName))
+                .find((role) => role.Ids.includes(r))
+        );
     }
 
     async run(ctx: CommandContext) {
