@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const array_prototype_flatmap_1 = __importDefault(require("array.prototype.flatmap"));
 const date_fns_1 = require("date-fns");
 const date_fns_tz_1 = require("date-fns-tz");
 const pluralize_1 = __importDefault(require("pluralize"));
@@ -40,13 +39,6 @@ class Admins extends SlashCommand_1.default {
             dmPermission: false,
             guildIDs: bot.client.guilds.map((guild) => guild.id),
             requiredPermissions: [],
-            permissions: Object.assign({}, ...bot.client.guilds.map((guild) => ({
-                [guild.id]: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.commands.includes(commandName)), (role) => role.Ids.map((id) => ({
-                    type: slash_create_1.ApplicationCommandPermissionType.ROLE,
-                    id,
-                    permission: true,
-                }))),
-            }))),
         });
     }
     hasPermission(ctx) {
