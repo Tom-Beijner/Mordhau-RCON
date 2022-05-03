@@ -33,7 +33,6 @@ class Unmute extends SlashCommand_1.default {
                 },
             ],
             dmPermission: false,
-            guildIDs: bot.client.guilds.map((guild) => guild.id),
             requiredPermissions: [],
         });
     }
