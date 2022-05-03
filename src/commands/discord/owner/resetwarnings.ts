@@ -32,7 +32,6 @@ export default class ResetWarnings extends SlashCommand {
                 },
             ],
             dmPermission: false,
-            guildIDs: bot.client.guilds.map((guild) => guild.id),
             requiredPermissions: [],
             // permissions: Object.assign(
             //     {},
