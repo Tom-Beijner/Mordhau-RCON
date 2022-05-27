@@ -216,7 +216,7 @@ export default class AutoMod {
         ).filter((p) => p.server === rcon.options.name);
     }
 
-    public async add(
+    public add(
         rcon: Rcon,
         admin: {
             ids: { playFabID: string; steamID?: string };
@@ -273,7 +273,7 @@ export default class AutoMod {
         );
     }
 
-    public async remove(
+    public remove(
         rcon: Rcon,
         admin: {
             ids: { playFabID: string; steamID?: string };
@@ -305,7 +305,7 @@ export default class AutoMod {
                     server: string;
                 }[]
             ).filter(
-                (p) => p.id !== player.id && p.server !== rcon.options.name
+                (p) => p.id !== player.id || p.server !== rcon.options.name
             )
         );
 
@@ -333,6 +333,53 @@ export default class AutoMod {
             } (${outputPlayerIDs(player.ids)}) from the whitelist (Server: ${
                 rcon.options.name
             })`
+        );
+    }
+
+    public async clear(
+        rcon: Rcon,
+        admin: {
+            ids: { playFabID: string; steamID?: string };
+            id: string;
+            name: string;
+        }
+    ) {
+        if (
+            !(
+                this.config.get("players") as {
+                    id: string;
+                    server: string;
+                }[]
+            ).filter((p) => p.server === rcon.options.name).length
+        ) {
+            return `There are no whitelisted players.`;
+        }
+
+        this.config.set(
+            "players",
+            (
+                this.config.get("players") as {
+                    id: string;
+                    server: string;
+                }[]
+            ).filter((p) => p.server !== rcon.options.name)
+        );
+
+        rcon.say(`The whitelist has been cleared.`);
+
+        this.sendMessage(
+            rcon.webhooks.get("activity"),
+            `${parseOut(admin.name)} (${outputPlayerIDs(
+                admin.ids,
+                true
+            )}) cleared the whitelist (Server: ${rcon.options.name})`
+        );
+
+        logger.info(
+            "Whitelist",
+            `${admin.name} (${outputPlayerIDs(
+                admin.ids
+            )}) cleared the whitelist (Server: ${rcon.options.name})`
         );
     }
 }

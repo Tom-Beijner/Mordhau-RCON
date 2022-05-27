@@ -4,9 +4,12 @@ import {
     ApplicationCommandPermissionType,
     CommandContext,
     CommandOptionType,
+    ComponentType,
     Message,
     SlashCreator,
+    TextInputStyle,
 } from "slash-create";
+import { ComponentConfirmation } from "../../../services/Discord";
 import { LookupPlayer } from "../../../services/PlayFab";
 import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
@@ -96,12 +99,6 @@ export default class Whitelist extends SlashCommand {
                                 value: server.name,
                             })),
                         },
-                        {
-                            name: "player",
-                            description: "PlayFab ID or name of the player",
-                            required: true,
-                            type: CommandOptionType.STRING,
-                        },
                     ],
                 },
                 {
@@ -119,11 +116,22 @@ export default class Whitelist extends SlashCommand {
                                 value: server.name,
                             })),
                         },
+                    ],
+                },
+                {
+                    type: CommandOptionType.SUB_COMMAND,
+                    name: "clear",
+                    description: "Clear the whitelist",
+                    options: [
                         {
-                            name: "player",
-                            description: "PlayFab ID or name of the player",
+                            name: "server",
+                            description: "Server to run the command on",
                             required: true,
                             type: CommandOptionType.STRING,
+                            choices: config.get("servers").map((server) => ({
+                                name: server.name,
+                                value: server.name,
+                            })),
                         },
                     ],
                 },
@@ -181,10 +189,8 @@ export default class Whitelist extends SlashCommand {
     }
 
     async run(ctx: CommandContext) {
-        await ctx.defer();
         const options = ctx.options[ctx.subcommands[0]] as {
             server: string;
-            player: string;
         };
 
         const server = this.bot.servers.get(options.server);
@@ -205,6 +211,8 @@ export default class Whitelist extends SlashCommand {
 
         switch (ctx.subcommands[0]) {
             case "on": {
+                await ctx.defer();
+
                 this.bot.whitelist.on(server.rcon, {
                     ids: { playFabID: ctx.member.id },
                     id: ctx.member.id,
@@ -216,6 +224,8 @@ export default class Whitelist extends SlashCommand {
                 )) as Message;
             }
             case "off": {
+                await ctx.defer();
+
                 this.bot.whitelist.off(server.rcon, {
                     ids: { playFabID: ctx.member.id },
                     id: ctx.member.id,
@@ -227,6 +237,8 @@ export default class Whitelist extends SlashCommand {
                 )) as Message;
             }
             case "list": {
+                await ctx.defer();
+
                 const players = await this.bot.whitelist.list(server.rcon);
 
                 return (await ctx.send(
@@ -238,76 +250,330 @@ export default class Whitelist extends SlashCommand {
                 )) as Message;
             }
             case "add": {
-                const ingamePlayer = await server.rcon.getIngamePlayer(
-                    options.player
-                );
-                const player = this.bot.cachedPlayers.get(
-                    ingamePlayer?.id || options.player
-                ) || {
-                    server: server.name,
-                    ...(await LookupPlayer(ingamePlayer?.id || options.player)),
-                };
-
-                if (!player?.id) {
-                    return await ctx.send("Invalid player provided");
-                }
-
-                this.bot.whitelist.add(
-                    server.rcon,
+                await ctx.sendModal(
                     {
-                        ids: {
-                            playFabID: player.ids.playFabID,
-                            steamID: player.ids.steamID,
-                        },
-                        id: ctx.member.id,
-                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                        title: "Add players to the whitelist",
+                        components: [
+                            {
+                                type: ComponentType.ACTION_ROW,
+                                components: [
+                                    {
+                                        type: ComponentType.TEXT_INPUT,
+                                        label: "PlayFab IDs (one per line)",
+                                        style: TextInputStyle.PARAGRAPH,
+                                        custom_id: "playFabIDs",
+                                        placeholder: "ID1\nID2\n...",
+                                    },
+                                ],
+                            },
+                        ],
                     },
-                    {
-                        ids: { playFabID: player.id },
-                        id: player.id,
-                        name: player.name,
+                    async (mctx) => {
+                        const values = mctx.values as {
+                            playFabIDs: string;
+                        };
+
+                        const ids = [
+                            ...new Set(
+                                values.playFabIDs
+                                    .split("\n")
+                                    .filter((id) => id.length)
+                                    .map((id) => id.trim())
+                            ),
+                        ];
+
+                        if (ids.length === 0) {
+                            return (await mctx.send(
+                                "No valid PlayFab IDs provided"
+                            )) as Message;
+                        }
+
+                        if (ids.length > 100) {
+                            return (await mctx.send(
+                                "Too many PlayFab IDs provided (max 100)"
+                            )) as Message;
+                        }
+
+                        const added: { id: string; name: string }[] = [];
+                        const alreadyExisting: { id: string; name: string }[] =
+                            [];
+                        const invalid: string[] = [];
+
+                        for (let i = 0; i < ids.length; i++) {
+                            const id = ids[i];
+
+                            const ingamePlayer =
+                                await server.rcon.getIngamePlayer(id);
+                            const player = this.bot.cachedPlayers.get(
+                                ingamePlayer?.id || id
+                            ) || {
+                                server: server.name,
+                                ...(await LookupPlayer(ingamePlayer?.id || id)),
+                            };
+
+                            if (!player?.id) {
+                                invalid.push(id);
+                                continue;
+                            }
+
+                            const existing = this.bot.whitelist.add(
+                                server.rcon,
+                                {
+                                    ids: {
+                                        playFabID: ctx.member.id,
+                                    },
+                                    id: ctx.member.id,
+                                    name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                                },
+                                {
+                                    ids: {
+                                        playFabID: player.ids.playFabID,
+                                        steamID: player.ids.steamID,
+                                    },
+                                    id: player.id,
+                                    name: player.name,
+                                }
+                            );
+
+                            if (existing) {
+                                alreadyExisting.push({
+                                    id: player.id,
+                                    name: player.name,
+                                });
+                                continue;
+                            }
+
+                            added.push({ id: player.id, name: player.name });
+                        }
+
+                        const message = [
+                            added.length
+                                ? `Added (${added.length} ${pluralize(
+                                      "players",
+                                      added.length
+                                  )}): ${added
+                                      .map(
+                                          (player) =>
+                                              `${player.name} (${player.id})`
+                                      )
+                                      .join(", ")}`
+                                : null,
+                            alreadyExisting.length
+                                ? `Already Exists (${
+                                      alreadyExisting.length
+                                  } ${pluralize(
+                                      "players",
+                                      alreadyExisting.length
+                                  )}): ${alreadyExisting
+                                      .map(
+                                          (player) =>
+                                              `${player.name} (${player.id})`
+                                      )
+                                      .join(", ")}`
+                                : null,
+                            invalid.length
+                                ? `Invalid (${invalid.length} ${pluralize(
+                                      "IDs",
+                                      invalid.length
+                                  )}): ${invalid.join(", ")}`
+                                : null,
+                        ]
+                            .filter((message) => message !== null)
+                            .join("\n");
+
+                        return await mctx.send({
+                            content:
+                                message.length > 1023
+                                    ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
+                                          message
+                                      )})`
+                                    : message,
+                        });
                     }
                 );
-
-                return (await ctx.send(
-                    `Added ${player.name} to the whitelist on ${server.name}`
-                )) as Message;
+                break;
             }
             case "remove": {
-                const ingamePlayer = await server.rcon.getIngamePlayer(
-                    options.player
-                );
-                const player = this.bot.cachedPlayers.get(
-                    ingamePlayer?.id || options.player
-                ) || {
-                    server: server.name,
-                    ...(await LookupPlayer(ingamePlayer?.id || options.player)),
-                };
-
-                if (!player?.id) {
-                    return await ctx.send("Invalid player provided");
-                }
-
-                this.bot.whitelist.remove(
-                    server.rcon,
+                await ctx.sendModal(
                     {
-                        ids: { playFabID: ctx.member.id },
-                        id: ctx.member.id,
-                        name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                        title: "Remove players to the whitelist",
+                        components: [
+                            {
+                                type: ComponentType.ACTION_ROW,
+                                components: [
+                                    {
+                                        type: ComponentType.TEXT_INPUT,
+                                        label: "PlayFab IDs (one per line)",
+                                        style: TextInputStyle.PARAGRAPH,
+                                        custom_id: "playFabIDs",
+                                        placeholder: "ID1\nID2\n...",
+                                    },
+                                ],
+                            },
+                        ],
                     },
-                    {
-                        ids: {
-                            playFabID: player.ids.playFabID,
-                            steamID: player.ids.steamID,
-                        },
-                        id: player.id,
-                        name: player.name,
+                    async (mctx) => {
+                        const values = mctx.values as {
+                            playFabIDs: string;
+                        };
+
+                        const ids = [
+                            ...new Set(
+                                values.playFabIDs
+                                    .split("\n")
+                                    .filter((id) => id.length)
+                                    .map((id) => id.trim())
+                            ),
+                        ];
+
+                        if (ids.length === 0) {
+                            return (await mctx.send(
+                                "No valid PlayFab IDs provided"
+                            )) as Message;
+                        }
+
+                        if (ids.length > 100) {
+                            return (await mctx.send(
+                                "Too many PlayFab IDs provided (max 100)"
+                            )) as Message;
+                        }
+
+                        const removed: { id: string; name: string }[] = [];
+                        const doesntExisting: { id: string; name: string }[] =
+                            [];
+                        const invalid: string[] = [];
+
+                        for (let i = 0; i < ids.length; i++) {
+                            const id = ids[i];
+
+                            const ingamePlayer =
+                                await server.rcon.getIngamePlayer(id);
+                            const player = this.bot.cachedPlayers.get(
+                                ingamePlayer?.id || id
+                            ) || {
+                                server: server.name,
+                                ...(await LookupPlayer(ingamePlayer?.id || id)),
+                            };
+
+                            if (!player?.id) {
+                                invalid.push(id);
+                                continue;
+                            }
+
+                            const existing = this.bot.whitelist.remove(
+                                server.rcon,
+                                {
+                                    ids: { playFabID: ctx.member.id },
+                                    id: ctx.member.id,
+                                    name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                                },
+                                {
+                                    ids: {
+                                        playFabID: player.ids.playFabID,
+                                        steamID: player.ids.steamID,
+                                    },
+                                    id: player.id,
+                                    name: player.name,
+                                }
+                            );
+
+                            if (existing) {
+                                doesntExisting.push({
+                                    id: player.id,
+                                    name: player.name,
+                                });
+                                continue;
+                            }
+
+                            removed.push({ id: player.id, name: player.name });
+                        }
+
+                        const message = [
+                            removed.length
+                                ? `Removed (${removed.length} ${pluralize(
+                                      "players",
+                                      removed.length
+                                  )}): ${removed
+                                      .map(
+                                          (player) =>
+                                              `${player.name} (${player.id})`
+                                      )
+                                      .join(", ")}`
+                                : null,
+                            doesntExisting.length
+                                ? `Doesn't exist (${
+                                      doesntExisting.length
+                                  } ${pluralize(
+                                      "players",
+                                      doesntExisting.length
+                                  )}): ${doesntExisting
+                                      .map(
+                                          (player) =>
+                                              `${player.name} (${player.id})`
+                                      )
+                                      .join(", ")}`
+                                : null,
+                            invalid.length
+                                ? `Invalid (${invalid.length} ${pluralize(
+                                      "IDs",
+                                      invalid.length
+                                  )}): ${invalid.join(", ")}`
+                                : null,
+                        ]
+                            .filter((message) => message !== null)
+                            .join("\n");
+
+                        return await mctx.send({
+                            content:
+                                message.length > 1023
+                                    ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
+                                          message
+                                      )})`
+                                    : message,
+                        });
                     }
                 );
+                break;
+            }
+            case "clear": {
+                await ctx.defer();
 
-                return (await ctx.send(
-                    `Removed ${player.name} from the whitelist on ${server.name}`
-                )) as Message;
+                await ComponentConfirmation(
+                    ctx,
+                    {
+                        embeds: [
+                            {
+                                description: [
+                                    `Are you sure you want to clear the whitelist on ${server.name}?`,
+                                ].join("\n"),
+                                color: 15158332,
+                            },
+                        ],
+                    },
+                    async (btnCtx) => {
+                        if (ctx.user.id !== btnCtx.user.id) return;
+
+                        const existing = await this.bot.whitelist.clear(
+                            server.rcon,
+                            {
+                                ids: { playFabID: ctx.member.id },
+                                id: ctx.member.id,
+                                name: `${ctx.member.displayName}#${ctx.member.user.discriminator}`,
+                            }
+                        );
+
+                        if (existing) {
+                            return await ctx.send(existing);
+                        }
+
+                        await btnCtx.editParent({
+                            content: `Cleared the whitelist on ${server.name}`,
+                            embeds: [],
+                            components: [],
+                        });
+                    }
+                );
+                break;
             }
         }
     }
