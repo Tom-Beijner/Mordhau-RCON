@@ -95,7 +95,7 @@ class AutoMod {
     async list(rcon) {
         return this.config.get("players").filter((p) => p.server === rcon.options.name);
     }
-    async add(rcon, admin, player) {
+    add(rcon, admin, player) {
         if (this.config.get("players").find((p) => p.id === player.id && p.server === rcon.options.name)) {
             return `${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) is already whitelisted.`;
         }
@@ -110,14 +110,23 @@ class AutoMod {
         this.sendMessage(rcon.webhooks.get("activity"), `${parseOut_1.default(admin.name)} (${PlayerID_1.outputPlayerIDs(admin.ids, true)}) added ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) to the whitelist (Server: ${rcon.options.name})`);
         logger_1.default.info("Whitelist", `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids)}) added ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) to the whitelist (Server: ${rcon.options.name})`);
     }
-    async remove(rcon, admin, player) {
+    remove(rcon, admin, player) {
         if (!this.config.get("players").find((p) => p.id === player.id && p.server === rcon.options.name)) {
             return `${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) is not whitelisted.`;
         }
-        this.config.set("players", this.config.get("players").filter((p) => p.id !== player.id && p.server !== rcon.options.name));
+        this.config.set("players", this.config.get("players").filter((p) => p.id !== player.id || p.server !== rcon.options.name));
         rcon.say(`${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) was removed from the whitelist.`);
         this.sendMessage(rcon.webhooks.get("activity"), `${parseOut_1.default(admin.name)} (${PlayerID_1.outputPlayerIDs(admin.ids, true)}) removed ${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)}) from the whitelist (Server: ${rcon.options.name})`);
         logger_1.default.info("Whitelist", `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids)}) removed ${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)}) from the whitelist (Server: ${rcon.options.name})`);
+    }
+    async clear(rcon, admin) {
+        if (!this.config.get("players").filter((p) => p.server === rcon.options.name).length) {
+            return `There are no whitelisted players.`;
+        }
+        this.config.set("players", this.config.get("players").filter((p) => p.server !== rcon.options.name));
+        rcon.say(`The whitelist has been cleared.`);
+        this.sendMessage(rcon.webhooks.get("activity"), `${parseOut_1.default(admin.name)} (${PlayerID_1.outputPlayerIDs(admin.ids, true)}) cleared the whitelist (Server: ${rcon.options.name})`);
+        logger_1.default.info("Whitelist", `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids)}) cleared the whitelist (Server: ${rcon.options.name})`);
     }
 }
 exports.default = AutoMod;

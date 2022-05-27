@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.29.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.28.2...v1.29.0) (2022-05-27)
+
+
+### Features
+
+* added modal to mass add/remove players from the whitelist and a clear command (per server) ([9401c7d](https://github.com/Tom-Beijner/Mordhau-RCON/commit/9401c7d5da939c6d6fe923d6340359f824564cdd))
+
 ### [1.28.2](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.28.1...v1.28.2) (2022-05-03)
 
 
