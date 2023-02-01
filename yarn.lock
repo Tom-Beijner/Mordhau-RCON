@@ -409,7 +409,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bson@npm:*":
+"@types/bson@npm:*, @types/bson@npm:1.x || 4.0.x":
   version: 4.0.5
   resolution: "@types/bson@npm:4.0.5"
   dependencies:
@@ -4813,14 +4813,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongodb@npm:3.6.10":
-  version: 3.6.10
-  resolution: "mongodb@npm:3.6.10"
+"mongodb@npm:3.7.3":
+  version: 3.7.3
+  resolution: "mongodb@npm:3.7.3"
   dependencies:
     bl: ^2.2.1
     bson: ^1.1.4
     denque: ^1.4.1
-    optional-require: ^1.0.3
+    optional-require: ^1.1.8
     safe-buffer: ^5.1.2
     saslprep: ^1.0.0
   dependenciesMeta:
@@ -4839,7 +4839,7 @@ __metadata:
       optional: true
     snappy:
       optional: true
-  checksum: 9dcf5d26b189f899f4eb31225971c84abaacf8f62d6158a4851baaf758c716779c08085ff09b510a0c627e172b8080bffe093f37bc06d2990a7b48c625b0818d
+  checksum: ef7690fe6ee7d1752f121b14e59b3fabfddc60ff0536babce6c945703ad0010de9e6fa7de4c91b99275c256876a72a06899ce27893aba0838c2b542088bd1044
   languageName: node
   linkType: hard
 
@@ -4862,16 +4862,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mongoose@npm:^5.13.5":
-  version: 5.13.5
-  resolution: "mongoose@npm:5.13.5"
+"mongoose@npm:^5.13.15":
+  version: 5.13.15
+  resolution: "mongoose@npm:5.13.15"
   dependencies:
+    "@types/bson": 1.x || 4.0.x
     "@types/mongodb": ^3.5.27
     bson: ^1.1.4
     kareem: 2.3.2
-    mongodb: 3.6.10
+    mongodb: 3.7.3
     mongoose-legacy-pluralize: 1.0.2
-    mpath: 0.8.3
+    mpath: 0.8.4
     mquery: 3.2.5
     ms: 2.1.2
     optional-require: 1.0.x
@@ -4879,7 +4880,7 @@ __metadata:
     safe-buffer: 5.2.1
     sift: 13.5.2
     sliced: 1.0.1
-  checksum: 392a9ee0ffb0d1cc609c97e50bfc876f6f5c47033f9cc96825c969df73daa06ce308c41fd6b4c113f3af78be40184a0053972c921eae40b633cbb533a58a645c
+  checksum: 74edc47c7819b82220e44402b3607faee622dfe6ac52947e812a7a179feebc295d1f7e7802da9353f8fc1f095b1b4eed775ed2c3914ee4baa332a36cb4679e18
   languageName: node
   linkType: hard
 
@@ -4926,7 +4927,7 @@ __metadata:
     fuse.js: ^6.4.6
     husky: ^7.0.0
     lru-cache: ^6.0.0
-    mongoose: ^5.13.5
+    mongoose: ^5.13.15
     mongoose-bignumber: ^1.2.0
     node-fetch: ^2.6.1
     playfab-sdk: ^2.71.210802
@@ -4951,10 +4952,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"mpath@npm:0.8.3":
-  version: 0.8.3
-  resolution: "mpath@npm:0.8.3"
-  checksum: 541032316f883abd8e4a8042686e8aa013598abb292fd420f76895706dc537d5ace6beef153d6e1a14557eef74e326f4a903d47d7674e29c49b00aeceb16da86
+"mpath@npm:0.8.4":
+  version: 0.8.4
+  resolution: "mpath@npm:0.8.4"
+  checksum: 06ad1d443766626fa361b67a4eca9cd4c36a71e475e92e8a5c242dbbc9a911adac00ce971177843b48475356df609f847342548da7701a976a2ab4116135caf0
   languageName: node
   linkType: hard
 
@@ -5324,12 +5325,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"optional-require@npm:^1.0.3":
-  version: 1.1.1
-  resolution: "optional-require@npm:1.1.1"
+"optional-require@npm:^1.1.8":
+  version: 1.1.8
+  resolution: "optional-require@npm:1.1.8"
   dependencies:
     require-at: ^1.0.6
-  checksum: 88db0f36c4f144428312d6b515b606127bb51c61a6e3416b8daf7d2c44ff7b69f0813c6fbe52b3a97e2ac5384ae82e7bec238e4f6e5c940aaf642c81a8af6062
+  checksum: 437db76f713052925185ae80837b593877f75101154e8937f50d33b0b07bd500c214efc9016748642109b6e3e1197eb0513a2963eb06bcf3890f88a2724b1c87
   languageName: node
   linkType: hard
 
