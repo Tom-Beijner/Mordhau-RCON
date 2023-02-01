@@ -52,7 +52,7 @@
         "fs-extra": "^10.0.0",
         "fuse.js": "^6.4.6",
         "lru-cache": "^6.0.0",
-        "mongoose": "^5.13.5",
+        "mongoose": "^5.13.15",
         "mongoose-bignumber": "^1.2.0",
         "node-fetch": "^2.6.1",
         "playfab-sdk": "^2.71.210802",
