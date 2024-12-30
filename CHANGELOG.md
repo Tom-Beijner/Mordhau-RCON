@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.30.2](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.30.1...v1.30.2) (2024-12-30)
+
+
+### Bug Fixes
+
+* potential fix for the bot crashing when unauthorized adding or removal of an admin ([51ac141](https://github.com/Tom-Beijner/Mordhau-RCON/commit/51ac1414618cd4eaae5065116aa42cef0cfaa3cb))
+
 ### [1.30.1](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.30.0...v1.30.1) (2024-12-30)
 
 

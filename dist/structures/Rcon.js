@@ -226,9 +226,9 @@ class Rcon {
                 ? ", they've been removed"
                 : ""} (Server: ${this.options.name})`, {
                 roles: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids),
-            }, [
+            }, attachment ? [
                 { attachment: attachment, name: "Output.txt" }
-            ]);
+            ] : []);
         }
         if (unauthorizedRemovedAdmins === null || unauthorizedRemovedAdmins === void 0 ? void 0 : unauthorizedRemovedAdmins.length) {
             for (let i = 0; i < unauthorizedRemovedAdmins.length; i++) {
@@ -261,9 +261,9 @@ class Rcon {
                 ? ", they've been added back"
                 : ""} (Server: ${this.options.name})`, {
                 roles: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids),
-            }, [
+            }, attachment ? [
                 { attachment: attachment, name: "Output.txt" }
-            ]);
+            ] : []);
         }
         logger_1.default.warn("RCON", "Investigate this!");
     }
