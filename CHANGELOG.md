@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.30.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.29.0...v1.30.0) (2024-12-30)
+
+
+### Features
+
+* use discord uploading instead of thirdparty service ([ad9c84a](https://github.com/Tom-Beijner/Mordhau-RCON/commit/ad9c84a7d16ade509b43afc84b09d9eac6fd9de5))
+
+
+### Bug Fixes
+
+* playfab-sdk using too new version ([18d2337](https://github.com/Tom-Beijner/Mordhau-RCON/commit/18d2337f46aa60259d4c2dbc6a099fc80efb8c86))
+
 ## [1.29.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.28.2...v1.29.0) (2022-05-27)
 
 
