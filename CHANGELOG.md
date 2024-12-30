@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.30.1](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.30.0...v1.30.1) (2024-12-30)
+
+
+### Bug Fixes
+
+* country is not assumed as string ([1acc71d](https://github.com/Tom-Beijner/Mordhau-RCON/commit/1acc71d2b5e8391482fe9bcc5483d47627d08074))
+
 ## [1.30.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.29.0...v1.30.0) (2024-12-30)
 
 
