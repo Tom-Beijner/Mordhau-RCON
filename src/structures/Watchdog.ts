@@ -318,7 +318,7 @@ export default class Watchdog {
 
                     if (res.status === 200) {
                         country = (await res.text()).trim();
-                        server.rcon.country = country;
+                        server.rcon.country = country as string;
                     } else country = false;
                 }
                 embed
