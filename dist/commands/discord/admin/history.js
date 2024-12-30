@@ -11,7 +11,6 @@ const slash_create_1 = require("slash-create");
 const PlayFab_1 = require("../../../services/PlayFab");
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
-const utils_1 = require("../../../utils");
 const PlayerID_1 = require("../../../utils/PlayerID");
 class History extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
@@ -153,8 +152,11 @@ class History extends SlashCommand_1.default {
                 if (pastOffenses.length < 1025)
                     pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
             }
-            if (pastOffenses.length > 1024)
-                pastOffenses = `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(pastOffenses)})`;
+            let attachment;
+            if (pastOffenses.length > 1024) {
+                attachment = Buffer.from(pastOffenses);
+                pastOffenses = "See attached text file";
+            }
             let message = "";
             const historyLength = payload.history.length;
             let color;
@@ -208,6 +210,12 @@ class History extends SlashCommand_1.default {
                         },
                     },
                 ],
+                ...(pastOffenses.length > 1024 && {
+                    file: {
+                        file: attachment,
+                        name: "Output.txt"
+                    }
+                })
             });
         }
         catch (error) {

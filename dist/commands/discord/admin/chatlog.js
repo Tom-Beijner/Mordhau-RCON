@@ -7,7 +7,6 @@ const pluralize_1 = __importDefault(require("pluralize"));
 const slash_create_1 = require("slash-create");
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
-const Hastebin_1 = require("../../../utils/Hastebin");
 const logger_1 = __importDefault(require("../../../utils/logger"));
 class Chatlog extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
@@ -69,17 +68,27 @@ class Chatlog extends SlashCommand_1.default {
             options.messages -= 1;
             logger_1.default.info("Command", `${ctx.member.nick || ctx.member.user.username}#${ctx.member.user.discriminator} fetched chat log (${pluralize_1.default("message", options.messages, true)})`);
             const response = res.join("\n") || "No messages found";
+            let attachment;
+            if (response.length > 2047) {
+                attachment = Buffer.from(response);
+            }
             await ctx.send({
                 embeds: [
                     {
                         description: [
                             `Fetched latest chatlog (${pluralize_1.default("message", options.messages, true)})\n`,
                             response.length > 2047
-                                ? `The output was too long, but was uploaded to [paste.gg](${await Hastebin_1.hastebin(response)})`
+                                ? "See attached text file"
                                 : response,
                         ].join("\n"),
                     },
                 ],
+                ...(response.length > 2047 && {
+                    file: {
+                        file: attachment,
+                        name: "Output.txt"
+                    }
+                })
             });
         }
         catch (error) {

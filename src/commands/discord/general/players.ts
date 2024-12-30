@@ -1,8 +1,8 @@
-import { CommandContext, SlashCreator } from "slash-create";
-import SlashCommand from "../../../structures/SlashCommand";
-import Watchdog from "../../../structures/Watchdog";
-import { hastebin } from "../../../utils";
-import { outputPlayerIDs } from "../../../utils/PlayerID";
+import { CommandContext, MessageFile, SlashCreator } from 'slash-create';
+
+import SlashCommand from '../../../structures/SlashCommand';
+import Watchdog from '../../../structures/Watchdog';
+import { outputPlayerIDs } from '../../../utils/PlayerID';
 
 export default class Players extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -51,6 +51,7 @@ export default class Players extends SlashCommand {
 
         const servers = [...this.bot.servers.values()];
         let playerCount = 0;
+        const files: MessageFile[] = []
 
         for (let i = 0; i < servers.length; i++) {
             const server = servers[i];
@@ -58,9 +59,8 @@ export default class Players extends SlashCommand {
             if (!server.rcon.connected || !server.rcon.authenticated) {
                 fields.push({
                     name: server.name,
-                    value: `Not ${
-                        !server.rcon.connected ? "connected" : "authenticated"
-                    } to server`,
+                    value: `Not ${!server.rcon.connected ? "connected" : "authenticated"
+                        } to server`,
                 });
                 continue;
             }
@@ -85,8 +85,8 @@ export default class Players extends SlashCommand {
 
             if (!message.length)
                 message = "No players online, what a sad gamer moment.";
-            if (message.length > 1023)
-                message = `The output was too long, but was uploaded to [paste.gg](${await hastebin(
+            if (message.length > 1023) {
+                const attachment = Buffer.from(
                     players
                         .map(
                             (player, i) =>
@@ -98,7 +98,13 @@ export default class Players extends SlashCommand {
                                 })})`
                         )
                         .join("\n")
-                )})`;
+                )
+                files.push({
+                    file: attachment,
+                    name: `${server.name}.txt`
+                })
+                message = `See attached text file named ${server.name}.txt`;
+            }
 
             fields.push({
                 name: `${server.name} (${players.length})`,
@@ -113,6 +119,9 @@ export default class Players extends SlashCommand {
                     fields,
                 },
             ],
+            ...(files.length && {
+                file: files
+            })
         });
     }
 }

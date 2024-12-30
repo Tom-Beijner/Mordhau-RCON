@@ -1,8 +1,8 @@
-import pluralize from "pluralize";
-import { CommandContext, SlashCreator } from "slash-create";
-import SlashCommand from "../../../structures/SlashCommand";
-import Watchdog from "../../../structures/Watchdog";
-import { hastebin } from "../../../utils";
+import pluralize from 'pluralize';
+import { CommandContext, MessageFile, SlashCreator } from 'slash-create';
+
+import SlashCommand from '../../../structures/SlashCommand';
+import Watchdog from '../../../structures/Watchdog';
 
 export default class Killstreaks extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -21,6 +21,8 @@ export default class Killstreaks extends SlashCommand {
             kills: number;
         }[] = [];
         const fields: { name: string; value: string }[] = [];
+
+        const files: MessageFile[] = []
 
         for (let i = 0; i < killstreaks.length; i++) {
             const server = killstreaks[i];
@@ -41,10 +43,17 @@ export default class Killstreaks extends SlashCommand {
                 .join("\n");
             if (!message.length)
                 message = "No one has any kills, what a sad gamer moment.";
-            if (message.length > 1023)
-                message = `The output was too long, but was uploaded to [paste.gg](${await hastebin(
+
+            if (message.length > 1023) {
+                const attachment = Buffer.from(
                     message
-                )})`;
+                )
+                files.push({
+                    file: attachment,
+                    name: `${server.server}.txt`
+                })
+                message = `See attached text file named ${server.server}.txt`;
+            }
 
             fields.push({
                 name: server.server,
@@ -71,6 +80,9 @@ export default class Killstreaks extends SlashCommand {
                     fields,
                 },
             ],
+            ...(files.length && {
+                file: files
+            })
         });
     }
 }

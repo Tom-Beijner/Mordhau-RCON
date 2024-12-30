@@ -1,17 +1,11 @@
-import flatMap from "array.prototype.flatmap";
-import pluralize from "pluralize";
-import {
-    ApplicationCommandPermissionType,
-    CommandContext,
-    CommandOptionType,
-    Message,
-    SlashCreator,
-} from "slash-create";
-import config, { Role } from "../../../structures/Config";
-import SlashCommand from "../../../structures/SlashCommand";
-import Watchdog from "../../../structures/Watchdog";
-import { hastebin } from "../../../utils/Hastebin";
-import logger from "../../../utils/logger";
+import flatMap from 'array.prototype.flatmap';
+import pluralize from 'pluralize';
+import { CommandContext, CommandOptionType, Message, SlashCreator } from 'slash-create';
+
+import config, { Role } from '../../../structures/Config';
+import SlashCommand from '../../../structures/SlashCommand';
+import Watchdog from '../../../structures/Watchdog';
+import logger from '../../../utils/logger';
 
 export default class Chatlog extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -105,8 +99,7 @@ export default class Chatlog extends SlashCommand {
         }
         if (!server.rcon.connected || !server.rcon.authenticated) {
             return (await ctx.send(
-                `Not ${
-                    !server.rcon.connected ? "connected" : "authenticated"
+                `Not ${!server.rcon.connected ? "connected" : "authenticated"
                 } to server`
             )) as Message;
         }
@@ -135,8 +128,7 @@ export default class Chatlog extends SlashCommand {
 
             logger.info(
                 "Command",
-                `${ctx.member.nick || ctx.member.user.username}#${
-                    ctx.member.user.discriminator
+                `${ctx.member.nick || ctx.member.user.username}#${ctx.member.user.discriminator
                 } fetched chat log (${pluralize(
                     "message",
                     options.messages,
@@ -145,6 +137,13 @@ export default class Chatlog extends SlashCommand {
             );
 
             const response = res.join("\n") || "No messages found";
+
+            let attachment: Buffer
+            if (response.length > 2047) {
+                attachment = Buffer.from(
+                    response
+                )
+            }
 
             await ctx.send({
                 embeds: [
@@ -156,18 +155,21 @@ export default class Chatlog extends SlashCommand {
                                 true
                             )})\n`,
                             response.length > 2047
-                                ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                                      response
-                                  )})`
+                                ? "See attached text file"
                                 : response,
                         ].join("\n"),
                     },
                 ],
+                ...(response.length > 2047 && {
+                    file: {
+                        file: attachment,
+                        name: "Output.txt"
+                    }
+                })
             });
         } catch (error) {
             await ctx.send(
-                `An error occured while performing the command (${
-                    error.message || error
+                `An error occured while performing the command (${error.message || error
                 })`
             );
         }

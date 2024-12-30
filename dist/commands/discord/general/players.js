@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
-const utils_1 = require("../../../utils");
 const PlayerID_1 = require("../../../utils/PlayerID");
 class Players extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
@@ -18,6 +17,7 @@ class Players extends SlashCommand_1.default {
         const fields = [];
         const servers = [...this.bot.servers.values()];
         let playerCount = 0;
+        const files = [];
         for (let i = 0; i < servers.length; i++) {
             const server = servers[i];
             if (!server.rcon.connected || !server.rcon.authenticated) {
@@ -40,8 +40,8 @@ class Players extends SlashCommand_1.default {
                 .join("\n");
             if (!message.length)
                 message = "No players online, what a sad gamer moment.";
-            if (message.length > 1023)
-                message = `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(players
+            if (message.length > 1023) {
+                const attachment = Buffer.from(players
                     .map((player, i) => {
                     var _a, _b;
                     return `${i + 1}. ${player.name} (${PlayerID_1.outputPlayerIDs({
@@ -49,7 +49,13 @@ class Players extends SlashCommand_1.default {
                         steamID: (_b = (_a = this.bot.cachedPlayers.get(player.id)) === null || _a === void 0 ? void 0 : _a.ids) === null || _b === void 0 ? void 0 : _b.steamID,
                     })})`;
                 })
-                    .join("\n"))})`;
+                    .join("\n"));
+                files.push({
+                    file: attachment,
+                    name: `${server.name}.txt`
+                });
+                message = `See attached text file named ${server.name}.txt`;
+            }
             fields.push({
                 name: `${server.name} (${players.length})`,
                 value: message,
@@ -62,6 +68,9 @@ class Players extends SlashCommand_1.default {
                     fields,
                 },
             ],
+            ...(files.length && {
+                file: files
+            })
         });
     }
 }

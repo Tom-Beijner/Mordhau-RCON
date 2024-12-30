@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const slash_create_1 = require("slash-create");
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
-const utils_1 = require("../../../utils");
 const logger_1 = __importDefault(require("../../../utils/logger"));
 class Rcon extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
@@ -60,15 +59,25 @@ class Rcon extends SlashCommand_1.default {
             res = res.split("\n").map((line) => line.trim());
             logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator} used RCON command (Command: ${options.command})`);
             const response = res.join("\n");
+            let attachment;
+            if (response.length > 2047) {
+                attachment = Buffer.from(response);
+            }
             await ctx.send({
                 embeds: [
                     {
                         title: `RCON - ${options.command}`,
                         description: `\`\`\`${response.length > 2047
-                            ? `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(response)})`
+                            ? "See attached text file"
                             : response}\`\`\``,
                     },
                 ],
+                ...(response.length > 2047 && {
+                    file: {
+                        file: attachment,
+                        name: "Output.txt"
+                    }
+                })
             }, { ephemeral: true });
         }
         catch (error) {

@@ -9,7 +9,6 @@ const Discord_1 = require("../../../services/Discord");
 const PlayFab_1 = require("../../../services/PlayFab");
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
-const Hastebin_1 = require("../../../utils/Hastebin");
 class Whitelist extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
         super(creator, bot, {
@@ -250,10 +249,20 @@ class Whitelist extends SlashCommand_1.default {
                     ]
                         .filter((message) => message !== null)
                         .join("\n");
+                    let attachment;
+                    if (message.length > 1023) {
+                        attachment = Buffer.from(message);
+                    }
                     return await mctx.send({
                         content: message.length > 1023
-                            ? `The output was too long, but was uploaded to [paste.gg](${await Hastebin_1.hastebin(message)})`
+                            ? "See attached text file"
                             : message,
+                        ...(message.length > 1023 && {
+                            file: {
+                                file: attachment,
+                                name: "Output.txt"
+                            }
+                        })
                     });
                 });
                 break;
@@ -341,10 +350,20 @@ class Whitelist extends SlashCommand_1.default {
                     ]
                         .filter((message) => message !== null)
                         .join("\n");
+                    let attachment;
+                    if (message.length > 1023) {
+                        attachment = Buffer.from(message);
+                    }
                     return await mctx.send({
                         content: message.length > 1023
-                            ? `The output was too long, but was uploaded to [paste.gg](${await Hastebin_1.hastebin(message)})`
+                            ? "See attached text file"
                             : message,
+                        ...(message.length > 1023 && {
+                            file: {
+                                file: attachment,
+                                name: "Output.txt"
+                            }
+                        })
                     });
                 });
                 break;

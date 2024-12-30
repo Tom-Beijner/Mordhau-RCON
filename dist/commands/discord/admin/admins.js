@@ -12,7 +12,6 @@ const table_1 = require("table");
 const AdminActivityConfig_1 = __importDefault(require("../../../structures/AdminActivityConfig"));
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
-const utils_1 = require("../../../utils");
 class Admins extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
         super(creator, bot, {
@@ -165,10 +164,20 @@ class Admins extends SlashCommand_1.default {
             ], {
                 border: table_1.getBorderCharacters("norc"),
             })}\`\`\``;
+            let attachment;
+            if (message.length > 900) {
+                attachment = Buffer.from(remove_markdown_1.default(message));
+            }
             await ctx.send({
                 content: message.length > 900
-                    ? `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(remove_markdown_1.default(message))})`
+                    ? "See attached text file"
                     : message,
+                ...(message.length > 900 && {
+                    file: {
+                        file: attachment,
+                        name: "Output.txt"
+                    }
+                })
             });
         }
         catch (error) {

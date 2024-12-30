@@ -1,21 +1,16 @@
-import flatMap from "array.prototype.flatmap";
-import { formatRelative, isToday, parseISO } from "date-fns";
-import { utcToZonedTime, zonedTimeToUtc } from "date-fns-tz";
-import pluralize from "pluralize";
-import removeMarkdown from "remove-markdown";
-import {
-    ApplicationCommandPermissionType,
-    CommandContext,
-    CommandOptionType,
-    Message,
-    SlashCreator,
-} from "slash-create";
-import { getBorderCharacters, table } from "table";
-import AdminActivityConfig from "../../../structures/AdminActivityConfig";
-import config, { Role } from "../../../structures/Config";
-import SlashCommand from "../../../structures/SlashCommand";
-import Watchdog from "../../../structures/Watchdog";
-import { hastebin } from "../../../utils";
+import flatMap from 'array.prototype.flatmap';
+import { formatRelative, isToday, parseISO } from 'date-fns';
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
+import pluralize from 'pluralize';
+import removeMarkdown from 'remove-markdown';
+import { CommandContext, CommandOptionType, Message, SlashCreator } from 'slash-create';
+import { getBorderCharacters, table } from 'table';
+
+import AdminActivityConfig from '../../../structures/AdminActivityConfig';
+import config, { Role } from '../../../structures/Config';
+import SlashCommand from '../../../structures/SlashCommand';
+import Watchdog from '../../../structures/Watchdog';
+
 export default class Admins extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
         super(creator, bot, {
@@ -117,8 +112,7 @@ export default class Admins extends SlashCommand {
             }
             if (!server.rcon.connected || !server.rcon.authenticated) {
                 return (await ctx.send(
-                    `Not ${
-                        !server.rcon.connected ? "connected" : "authenticated"
+                    `Not ${!server.rcon.connected ? "connected" : "authenticated"
                     } to server`
                 )) as Message;
             }
@@ -173,28 +167,28 @@ export default class Admins extends SlashCommand {
                         )
                             ? "online now"
                             : Boolean(lastActivity.endedAt)
-                            ? lastActivity.endedAt
-                            : null,
+                                ? lastActivity.endedAt
+                                : null,
                         totalPlayTime: lastActivities.reduce(
                             (a, b, index) =>
                                 a +
                                 b.duration +
                                 (index !== 0 &&
-                                !isToday(parseISO(lastActivityDate))
+                                    !isToday(parseISO(lastActivityDate))
                                     ? 0
                                     : !lastActivities.some((a) => a.startedAt)
-                                    ? 0
-                                    : Math.round(
-                                          (new Date().getTime() -
-                                              (lastActivity.startedAt ||
-                                                  new Date(
-                                                      new Date()
-                                                          .toISOString()
-                                                          .slice(0, 10)
-                                                  ).getTime())) /
-                                              1000 /
-                                              60
-                                      )),
+                                        ? 0
+                                        : Math.round(
+                                            (new Date().getTime() -
+                                                (lastActivity.startedAt ||
+                                                    new Date(
+                                                        new Date()
+                                                            .toISOString()
+                                                            .slice(0, 10)
+                                                    ).getTime())) /
+                                            1000 /
+                                            60
+                                        )),
                             0
                         ),
                     });
@@ -269,9 +263,8 @@ export default class Admins extends SlashCommand {
                         "Rank",
                         "ID",
                         "Name",
-                        `Last played (${
-                            config.get("consoleTimezone") ||
-                            Intl.DateTimeFormat().resolvedOptions().timeZone
+                        `Last played (${config.get("consoleTimezone") ||
+                        Intl.DateTimeFormat().resolvedOptions().timeZone
                         })`,
                         `Total playtime (past ${pluralize(
                             "day",
@@ -288,23 +281,23 @@ export default class Admins extends SlashCommand {
                             admin.lastActivity === "online now"
                                 ? "online now"
                                 : typeof admin.lastActivity === "number"
-                                ? formatRelative(
-                                      utcToZonedTime(
-                                          zonedTimeToUtc(
-                                              new Date(admin.lastActivity),
-                                              Intl.DateTimeFormat().resolvedOptions()
-                                                  .timeZone
-                                          ),
-                                          config.get("consoleTimezone") ||
-                                              Intl.DateTimeFormat().resolvedOptions()
-                                                  .timeZone
-                                      ),
-                                      new Date(),
-                                      {
-                                          weekStartsOn: 1,
-                                      }
-                                  )
-                                : "never",
+                                    ? formatRelative(
+                                        utcToZonedTime(
+                                            zonedTimeToUtc(
+                                                new Date(admin.lastActivity),
+                                                Intl.DateTimeFormat().resolvedOptions()
+                                                    .timeZone
+                                            ),
+                                            config.get("consoleTimezone") ||
+                                            Intl.DateTimeFormat().resolvedOptions()
+                                                .timeZone
+                                        ),
+                                        new Date(),
+                                        {
+                                            weekStartsOn: 1,
+                                        }
+                                    )
+                                    : "never",
                             pluralize(
                                 "minute",
                                 Math.round(admin.totalPlayTime / 60),
@@ -339,18 +332,28 @@ export default class Admins extends SlashCommand {
                 }
             )}\`\`\``;
 
+            let attachment: Buffer
+            if (message.length > 900) {
+                attachment = Buffer.from(
+                    removeMarkdown(message)
+                )
+            }
+
             await ctx.send({
                 content:
                     message.length > 900
-                        ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                              removeMarkdown(message)
-                          )})`
+                        ? "See attached text file"
                         : message,
+                ...(message.length > 900 && {
+                    file: {
+                        file: attachment,
+                        name: "Output.txt"
+                    }
+                })
             });
         } catch (error) {
             await ctx.send(
-                `An error occured while performing the command (${
-                    error.message || error
+                `An error occured while performing the command (${error.message || error
                 })`
             );
         }

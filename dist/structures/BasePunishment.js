@@ -10,7 +10,6 @@ const pluralize_1 = __importDefault(require("pluralize"));
 const Discord_1 = require("../services/Discord");
 const PlayFab_1 = require("../services/PlayFab");
 const Config_1 = __importDefault(require("../structures/Config"));
-const Hastebin_1 = require("../utils/Hastebin");
 const logger_1 = __importDefault(require("../utils/logger"));
 const parseOut_1 = __importDefault(require("../utils/parseOut"));
 const PlayerID_1 = require("../utils/PlayerID");
@@ -192,8 +191,11 @@ class BasePunishment {
             if (pastOffenses.length < 1025)
                 pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
         }
-        if (pastOffenses.length > 1024)
-            pastOffenses = `The output was too long, but was uploaded to [paste.gg](${await Hastebin_1.hastebin(pastOffenses)})`;
+        let attachment;
+        if (pastOffenses.length > 1024) {
+            attachment = Buffer.from(pastOffenses);
+            pastOffenses = "See attached text file";
+        }
         logger_1.default.info("Bot", `Sending ${data.type.toLowerCase()} to punishments webhook`);
         let message = [
             data.global ? undefined : `**Server**: \`${data.server}\``,
@@ -244,6 +246,12 @@ class BasePunishment {
                     value: pastOffenses,
                 },
             ],
+            ...(pastOffenses.length > 1024 && {
+                file: {
+                    file: attachment,
+                    name: "Output.txt"
+                }
+            }),
             color,
             image: {
                 url: data.playeravatar,

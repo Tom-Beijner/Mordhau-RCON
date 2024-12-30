@@ -1,26 +1,26 @@
-import flatMap from "array.prototype.flatmap";
-import BigNumber from "bignumber.js";
-import { compareArrayVals } from "crud-object-diff";
-import { addSeconds, formatDistanceToNow } from "date-fns";
-import deepClean from "deep-cleaner";
-import Timer from "easytimer.js";
-import Fuse from "fuse.js";
-import pluralize from "pluralize";
-import { Rcon as RconClient } from "../rcon";
-import { mentionRole, sendWebhookMessage } from "../services/Discord";
-import { LookupPlayer } from "../services/PlayFab";
-import config, { Role } from "../structures/Config";
-import { hastebin } from "../utils";
-import logger from "../utils/logger";
-import parseOut from "../utils/parseOut";
-import { outputPlayerIDs } from "../utils/PlayerID";
-import removeMentions from "../utils/RemoveMentions";
-import AdminActivityConfig from "./AdminActivityConfig";
-import KillStreak from "./KillStreak";
-import MapVote from "./MapVote";
-import RCONCommandContext from "./RCONCommandContext";
-import StatsConfig from "./StatsConfig";
-import Watchdog from "./Watchdog";
+import flatMap from 'array.prototype.flatmap';
+import BigNumber from 'bignumber.js';
+import { compareArrayVals } from 'crud-object-diff';
+import { addSeconds, formatDistanceToNow } from 'date-fns';
+import deepClean from 'deep-cleaner';
+import Timer from 'easytimer.js';
+import Fuse from 'fuse.js';
+import pluralize from 'pluralize';
+
+import { Rcon as RconClient } from '../rcon';
+import { mentionRole, sendWebhookMessage } from '../services/Discord';
+import { LookupPlayer } from '../services/PlayFab';
+import config, { Role } from '../structures/Config';
+import logger from '../utils/logger';
+import parseOut from '../utils/parseOut';
+import { outputPlayerIDs } from '../utils/PlayerID';
+import removeMentions from '../utils/RemoveMentions';
+import AdminActivityConfig from './AdminActivityConfig';
+import KillStreak from './KillStreak';
+import MapVote from './MapVote';
+import RCONCommandContext from './RCONCommandContext';
+import StatsConfig from './StatsConfig';
+import Watchdog from './Watchdog';
 
 export default class Rcon {
     bot: Watchdog;
@@ -147,9 +147,8 @@ export default class Rcon {
         shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
-            return `Not ${
-                !this.connected ? "connected" : "authenticated"
-            } to server`;
+            return `Not ${!this.connected ? "connected" : "authenticated"
+                } to server`;
         }
 
         // const bans = (await this.rcon.send("banlist"))
@@ -177,12 +176,10 @@ export default class Rcon {
         this.say(`${player.name} has been banned by an admin.`);
 
         this.say(
-            `${player.name} has been banned for ${
-                duration && !duration.isEqualTo(0) && !duration.isNaN()
-                    ? pluralize("minute", duration.toNumber(), true)
-                    : "PERMANENTLY"
-            } by ${admin.name} (${admin.id}).\nReason: ${
-                reason || "none given"
+            `${player.name} has been banned for ${duration && !duration.isEqualTo(0) && !duration.isNaN()
+                ? pluralize("minute", duration.toNumber(), true)
+                : "PERMANENTLY"
+            } by ${admin.name} (${admin.id}).\nReason: ${reason || "none given"
             }`,
             "adminchat"
         );
@@ -214,9 +211,8 @@ export default class Rcon {
         shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
-            return `Not ${
-                !this.connected ? "connected" : "authenticated"
-            } to server`;
+            return `Not ${!this.connected ? "connected" : "authenticated"
+                } to server`;
         }
 
         let result = await this.rcon.send(`unban ${player.id}`);
@@ -261,9 +257,8 @@ export default class Rcon {
         shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
-            return `Not ${
-                !this.connected ? "connected" : "authenticated"
-            } to server`;
+            return `Not ${!this.connected ? "connected" : "authenticated"
+                } to server`;
         }
 
         let result = await this.rcon.send(`kick ${player.id} ${reason}`);
@@ -277,8 +272,7 @@ export default class Rcon {
         // this.bot.logHandler.kickHandler.parse(line, server, lineDate, player);
 
         this.say(
-            `${player.name} has been kicked by ${admin.name} (${
-                admin.id
+            `${player.name} has been kicked by ${admin.name} (${admin.id
             }).\nReason: ${reason || "none give"}`,
             "adminchat"
         );
@@ -311,9 +305,8 @@ export default class Rcon {
         shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
-            return `Not ${
-                !this.connected ? "connected" : "authenticated"
-            } to server`;
+            return `Not ${!this.connected ? "connected" : "authenticated"
+                } to server`;
         }
 
         // const mutes = (await this.rcon.send("mutelist"))
@@ -372,9 +365,8 @@ export default class Rcon {
         shouldSave: boolean = true
     ) {
         if (!this.connected || !this.authenticated) {
-            return `Not ${
-                !this.connected ? "connected" : "authenticated"
-            } to server`;
+            return `Not ${!this.connected ? "connected" : "authenticated"
+                } to server`;
         }
 
         // const mutes = (await this.rcon.send("mutelist"))
@@ -510,13 +502,20 @@ export default class Rcon {
 
                 affectedPlayers.push(
                     this.bot.cachedPlayers.get(adminID) ||
-                        (await LookupPlayer(adminID))
+                    (await LookupPlayer(adminID))
                 );
             }
 
-            logger.warn(
-                "RCON",
-                `Following players: ${
+            let attachment: Buffer
+            if (affectedPlayers
+                .map(
+                    (player) =>
+                        `${player.name} (${outputPlayerIDs(
+                            player.ids
+                        )})`
+                )
+                .join(", ").length > 900) {
+                attachment = Buffer.from(
                     affectedPlayers
                         .map(
                             (player) =>
@@ -524,29 +523,23 @@ export default class Rcon {
                                     player.ids
                                 )})`
                         )
-                        .join(", ").length > 900
-                        ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                              affectedPlayers
-                                  .map(
-                                      (player) =>
-                                          `${player.name} (${outputPlayerIDs(
-                                              player.ids
-                                          )})`
-                                  )
-                                  .join(", ")
-                          )})`
-                        : affectedPlayers
-                              .map(
-                                  (player) =>
-                                      `${player.name} (${outputPlayerIDs(
-                                          player.ids
-                                      )})`
-                              )
-                              .join(", ")
-                } was given privileges without permission${
-                    config.get("adminListSaving.rollbackAdmins")
-                        ? ", they've been removed"
-                        : ""
+                        .join(", ")
+                )
+            }
+
+            logger.warn(
+                "RCON",
+                `Following players: ${affectedPlayers
+                    .map(
+                        (player) =>
+                            `${player.name} (${outputPlayerIDs(
+                                player.ids
+                            )})`
+                    )
+                    .join(", ")
+                } was given privileges without permission${config.get("adminListSaving.rollbackAdmins")
+                    ? ", they've been removed"
+                    : ""
                 } (Server: ${this.options.name})`
             );
 
@@ -557,38 +550,27 @@ export default class Rcon {
                         (role) => role.receiveMentions
                     ),
                     (role) => role.Ids.map((id) => mentionRole(id))
-                )} Following players: ${
-                    affectedPlayers
+                )} Following players: ${affectedPlayers
+                    .map(
+                        (player) =>
+                            `${player.name} (${outputPlayerIDs(
+                                player.ids,
+                                true
+                            )})`
+                    )
+                    .join(", ").length > 900
+                    ? "See attached text file"
+                    : affectedPlayers
                         .map(
                             (player) =>
-                                `${player.name} (${outputPlayerIDs(
-                                    player.ids,
-                                    true
-                                )})`
+                                `${parseOut(
+                                    player.name
+                                )} (${outputPlayerIDs(player.ids, true)})`
                         )
-                        .join(", ").length > 900
-                        ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                              affectedPlayers
-                                  .map(
-                                      (player) =>
-                                          `${player.name} (${outputPlayerIDs(
-                                              player.ids
-                                          )})`
-                                  )
-                                  .join(", ")
-                          )})`
-                        : affectedPlayers
-                              .map(
-                                  (player) =>
-                                      `${parseOut(
-                                          player.name
-                                      )} (${outputPlayerIDs(player.ids, true)})`
-                              )
-                              .join(", ")
-                } was given admin privileges on without permission${
-                    config.get("adminListSaving.rollbackAdmins")
-                        ? ", they've been removed"
-                        : ""
+                        .join(", ")
+                } was given admin privileges on without permission${config.get("adminListSaving.rollbackAdmins")
+                    ? ", they've been removed"
+                    : ""
                 } (Server: ${this.options.name})`,
                 {
                     roles: flatMap(
@@ -597,7 +579,10 @@ export default class Rcon {
                         ),
                         (role) => role.Ids
                     ),
-                }
+                },
+                [
+                    { attachment: attachment, name: "Output.txt" }
+                ]
             );
         }
         if (unauthorizedRemovedAdmins?.length) {
@@ -609,41 +594,45 @@ export default class Rcon {
 
                 affectedAdmins.push(
                     this.bot.cachedPlayers.get(adminID) ||
-                        (await LookupPlayer(adminID))
+                    (await LookupPlayer(adminID))
                 );
+            }
+
+            let attachment: Buffer
+            if (affectedAdmins
+                .map(
+                    (admin) =>
+                        `${admin.name} (${outputPlayerIDs(
+                            admin.ids,
+                            true
+                        )})`
+                )
+                .join(", ").length > 900) {
+                attachment = Buffer.from(
+                    affectedAdmins
+                        .map(
+                            (admin) =>
+                                `${admin.name} (${outputPlayerIDs(
+                                    admin.ids
+                                )})`
+                        )
+                        .join(", ")
+                )
             }
 
             logger.warn(
                 "RCON",
-                `Following admins: ${
-                    affectedAdmins
-                        .map(
-                            (admin) =>
-                                `${admin.name} (${outputPlayerIDs(admin.ids)})`
-                        )
-                        .join(", ").length > 900
-                        ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                              affectedAdmins
-                                  .map(
-                                      (player) =>
-                                          `${player.name} (${outputPlayerIDs(
-                                              player.ids
-                                          )})`
-                                  )
-                                  .join(", ")
-                          )})`
-                        : affectedAdmins
-                              .map(
-                                  (player) =>
-                                      `${player.name} (${outputPlayerIDs(
-                                          player.ids
-                                      )})`
-                              )
-                              .join(", ")
-                } had their privileges removed without permission${
-                    config.get("adminListSaving.rollbackAdmins")
-                        ? ", they've been added back"
-                        : ""
+                `Following admins: ${affectedAdmins
+                    .map(
+                        (player) =>
+                            `${player.name} (${outputPlayerIDs(
+                                player.ids
+                            )})`
+                    )
+                    .join(", ")
+                } had their privileges removed without permission${config.get("adminListSaving.rollbackAdmins")
+                    ? ", they've been added back"
+                    : ""
                 } (Server: ${this.options.name})`
             );
 
@@ -654,41 +643,30 @@ export default class Rcon {
                         (role) => role.receiveMentions
                     ),
                     (role) => role.Ids.map((id) => mentionRole(id))
-                )} Following admins: ${
-                    affectedAdmins
-                        .map(
-                            (admin) =>
-                                `${admin.name} (${outputPlayerIDs(
-                                    admin.ids,
-                                    true
-                                )})`
-                        )
-                        .join(", ").length > 900
-                        ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                              affectedAdmins
-                                  .map(
-                                      (admin) =>
-                                          `${admin.name} (${outputPlayerIDs(
-                                              admin.ids
-                                          )})`
-                                  )
-                                  .join(", ")
-                          )})`
-                        : parseOut(
-                              affectedAdmins
-                                  .map(
-                                      (admin) =>
-                                          `${admin.name} (${outputPlayerIDs(
-                                              admin.ids,
-                                              true
-                                          )})`
-                                  )
-                                  .join(", ")
-                          )
-                }  had their privileges removed without permission${
-                    config.get("adminListSaving.rollbackAdmins")
-                        ? ", they've been added back"
-                        : ""
+                )} Following admins: ${affectedAdmins
+                    .map(
+                        (admin) =>
+                            `${admin.name} (${outputPlayerIDs(
+                                admin.ids,
+                                true
+                            )})`
+                    )
+                    .join(", ").length > 900
+                    ? "See attached text file"
+                    : parseOut(
+                        affectedAdmins
+                            .map(
+                                (admin) =>
+                                    `${admin.name} (${outputPlayerIDs(
+                                        admin.ids,
+                                        true
+                                    )})`
+                            )
+                            .join(", ")
+                    )
+                }  had their privileges removed without permission${config.get("adminListSaving.rollbackAdmins")
+                    ? ", they've been added back"
+                    : ""
                 } (Server: ${this.options.name})`,
                 {
                     roles: flatMap(
@@ -697,7 +675,10 @@ export default class Rcon {
                         ),
                         (role) => role.Ids
                     ),
-                }
+                },
+                [
+                    { attachment: attachment, name: "Output.txt" }
+                ]
             );
         }
 
@@ -1086,18 +1067,16 @@ export default class Rcon {
         if (!this.tempCurrentPlayers.includes(player.id)) {
             logger.info(
                 "Server",
-                `${admin ? "Admin" : "Player"} ${
-                    player.name
+                `${admin ? "Admin" : "Player"} ${player.name
                 } (${outputPlayerIDs(
                     player.ids
-                )}) has joined the server (Server: ${server}${
-                    bans > 0
-                        ? `, Bans: ${bans}, Total Duration: ${pluralize(
-                              "minute",
-                              totalDuration.toNumber(),
-                              true
-                          )}`
-                        : ""
+                )}) has joined the server (Server: ${server}${bans > 0
+                    ? `, Bans: ${bans}, Total Duration: ${pluralize(
+                        "minute",
+                        totalDuration.toNumber(),
+                        true
+                    )}`
+                    : ""
                 })`
             );
         }
@@ -1113,14 +1092,13 @@ export default class Rcon {
                 )} (${outputPlayerIDs(
                     player.ids,
                     true
-                )}) has joined the server (Server: ${server}${
-                    bans > 0
-                        ? `, Bans: ${bans}, Total Duration: ${pluralize(
-                              "minute",
-                              totalDuration.toNumber(),
-                              true
-                          )}`
-                        : ""
+                )}) has joined the server (Server: ${server}${bans > 0
+                    ? `, Bans: ${bans}, Total Duration: ${pluralize(
+                        "minute",
+                        totalDuration.toNumber(),
+                        true
+                    )}`
+                    : ""
                 })`
             );
 
@@ -1130,15 +1108,14 @@ export default class Rcon {
             this.bot.naughtyPlayers.set(
                 player.id,
                 this.bot.cachedPlayers.get(player.id) ||
-                    (await this.getPlayerToCache(player.id))
+                (await this.getPlayerToCache(player.id))
             );
         }
 
         if (!this.tempCurrentPlayers.includes(player.id)) {
             logger.info(
                 "Server",
-                `Naughty ${admin ? "admin" : "player"} ${
-                    player.name
+                `Naughty ${admin ? "admin" : "player"} ${player.name
                 } (${outputPlayerIDs(
                     player.ids
                 )}) has joined with ${bans} bans a total duration of ${pluralize(
@@ -1197,14 +1174,14 @@ export default class Rcon {
                         (AdminActivityConfig.get(
                             `${activityTodayPath}.duration`
                         ) as number) +
-                            Math.round(
-                                (new Date().getTime() -
-                                    ((AdminActivityConfig.get(
-                                        `${activityTodayPath}.startedAt`
-                                    ) as number) ||
-                                        new Date(currentDate).getTime())) /
-                                    1000
-                            )
+                        Math.round(
+                            (new Date().getTime() -
+                                ((AdminActivityConfig.get(
+                                    `${activityTodayPath}.startedAt`
+                                ) as number) ||
+                                    new Date(currentDate).getTime())) /
+                            1000
+                        )
                     );
 
                     AdminActivityConfig.set(
@@ -1247,10 +1224,8 @@ export default class Rcon {
         if (punishedPlayer) {
             logger.info(
                 "Server",
-                `${admin ? "Admin" : "Player"} ${
-                    player.name
-                } (${outputPlayerIDs(player.ids)}) has been punished (Type: ${
-                    punishedPlayer.punishment
+                `${admin ? "Admin" : "Player"} ${player.name
+                } (${outputPlayerIDs(player.ids)}) has been punished (Type: ${punishedPlayer.punishment
                 }, Admin: ${punishedPlayer.admin.name}, Server: ${server})`
             );
 
@@ -1262,8 +1237,7 @@ export default class Rcon {
                     )} (${outputPlayerIDs(
                         player.ids,
                         true
-                    )}) has been punished (Type: ${
-                        punishedPlayer.punishment
+                    )}) has been punished (Type: ${punishedPlayer.punishment
                     }, Admin: ${parseOut(
                         punishedPlayer.admin.name
                     )}, Server: ${server})`
@@ -1275,8 +1249,7 @@ export default class Rcon {
 
             logger.info(
                 "Server",
-                `${admin ? "Admin" : "Player"} ${
-                    player.name
+                `${admin ? "Admin" : "Player"} ${player.name
                 } (${outputPlayerIDs(
                     player.ids
                 )}) has left the server (Server: ${server})`
@@ -1302,8 +1275,7 @@ export default class Rcon {
                 if (!punishedPlayer) {
                     logger.info(
                         "Server",
-                        `Naughty ${admin ? "admin" : "player"} ${
-                            player.name
+                        `Naughty ${admin ? "admin" : "player"} ${player.name
                         } (${outputPlayerIDs(
                             player.ids
                         )}) left the server (Server: ${server})`
@@ -1321,14 +1293,11 @@ export default class Rcon {
                 } else {
                     logger.info(
                         "Server",
-                        `Naughty ${admin ? "admin" : "player"} ${
-                            player.name
+                        `Naughty ${admin ? "admin" : "player"} ${player.name
                         } (${outputPlayerIDs(
                             player.ids
-                        )}) has been punished (Type: ${
-                            punishedPlayer.punishment
-                        }, Admin: ${
-                            punishedPlayer.admin.name
+                        )}) has been punished (Type: ${punishedPlayer.punishment
+                        }, Admin: ${punishedPlayer.admin.name
                         }, Server: ${server})`
                     );
 
@@ -1339,8 +1308,7 @@ export default class Rcon {
                         )} (${outputPlayerIDs(
                             player.ids,
                             true
-                        )}) has been punished (Type: ${
-                            punishedPlayer.punishment
+                        )}) has been punished (Type: ${punishedPlayer.punishment
                         }, Admin: ${parseOut(
                             punishedPlayer.admin.name
                         )}, Server: ${server})`
@@ -1380,10 +1348,9 @@ export default class Rcon {
                 )}) ${punishment} ${parseOut(player.name)} (${outputPlayerIDs(
                     player.ids,
                     true
-                )})${
-                    ["banned", "muted"].includes(punishment)
-                        ? " and the punishment has beeen reverted"
-                        : ""
+                )})${["banned", "muted"].includes(punishment)
+                    ? " and the punishment has beeen reverted"
+                    : ""
                 }`
             );
 
@@ -1470,12 +1437,10 @@ export default class Rcon {
                 this.say(`${player.name} has been banned by an admin.`);
 
                 this.say(
-                    `${player.name} has been banned for ${
-                        duration && !duration.isEqualTo(0) && !duration.isNaN()
-                            ? pluralize("minute", duration.toNumber(), true)
-                            : "PERMANENTLY"
-                    } by ${admin.name} (${admin.id}).\nReason: ${
-                        reason || "none given"
+                    `${player.name} has been banned for ${duration && !duration.isEqualTo(0) && !duration.isNaN()
+                        ? pluralize("minute", duration.toNumber(), true)
+                        : "PERMANENTLY"
+                    } by ${admin.name} (${admin.id}).\nReason: ${reason || "none given"
                     }`,
                     "adminchat"
                 );
@@ -1748,8 +1713,7 @@ export default class Rcon {
         this.rcon.on("error", (error) => {
             logger.error(
                 "RCON",
-                `An error occurred (Error: ${error.message || error}, Server: ${
-                    this.options.name
+                `An error occurred (Error: ${error.message || error}, Server: ${this.options.name
                 })`
             );
         });
@@ -2021,14 +1985,13 @@ export default class Rcon {
                 if (this.webhooks.get("activity")) {
                     await sendWebhookMessage(
                         this.webhooks.get("activity"),
-                        `**${data}**${
-                            data.includes("Leaving map")
-                                ? `, ${pluralize(
-                                      "player",
-                                      this.tempCurrentPlayers.length,
-                                      true
-                                  )} still on server`
-                                : ""
+                        `**${data}**${data.includes("Leaving map")
+                            ? `, ${pluralize(
+                                "player",
+                                this.tempCurrentPlayers.length,
+                                true
+                            )} still on server`
+                            : ""
                         }`
                     );
                 }
@@ -2152,8 +2115,7 @@ export default class Rcon {
                 .catch(async (err) => {
                     logger.debug(
                         "RCON",
-                        `Keepalive failed (Error: ${
-                            err.message || err
+                        `Keepalive failed (Error: ${err.message || err
                         }, Server: ${this.options.name})`
                     );
 
@@ -2166,8 +2128,7 @@ export default class Rcon {
         } catch (error) {
             logger.error(
                 "RCON",
-                `An error occurred while connecting (Error: ${
-                    error.message || error
+                `An error occurred while connecting (Error: ${error.message || error
                 }, Server: ${this.options.name})`
             );
 

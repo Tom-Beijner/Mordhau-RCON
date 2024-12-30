@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const pluralize_1 = __importDefault(require("pluralize"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
-const utils_1 = require("../../../utils");
 class Killstreaks extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
         super(creator, bot, {
@@ -19,6 +18,7 @@ class Killstreaks extends SlashCommand_1.default {
         const onlinePlayers = await this.bot.rcon.getIngamePlayers();
         const players = [];
         const fields = [];
+        const files = [];
         for (let i = 0; i < killstreaks.length; i++) {
             const server = killstreaks[i];
             for (const [_, data] of server.data) {
@@ -30,8 +30,14 @@ class Killstreaks extends SlashCommand_1.default {
                 .join("\n");
             if (!message.length)
                 message = "No one has any kills, what a sad gamer moment.";
-            if (message.length > 1023)
-                message = `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(message)})`;
+            if (message.length > 1023) {
+                const attachment = Buffer.from(message);
+                files.push({
+                    file: attachment,
+                    name: `${server.server}.txt`
+                });
+                message = `See attached text file named ${server.server}.txt`;
+            }
             fields.push({
                 name: server.server,
                 value: message,
@@ -46,6 +52,9 @@ class Killstreaks extends SlashCommand_1.default {
                     fields,
                 },
             ],
+            ...(files.length && {
+                file: files
+            })
         });
     }
 }

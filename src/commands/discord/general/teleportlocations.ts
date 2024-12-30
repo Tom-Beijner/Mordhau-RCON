@@ -4,7 +4,6 @@ import TeleportConfig, {
     Coordinates,
 } from "../../../structures/TeleportConfig";
 import Watchdog from "../../../structures/Watchdog";
-import { hastebin } from "../../../utils";
 import logger from "../../../utils/logger";
 
 export default class TeleportLocations extends SlashCommand {
@@ -59,14 +58,12 @@ export default class TeleportLocations extends SlashCommand {
                 Object.entries(locations)
                     .map(
                         ([name, location], index) =>
-                            `${index + 1}.\nName: ${name}${
-                                location.aliases && location.aliases.length
-                                    ? `\nAliases: ${location.aliases.join(
-                                          ", "
-                                      )}`
-                                    : ""
-                            }\nCoordinates: X=${location.coordinates.x}, Y=${
-                                location.coordinates.y
+                            `${index + 1}.\nName: ${name}${location.aliases && location.aliases.length
+                                ? `\nAliases: ${location.aliases.join(
+                                    ", "
+                                )}`
+                                : ""
+                            }\nCoordinates: X=${location.coordinates.x}, Y=${location.coordinates.y
                             }, Z=${location.coordinates.z}`
                     )
                     .join("\n\n");
@@ -76,23 +73,32 @@ export default class TeleportLocations extends SlashCommand {
                 `${ctx.member.displayName}#${ctx.member.user.discriminator} ran get teleport locations (Map: ${options.map})`
             );
 
+            let attachment: Buffer
+            if (locationsMessage.length > 900) {
+                attachment = Buffer.from(locationsMessage
+                )
+            }
+
             await ctx.send({
                 embeds: [
                     {
                         description:
                             locationsMessage.length > 900
-                                ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                                      locationsMessage
-                                  )})`
+                                ? "See attached text file"
                                 : locationsMessage,
                     },
                 ],
+                ...(locationsMessage.length > 900 && {
+                    file: {
+                        file: attachment,
+                        name: "Output.txt"
+                    }
+                })
             });
         } catch (error) {
             await ctx.send({
-                content: `An error occured while performing the command (${
-                    error.message || error
-                })`,
+                content: `An error occured while performing the command (${error.message || error
+                    })`,
             });
         }
     }

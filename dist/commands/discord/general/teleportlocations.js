@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const slash_create_1 = require("slash-create");
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
 const TeleportConfig_1 = __importDefault(require("../../../structures/TeleportConfig"));
-const utils_1 = require("../../../utils");
 const logger_1 = __importDefault(require("../../../utils/logger"));
 class TeleportLocations extends SlashCommand_1.default {
     constructor(creator, bot, commandName) {
@@ -51,14 +50,24 @@ class TeleportLocations extends SlashCommand_1.default {
                     : ""}\nCoordinates: X=${location.coordinates.x}, Y=${location.coordinates.y}, Z=${location.coordinates.z}`)
                     .join("\n\n");
             logger_1.default.info("Command", `${ctx.member.displayName}#${ctx.member.user.discriminator} ran get teleport locations (Map: ${options.map})`);
+            let attachment;
+            if (locationsMessage.length > 900) {
+                attachment = Buffer.from(locationsMessage);
+            }
             await ctx.send({
                 embeds: [
                     {
                         description: locationsMessage.length > 900
-                            ? `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(locationsMessage)})`
+                            ? "See attached text file"
                             : locationsMessage,
                     },
                 ],
+                ...(locationsMessage.length > 900 && {
+                    file: {
+                        file: attachment,
+                        name: "Output.txt"
+                    }
+                })
             });
         }
         catch (error) {

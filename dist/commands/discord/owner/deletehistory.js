@@ -11,7 +11,6 @@ const Discord_1 = require("../../../services/Discord");
 const PlayFab_1 = require("../../../services/PlayFab");
 const Config_1 = __importDefault(require("../../../structures/Config"));
 const SlashCommand_1 = __importDefault(require("../../../structures/SlashCommand"));
-const Hastebin_1 = require("../../../utils/Hastebin");
 const logger_1 = __importDefault(require("../../../utils/logger"));
 const PlayerID_1 = require("../../../utils/PlayerID");
 class DeleteHistory extends SlashCommand_1.default {
@@ -126,8 +125,11 @@ class DeleteHistory extends SlashCommand_1.default {
                 if (pastOffenses.length < 1025)
                     pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
             }
-            if (pastOffenses.length > 1024)
-                pastOffenses = `The output was too long, but was uploaded to [paste.gg](${await Hastebin_1.hastebin(pastOffenses)})`;
+            let attachment;
+            if (pastOffenses.length > 1024) {
+                attachment = Buffer.from(pastOffenses);
+                pastOffenses = "See attached text file";
+            }
             Discord_1.ComponentConfirmation(ctx, {
                 embeds: [
                     {
@@ -143,6 +145,12 @@ class DeleteHistory extends SlashCommand_1.default {
                         color: 15158332,
                     },
                 ],
+                ...(pastOffenses.length > 1024 && {
+                    file: {
+                        file: attachment,
+                        name: "Output.txt"
+                    }
+                })
             }, async (btnCtx) => {
                 if (ctx.user.id !== btnCtx.user.id)
                     return;
@@ -161,6 +169,12 @@ class DeleteHistory extends SlashCommand_1.default {
                         },
                     ],
                     components: [],
+                    ...(pastOffenses.length > 1024 && {
+                        file: {
+                            file: attachment,
+                            name: "Output.txt"
+                        }
+                    })
                 });
             });
         }

@@ -6,7 +6,6 @@ import { ILog } from "../models/logSchema";
 import { sendWebhookEmbed, sendWebhookMessage } from "../services/Discord";
 import { LookupPlayer } from "../services/PlayFab";
 import config from "../structures/Config";
-import { hastebin } from "../utils/Hastebin";
 import logger from "../utils/logger";
 import parseOut from "../utils/parseOut";
 import { outputPlayerIDs, parsePlayerID } from "../utils/PlayerID";
@@ -131,37 +130,33 @@ export default abstract class BasePunishment {
         reason?: string;
         global?: boolean;
     }) {
-        const type = `${
-            payload.global && this.type !== "KICK" ? "GLOBAL " : ""
-        }${this.type}` as Types;
+        const type = `${payload.global && this.type !== "KICK" ? "GLOBAL " : ""
+            }${this.type}` as Types;
         const duration = new BigNumber(payload.duration);
 
         logger.info(
             "Bot",
             `${payload.admin.name} (${outputPlayerIDs(
                 payload.admin.ids
-            )}) ${type.toLowerCase().replace("global", "globally")}${
-                ["BAN", "UNBAN", "GLOBAL BAN", "GLOBAL UNBAN"].includes(type)
-                    ? "ned"
-                    : type === "KICK"
+            )}) ${type.toLowerCase().replace("global", "globally")}${["BAN", "UNBAN", "GLOBAL BAN", "GLOBAL UNBAN"].includes(type)
+                ? "ned"
+                : type === "KICK"
                     ? "ed"
                     : "d"
-            } ${payload.player.name} (${outputPlayerIDs(payload.player.ids)})${
-                !duration.isNaN()
-                    ? duration.isEqualTo(0)
-                        ? " PERMANENTLY"
-                        : ` for ${pluralize(
-                              "minute",
-                              duration.toNumber(),
-                              true
-                          )}`
-                    : ""
-            }${
-                payload.reason &&
+            } ${payload.player.name} (${outputPlayerIDs(payload.player.ids)})${!duration.isNaN()
+                ? duration.isEqualTo(0)
+                    ? " PERMANENTLY"
+                    : ` for ${pluralize(
+                        "minute",
+                        duration.toNumber(),
+                        true
+                    )}`
+                : ""
+            }${payload.reason &&
                 payload.reason.length &&
                 payload.reason !== "None given"
-                    ? ` with the reason: ${payload.reason}`
-                    : ""
+                ? ` with the reason: ${payload.reason}`
+                : ""
             }`
         );
 
@@ -286,9 +281,8 @@ export default abstract class BasePunishment {
                 const server = this.bot.servers.get(data.server);
                 const payload = `${parseOut(
                     data.player.name
-                )} (${outputPlayerIDs(data.player.ids, true)}) ${
-                    data.global ? "globally" : `in ${data.server}`
-                }`;
+                )} (${outputPlayerIDs(data.player.ids, true)}) ${data.global ? "globally" : `in ${data.server}`
+                    }`;
 
                 if (server) {
                     sendWebhookMessage(
@@ -354,23 +348,21 @@ export default abstract class BasePunishment {
                         ["BAN", "MUTE", "GLOBAL BAN", "GLOBAL MUTE"].includes(
                             type
                         )
-                            ? `Duration: ${historyDuration}${
-                                  !h.duration ||
-                                  h.duration.isEqualTo(0) ||
-                                  h.duration.isNaN()
-                                      ? ""
-                                      : ` (Un${
-                                            ["BAN", "GLOBAL BAN"].includes(type)
-                                                ? "banned"
-                                                : "muted"
-                                        } ${formatDistanceToNow(
-                                            addMinutes(
-                                                date,
-                                                h.duration.toNumber()
-                                            ),
-                                            { addSuffix: true }
-                                        )})`
-                              }`
+                            ? `Duration: ${historyDuration}${!h.duration ||
+                                h.duration.isEqualTo(0) ||
+                                h.duration.isNaN()
+                                ? ""
+                                : ` (Un${["BAN", "GLOBAL BAN"].includes(type)
+                                    ? "banned"
+                                    : "muted"
+                                } ${formatDistanceToNow(
+                                    addMinutes(
+                                        date,
+                                        h.duration.toNumber()
+                                    ),
+                                    { addSuffix: true }
+                                )})`
+                            }`
                             : undefined,
                         `------------------`,
                     ]
@@ -385,10 +377,13 @@ export default abstract class BasePunishment {
                 pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
         }
 
-        if (pastOffenses.length > 1024)
-            pastOffenses = `The output was too long, but was uploaded to [paste.gg](${await hastebin(
+        let attachment: Buffer
+        if (pastOffenses.length > 1024) {
+            attachment = Buffer.from(
                 pastOffenses
-            )})`;
+            )
+            pastOffenses = "See attached text file";
+        }
 
         logger.info(
             "Bot",
@@ -405,16 +400,15 @@ export default abstract class BasePunishment {
         if (["BAN", "GLOBAL BAN"].includes(data.type)) {
             message.push(
                 `**Offense**: \`${data.reason || "None given"}\``,
-                `**Duration**: \`${duration}${
-                    data.duration?.isEqualTo(0)
-                        ? ""
-                        : ` (Unbanned ${formatDistanceToNow(
-                              addMinutes(
-                                  new Date(),
-                                  new BigNumber(data.duration).toNumber()
-                              ),
-                              { addSuffix: true }
-                          )})`
+                `**Duration**: \`${duration}${data.duration?.isEqualTo(0)
+                    ? ""
+                    : ` (Unbanned ${formatDistanceToNow(
+                        addMinutes(
+                            new Date(),
+                            new BigNumber(data.duration).toNumber()
+                        ),
+                        { addSuffix: true }
+                    )})`
                 }\``
             );
 
@@ -423,16 +417,15 @@ export default abstract class BasePunishment {
 
         if (["MUTE", "GLOBAL MUTE"].includes(data.type)) {
             message.push(
-                `**Duration**: \`${duration} ${
-                    data.duration?.isEqualTo(0)
-                        ? ""
-                        : `(Unmuted ${formatDistanceToNow(
-                              addMinutes(
-                                  new Date(),
-                                  new BigNumber(data.duration).toNumber()
-                              ),
-                              { addSuffix: true }
-                          )})`
+                `**Duration**: \`${duration} ${data.duration?.isEqualTo(0)
+                    ? ""
+                    : `(Unmuted ${formatDistanceToNow(
+                        addMinutes(
+                            new Date(),
+                            new BigNumber(data.duration).toNumber()
+                        ),
+                        { addSuffix: true }
+                    )})`
                 }\``
             );
 
@@ -463,10 +456,9 @@ export default abstract class BasePunishment {
                         `**Name**: \`${parseOut(data.player.name)}\``,
                         `**PlayFabID**: \`${data.player.ids.playFabID}\``,
                         `**SteamID**: [${data.player.ids.steamID}](<http://steamcommunity.com/profiles/${data.player.ids.steamID}>)`,
-                        `**Previous Names**: \`${
-                            data.previousNames.length
-                                ? parseOut(data.previousNames)
-                                : "None"
+                        `**Previous Names**: \`${data.previousNames.length
+                            ? parseOut(data.previousNames)
+                            : "None"
                         }\``,
                         `**Total Duration**: \`${pluralize(
                             "minute",
@@ -480,6 +472,12 @@ export default abstract class BasePunishment {
                     value: pastOffenses,
                 },
             ],
+            ...(pastOffenses.length > 1024 && {
+                file: {
+                    file: attachment,
+                    name: "Output.txt"
+                }
+            }),
             color,
             image: {
                 url: data.playeravatar,

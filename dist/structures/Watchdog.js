@@ -35,7 +35,6 @@ const logHandler_1 = __importDefault(require("../handlers/logHandler"));
 const Discord_1 = require("../services/Discord");
 const PlayFab_1 = require("../services/PlayFab");
 const Config_1 = __importDefault(require("../structures/Config"));
-const Hastebin_1 = require("../utils/Hastebin");
 const logger_1 = __importDefault(require("../utils/logger"));
 const MordhauAPI_1 = __importDefault(require("../utils/MordhauAPI"));
 const parseOut_1 = __importDefault(require("../utils/parseOut"));
@@ -619,10 +618,10 @@ class Watchdog {
                 : configServer.rcon.status.fallbackValues.serverPort
                     ? `${server.rcon.options.host}:${configServer.rcon.status.fallbackValues.serverPort}`
                     : "Unknown";
-            const maxPlayerCount = configServer.rcon.status.fallbackValues
+            const maxPlayerCount = Number(configServer.rcon.status.fallbackValues
                 .maxPlayerCount
                 ? configServer.rcon.status.fallbackValues.maxPlayerCount
-                : server.rcon.maxPlayerCount;
+                : server.rcon.maxPlayerCount);
             const currentPlayerCount = players.length;
             const longestIDLength = Math.max(...players.map((p) => p.id.length));
             const playerList = online
@@ -684,6 +683,10 @@ class Watchdog {
                 }
                 description += `\n\nLast Update: <t:${Math.floor(date.getTime() / 1000)}:R>\nNext Update: <t:${Math.ceil(date_fns_1.addMinutes(date, configServer.rcon.status.updateInterval).getTime() / 1000)}:R>`;
                 embed.setDescription(description);
+                let attachment;
+                if (`\`\`\`${playerList}\`\`\``.length > 1024) {
+                    attachment = Buffer.from(playerList);
+                }
                 embed
                     .addField("Location", typeof country === "string"
                     ? `:${country === "Unknown"
@@ -701,15 +704,21 @@ class Watchdog {
                     : ""}`, !configServer.rcon.status.showPlayerList
                     ? `${currentPlayerCount}/${maxPlayerCount}`
                     : `\`\`\`${playerList}\`\`\``.length > 1024
-                        ? `[paste.gg](${await Hastebin_1.hastebin(playerList)})`
+                        ? "See attached text file"
                         : `\`\`\`${playerList}\`\`\``, !configServer.rcon.status.showPlayerList ? true : false)
                     .setFooter(`Mordhau RCON`);
-                return embed;
+                return { embed, attachment };
             }
             if (sendMessage) {
-                const embed = await generateStatusMessage();
+                const { embed, attachment } = await generateStatusMessage();
                 const m = await this.client.createMessage(channelID, {
                     embed: embed.getEmbed(),
+                    ...(attachment && {
+                        file: {
+                            file: attachment,
+                            name: "Output.txt"
+                        }
+                    })
                 });
                 server.rcon.statusMessageID = m.id;
             }
@@ -724,10 +733,15 @@ class Watchdog {
                         const field = messageEmbed.fields[i];
                         baseEmbed.addField(field.name, field.value, field.inline);
                     }
-                    const embed = await generateStatusMessage(messageEmbed);
-                    await this.client.editMessage(channelID, server.rcon.statusMessageID, {
-                        embed: embed.getEmbed(),
-                    });
+                    const { embed, attachment } = await generateStatusMessage(messageEmbed);
+                    if (attachment) {
+                        await this.refreshStatuses();
+                    }
+                    else {
+                        await this.client.editMessage(channelID, server.rcon.statusMessageID, {
+                            embed: embed.getEmbed(),
+                        });
+                    }
                 }
                 catch (error) {
                     this.statusMessageErrorCount++;

@@ -1,21 +1,16 @@
-import flatMap from "array.prototype.flatmap";
-import BigNumber from "bignumber.js";
-import { addMinutes, formatDistanceToNow } from "date-fns";
-import pluralize from "pluralize";
-import {
-    ApplicationCommandPermissionType,
-    CommandContext,
-    CommandOptionType,
-    SlashCreator,
-} from "slash-create";
-import { ComponentConfirmation } from "../../../services/Discord";
-import { LookupPlayer } from "../../../services/PlayFab";
-import config, { Role } from "../../../structures/Config";
-import SlashCommand from "../../../structures/SlashCommand";
-import Watchdog from "../../../structures/Watchdog";
-import { hastebin } from "../../../utils/Hastebin";
-import logger from "../../../utils/logger";
-import { outputPlayerIDs, parsePlayerID } from "../../../utils/PlayerID";
+import flatMap from 'array.prototype.flatmap';
+import BigNumber from 'bignumber.js';
+import { addMinutes, formatDistanceToNow } from 'date-fns';
+import pluralize from 'pluralize';
+import { CommandContext, CommandOptionType, SlashCreator } from 'slash-create';
+
+import { ComponentConfirmation } from '../../../services/Discord';
+import { LookupPlayer } from '../../../services/PlayFab';
+import config, { Role } from '../../../structures/Config';
+import SlashCommand from '../../../structures/SlashCommand';
+import Watchdog from '../../../structures/Watchdog';
+import logger from '../../../utils/logger';
+import { outputPlayerIDs, parsePlayerID } from '../../../utils/PlayerID';
 
 export default class DeleteHistory extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -157,17 +152,17 @@ export default class DeleteHistory extends SlashCommand {
                             `Platform: ${parsePlayerID(h.id).platform}`,
                             options.type === "admin"
                                 ? `Player: ${h.player} (${outputPlayerIDs(
-                                      h.ids.length
-                                          ? h.ids
-                                          : [
-                                                {
-                                                    platform: parsePlayerID(
-                                                        h.id
-                                                    ).platform,
-                                                    id: h.id,
-                                                },
-                                            ]
-                                  )})`
+                                    h.ids.length
+                                        ? h.ids
+                                        : [
+                                            {
+                                                platform: parsePlayerID(
+                                                    h.id
+                                                ).platform,
+                                                id: h.id,
+                                            },
+                                        ]
+                                )})`
                                 : undefined,
                             `Date: ${date.toDateString()} (${formatDistanceToNow(
                                 date,
@@ -181,23 +176,21 @@ export default class DeleteHistory extends SlashCommand {
                                 "GLOBAL BAN",
                                 "GLOBAL MUTE",
                             ].includes(type)
-                                ? `Duration: ${historyDuration} ${
-                                      h.duration.isEqualTo(0)
-                                          ? ""
-                                          : `(Un${
-                                                ["BAN", "GLOBAL BAN"].includes(
-                                                    type
-                                                )
-                                                    ? "banned"
-                                                    : "muted"
-                                            } ${formatDistanceToNow(
-                                                addMinutes(
-                                                    date,
-                                                    h.duration.toNumber()
-                                                ),
-                                                { addSuffix: true }
-                                            )})`
-                                  }`
+                                ? `Duration: ${historyDuration} ${h.duration.isEqualTo(0)
+                                    ? ""
+                                    : `(Un${["BAN", "GLOBAL BAN"].includes(
+                                        type
+                                    )
+                                        ? "banned"
+                                        : "muted"
+                                    } ${formatDistanceToNow(
+                                        addMinutes(
+                                            date,
+                                            h.duration.toNumber()
+                                        ),
+                                        { addSuffix: true }
+                                    )})`
+                                }`
                                 : undefined,
                             `------------------`,
                         ]
@@ -212,22 +205,24 @@ export default class DeleteHistory extends SlashCommand {
                     pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
             }
 
-            if (pastOffenses.length > 1024)
-                pastOffenses = `The output was too long, but was uploaded to [paste.gg](${await hastebin(
+            let attachment: Buffer
+            if (pastOffenses.length > 1024) {
+                attachment = Buffer.from(
                     pastOffenses
-                )})`;
+                )
+                pastOffenses = "See attached text file";
+            }
 
             ComponentConfirmation(
                 ctx,
                 {
                     embeds: [
                         {
-                            description: `Are you sure you want to delete \`${
-                                options.type
-                            }\` history of ${player.name} (${outputPlayerIDs(
-                                player.ids,
-                                true
-                            )})?`,
+                            description: `Are you sure you want to delete \`${options.type
+                                }\` history of ${player.name} (${outputPlayerIDs(
+                                    player.ids,
+                                    true
+                                )})?`,
                             fields: [
                                 {
                                     name:
@@ -240,6 +235,12 @@ export default class DeleteHistory extends SlashCommand {
                             color: 15158332,
                         },
                     ],
+                    ...(pastOffenses.length > 1024 && {
+                        file: {
+                            file: attachment,
+                            name: "Output.txt"
+                        }
+                    })
                 },
                 async (btnCtx) => {
                     if (ctx.user.id !== btnCtx.user.id) return;
@@ -250,21 +251,17 @@ export default class DeleteHistory extends SlashCommand {
 
                     logger.info(
                         "Command",
-                        `${ctx.member.displayName}#${
-                            ctx.member.user.discriminator
-                        } deleted ${options.type} history of ${
-                            player.name
+                        `${ctx.member.displayName}#${ctx.member.user.discriminator
+                        } deleted ${options.type} history of ${player.name
                         } (${outputPlayerIDs(player.ids, true)})`
                     );
 
                     await btnCtx.editParent({
                         embeds: [
                             {
-                                description: `Cleared \`${
-                                    options.type
-                                }\` punishment of ${
-                                    player.name
-                                } (${outputPlayerIDs(player.ids, true)})`,
+                                description: `Cleared \`${options.type
+                                    }\` punishment of ${player.name
+                                    } (${outputPlayerIDs(player.ids, true)})`,
                                 fields: [
                                     {
                                         name: `Deleted Data (${playerHistory.history.length})`,
@@ -274,14 +271,19 @@ export default class DeleteHistory extends SlashCommand {
                             },
                         ],
                         components: [],
+                        ...(pastOffenses.length > 1024 && {
+                            file: {
+                                file: attachment,
+                                name: "Output.txt"
+                            }
+                        })
                     });
                 }
             );
         } catch (error) {
             await ctx.send({
-                content: `An error occured while performing the command (${
-                    error.message || error
-                })`,
+                content: `An error occured while performing the command (${error.message || error
+                    })`,
             });
         }
     }

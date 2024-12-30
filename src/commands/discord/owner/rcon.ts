@@ -9,7 +9,6 @@ import {
 import config, { Role } from "../../../structures/Config";
 import SlashCommand from "../../../structures/SlashCommand";
 import Watchdog from "../../../structures/Watchdog";
-import { hastebin } from "../../../utils";
 import logger from "../../../utils/logger";
 
 export default class Rcon extends SlashCommand {
@@ -104,8 +103,7 @@ export default class Rcon extends SlashCommand {
         }
         if (!server.rcon.connected || !server.rcon.authenticated) {
             return (await ctx.send(
-                `Not ${
-                    !server.rcon.connected ? "connected" : "authenticated"
+                `Not ${!server.rcon.connected ? "connected" : "authenticated"
                 } to server`
             )) as Message;
         }
@@ -124,28 +122,37 @@ export default class Rcon extends SlashCommand {
 
             const response = res.join("\n");
 
+            let attachment: Buffer
+            if (response.length > 2047) {
+                attachment = Buffer.from(
+                    response
+                )
+            }
+
             await ctx.send(
                 {
                     embeds: [
                         {
                             title: `RCON - ${options.command}`,
-                            description: `\`\`\`${
-                                response.length > 2047
-                                    ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                                          response
-                                      )})`
-                                    : response
-                            }\`\`\``,
+                            description: `\`\`\`${response.length > 2047
+                                ? "See attached text file"
+                                : response
+                                }\`\`\``,
                         },
                     ],
+                    ...(response.length > 2047 && {
+                        file: {
+                            file: attachment,
+                            name: "Output.txt"
+                        }
+                    })
                 },
                 { ephemeral: true }
             );
         } catch (error) {
             await ctx.send({
-                content: `An error occured while performing the command (${
-                    error.message || error
-                })`,
+                content: `An error occured while performing the command (${error.message || error
+                    })`,
             });
         }
     }

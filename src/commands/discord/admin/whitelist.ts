@@ -1,21 +1,15 @@
-import flatMap from "array.prototype.flatmap";
-import pluralize from "pluralize";
+import flatMap from 'array.prototype.flatmap';
+import pluralize from 'pluralize';
 import {
-    ApplicationCommandPermissionType,
-    CommandContext,
-    CommandOptionType,
-    ComponentType,
-    Message,
-    SlashCreator,
-    TextInputStyle,
-} from "slash-create";
-import { ComponentConfirmation } from "../../../services/Discord";
-import { LookupPlayer } from "../../../services/PlayFab";
-import config, { Role } from "../../../structures/Config";
-import SlashCommand from "../../../structures/SlashCommand";
-import Watchdog from "../../../structures/Watchdog";
-import { hastebin } from "../../../utils/Hastebin";
-import logger from "../../../utils/logger";
+    CommandContext, CommandOptionType, ComponentType, Message, SlashCreator, TextInputStyle
+} from 'slash-create';
+
+import { ComponentConfirmation } from '../../../services/Discord';
+import { LookupPlayer } from '../../../services/PlayFab';
+import config, { Role } from '../../../structures/Config';
+import SlashCommand from '../../../structures/SlashCommand';
+import Watchdog from '../../../structures/Watchdog';
+import logger from '../../../utils/logger';
 
 export default class Whitelist extends SlashCommand {
     constructor(creator: SlashCreator, bot: Watchdog, commandName: string) {
@@ -203,8 +197,7 @@ export default class Whitelist extends SlashCommand {
         }
         if (!server.rcon.connected || !server.rcon.authenticated) {
             return (await ctx.send(
-                `Not ${
-                    !server.rcon.connected ? "connected" : "authenticated"
+                `Not ${!server.rcon.connected ? "connected" : "authenticated"
                 } to server`
             )) as Message;
         }
@@ -242,10 +235,9 @@ export default class Whitelist extends SlashCommand {
                 const players = await this.bot.whitelist.list(server.rcon);
 
                 return (await ctx.send(
-                    `Whitelisted players on ${server.name}: ${
-                        players.length
-                            ? players.map((player) => player.id).join(", ")
-                            : "none"
+                    `Whitelisted players on ${server.name}: ${players.length
+                        ? players.map((player) => player.id).join(", ")
+                        : "none"
                     }`
                 )) as Message;
             }
@@ -349,45 +341,55 @@ export default class Whitelist extends SlashCommand {
                         const message = [
                             added.length
                                 ? `Added (${added.length} ${pluralize(
-                                      "players",
-                                      added.length
-                                  )}): ${added
-                                      .map(
-                                          (player) =>
-                                              `${player.name} (${player.id})`
-                                      )
-                                      .join(", ")}`
+                                    "players",
+                                    added.length
+                                )}): ${added
+                                    .map(
+                                        (player) =>
+                                            `${player.name} (${player.id})`
+                                    )
+                                    .join(", ")}`
                                 : null,
                             alreadyExisting.length
-                                ? `Already Exists (${
-                                      alreadyExisting.length
-                                  } ${pluralize(
-                                      "players",
-                                      alreadyExisting.length
-                                  )}): ${alreadyExisting
-                                      .map(
-                                          (player) =>
-                                              `${player.name} (${player.id})`
-                                      )
-                                      .join(", ")}`
+                                ? `Already Exists (${alreadyExisting.length
+                                } ${pluralize(
+                                    "players",
+                                    alreadyExisting.length
+                                )}): ${alreadyExisting
+                                    .map(
+                                        (player) =>
+                                            `${player.name} (${player.id})`
+                                    )
+                                    .join(", ")}`
                                 : null,
                             invalid.length
                                 ? `Invalid (${invalid.length} ${pluralize(
-                                      "IDs",
-                                      invalid.length
-                                  )}): ${invalid.join(", ")}`
+                                    "IDs",
+                                    invalid.length
+                                )}): ${invalid.join(", ")}`
                                 : null,
                         ]
                             .filter((message) => message !== null)
                             .join("\n");
 
+                        let attachment: Buffer
+                        if (message.length > 1023) {
+                            attachment = Buffer.from(
+                                message
+                            )
+                        }
+
                         return await mctx.send({
                             content:
                                 message.length > 1023
-                                    ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                                          message
-                                      )})`
+                                    ? "See attached text file"
                                     : message,
+                            ...(message.length > 1023 && {
+                                file: {
+                                    file: attachment,
+                                    name: "Output.txt"
+                                }
+                            })
                         });
                     }
                 );
@@ -491,45 +493,55 @@ export default class Whitelist extends SlashCommand {
                         const message = [
                             removed.length
                                 ? `Removed (${removed.length} ${pluralize(
-                                      "players",
-                                      removed.length
-                                  )}): ${removed
-                                      .map(
-                                          (player) =>
-                                              `${player.name} (${player.id})`
-                                      )
-                                      .join(", ")}`
+                                    "players",
+                                    removed.length
+                                )}): ${removed
+                                    .map(
+                                        (player) =>
+                                            `${player.name} (${player.id})`
+                                    )
+                                    .join(", ")}`
                                 : null,
                             doesntExisting.length
-                                ? `Doesn't exist (${
-                                      doesntExisting.length
-                                  } ${pluralize(
-                                      "players",
-                                      doesntExisting.length
-                                  )}): ${doesntExisting
-                                      .map(
-                                          (player) =>
-                                              `${player.name} (${player.id})`
-                                      )
-                                      .join(", ")}`
+                                ? `Doesn't exist (${doesntExisting.length
+                                } ${pluralize(
+                                    "players",
+                                    doesntExisting.length
+                                )}): ${doesntExisting
+                                    .map(
+                                        (player) =>
+                                            `${player.name} (${player.id})`
+                                    )
+                                    .join(", ")}`
                                 : null,
                             invalid.length
                                 ? `Invalid (${invalid.length} ${pluralize(
-                                      "IDs",
-                                      invalid.length
-                                  )}): ${invalid.join(", ")}`
+                                    "IDs",
+                                    invalid.length
+                                )}): ${invalid.join(", ")}`
                                 : null,
                         ]
                             .filter((message) => message !== null)
                             .join("\n");
 
+                        let attachment: Buffer
+                        if (message.length > 1023) {
+                            attachment = Buffer.from(
+                                message
+                            )
+                        }
+
                         return await mctx.send({
                             content:
                                 message.length > 1023
-                                    ? `The output was too long, but was uploaded to [paste.gg](${await hastebin(
-                                          message
-                                      )})`
+                                    ? "See attached text file"
                                     : message,
+                            ...(message.length > 1023 && {
+                                file: {
+                                    file: attachment,
+                                    name: "Output.txt"
+                                }
+                            })
                         });
                     }
                 );

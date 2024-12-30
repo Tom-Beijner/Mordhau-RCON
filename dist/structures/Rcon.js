@@ -15,7 +15,6 @@ const rcon_1 = require("../rcon");
 const Discord_1 = require("../services/Discord");
 const PlayFab_1 = require("../services/PlayFab");
 const Config_1 = __importDefault(require("../structures/Config"));
-const utils_1 = require("../utils");
 const logger_1 = __importDefault(require("../utils/logger"));
 const parseOut_1 = __importDefault(require("../utils/parseOut"));
 const PlayerID_1 = require("../utils/PlayerID");
@@ -204,30 +203,32 @@ class Rcon {
                 affectedPlayers.push(this.bot.cachedPlayers.get(adminID) ||
                     (await PlayFab_1.LookupPlayer(adminID)));
             }
+            let attachment;
+            if (affectedPlayers
+                .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
+                .join(", ").length > 900) {
+                attachment = Buffer.from(affectedPlayers
+                    .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
+                    .join(", "));
+            }
             logger_1.default.warn("RCON", `Following players: ${affectedPlayers
                 .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
-                .join(", ").length > 900
-                ? `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(affectedPlayers
-                    .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
-                    .join(", "))})`
-                : affectedPlayers
-                    .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
-                    .join(", ")} was given privileges without permission${Config_1.default.get("adminListSaving.rollbackAdmins")
+                .join(", ")} was given privileges without permission${Config_1.default.get("adminListSaving.rollbackAdmins")
                 ? ", they've been removed"
                 : ""} (Server: ${this.options.name})`);
             Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} Following players: ${affectedPlayers
                 .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids, true)})`)
                 .join(", ").length > 900
-                ? `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(affectedPlayers
-                    .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
-                    .join(", "))})`
+                ? "See attached text file"
                 : affectedPlayers
                     .map((player) => `${parseOut_1.default(player.name)} (${PlayerID_1.outputPlayerIDs(player.ids, true)})`)
                     .join(", ")} was given admin privileges on without permission${Config_1.default.get("adminListSaving.rollbackAdmins")
                 ? ", they've been removed"
                 : ""} (Server: ${this.options.name})`, {
                 roles: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids),
-            });
+            }, [
+                { attachment: attachment, name: "Output.txt" }
+            ]);
         }
         if (unauthorizedRemovedAdmins === null || unauthorizedRemovedAdmins === void 0 ? void 0 : unauthorizedRemovedAdmins.length) {
             for (let i = 0; i < unauthorizedRemovedAdmins.length; i++) {
@@ -237,30 +238,32 @@ class Rcon {
                 affectedAdmins.push(this.bot.cachedPlayers.get(adminID) ||
                     (await PlayFab_1.LookupPlayer(adminID)));
             }
+            let attachment;
+            if (affectedAdmins
+                .map((admin) => `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids, true)})`)
+                .join(", ").length > 900) {
+                attachment = Buffer.from(affectedAdmins
+                    .map((admin) => `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids)})`)
+                    .join(", "));
+            }
             logger_1.default.warn("RCON", `Following admins: ${affectedAdmins
-                .map((admin) => `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids)})`)
-                .join(", ").length > 900
-                ? `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(affectedAdmins
-                    .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
-                    .join(", "))})`
-                : affectedAdmins
-                    .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
-                    .join(", ")} had their privileges removed without permission${Config_1.default.get("adminListSaving.rollbackAdmins")
+                .map((player) => `${player.name} (${PlayerID_1.outputPlayerIDs(player.ids)})`)
+                .join(", ")} had their privileges removed without permission${Config_1.default.get("adminListSaving.rollbackAdmins")
                 ? ", they've been added back"
                 : ""} (Server: ${this.options.name})`);
             Discord_1.sendWebhookMessage(this.webhooks.get("activity"), `${array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids.map((id) => Discord_1.mentionRole(id)))} Following admins: ${affectedAdmins
                 .map((admin) => `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids, true)})`)
                 .join(", ").length > 900
-                ? `The output was too long, but was uploaded to [paste.gg](${await utils_1.hastebin(affectedAdmins
-                    .map((admin) => `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids)})`)
-                    .join(", "))})`
+                ? "See attached text file"
                 : parseOut_1.default(affectedAdmins
                     .map((admin) => `${admin.name} (${PlayerID_1.outputPlayerIDs(admin.ids, true)})`)
                     .join(", "))}  had their privileges removed without permission${Config_1.default.get("adminListSaving.rollbackAdmins")
                 ? ", they've been added back"
                 : ""} (Server: ${this.options.name})`, {
                 roles: array_prototype_flatmap_1.default(Config_1.default.get("discord.roles").filter((role) => role.receiveMentions), (role) => role.Ids),
-            });
+            }, [
+                { attachment: attachment, name: "Output.txt" }
+            ]);
         }
         logger_1.default.warn("RCON", "Investigate this!");
     }

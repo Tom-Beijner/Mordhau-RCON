@@ -1,31 +1,30 @@
-import flatMap from "array.prototype.flatmap";
-import BigNumber from "bignumber.js";
-import { addMinutes, formatDistanceToNow } from "date-fns";
-import Eris, { Client, Constants, Embed, TextChannel } from "eris";
-import LRU from "lru-cache";
-import fetch from "node-fetch";
-import path, { resolve as res } from "path";
-import pluralize from "pluralize";
-import { GatewayServer, SlashCreator } from "slash-create";
-import { walk } from "walk";
+import flatMap from 'array.prototype.flatmap';
+import BigNumber from 'bignumber.js';
+import { addMinutes, formatDistanceToNow } from 'date-fns';
+import Eris, { Client, Constants, Embed, TextChannel } from 'eris';
+import LRU from 'lru-cache';
+import fetch from 'node-fetch';
+import path, { resolve as res } from 'path';
+import pluralize from 'pluralize';
+import { GatewayServer, SlashCreator } from 'slash-create';
+import { walk } from 'walk';
 
-import LogHandler from "../handlers/logHandler";
-import { mentionRole, sendWebhookMessage } from "../services/Discord";
-import { CreateAccount, getServerInfo, Login } from "../services/PlayFab";
-import config, { Role } from "../structures/Config";
-import { hastebin } from "../utils/Hastebin";
-import logger from "../utils/logger";
-import MordhauAPI from "../utils/MordhauAPI";
-import parseOut from "../utils/parseOut";
-import { outputPlayerIDs } from "../utils/PlayerID";
-import AntiSlur from "./AutoMod";
-import AutoUpdater from "./AutoUpdater";
-import BaseEvent from "./BaseEvent";
-import BaseRCONCommand from "./BaseRCONCommands";
-import Database from "./Database";
-import DiscordEmbed from "./DiscordEmbed";
-import Rcon from "./Rcon";
-import Whitelist from "./Whitelist";
+import LogHandler from '../handlers/logHandler';
+import { mentionRole, sendWebhookMessage } from '../services/Discord';
+import { CreateAccount, getServerInfo, Login } from '../services/PlayFab';
+import config, { Role } from '../structures/Config';
+import logger from '../utils/logger';
+import MordhauAPI from '../utils/MordhauAPI';
+import parseOut from '../utils/parseOut';
+import { outputPlayerIDs } from '../utils/PlayerID';
+import AntiSlur from './AutoMod';
+import AutoUpdater from './AutoUpdater';
+import BaseEvent from './BaseEvent';
+import BaseRCONCommand from './BaseRCONCommands';
+import Database from './Database';
+import DiscordEmbed from './DiscordEmbed';
+import Rcon from './Rcon';
+import Whitelist from './Whitelist';
 
 interface Iids {
     playFabID: string;
@@ -154,8 +153,7 @@ export default class Watchdog {
             } catch (error) {
                 logger.error(
                     "Server Status",
-                    `Setting status channel permissions failed for ${
-                        server.name
+                    `Setting status channel permissions failed for ${server.name
                     } (Error: ${error.message || error})`
                 );
             }
@@ -238,8 +236,7 @@ export default class Watchdog {
 
             logger.debug(
                 "Server Status",
-                `Updating ${
-                    server.name
+                `Updating ${server.name
                 } status message (Next update: ${formatDistanceToNow(
                     addMinutes(
                         new Date(),
@@ -275,29 +272,28 @@ export default class Watchdog {
             const adress = serverInfo
                 ? `${server.rcon.options.host}:${serverInfo.ServerPort}`
                 : configServer.rcon.status.fallbackValues.serverPort
-                ? `${server.rcon.options.host}:${configServer.rcon.status.fallbackValues.serverPort}`
-                : "Unknown";
-            const maxPlayerCount = configServer.rcon.status.fallbackValues
+                    ? `${server.rcon.options.host}:${configServer.rcon.status.fallbackValues.serverPort}`
+                    : "Unknown";
+            const maxPlayerCount = Number(configServer.rcon.status.fallbackValues
                 .maxPlayerCount
                 ? configServer.rcon.status.fallbackValues.maxPlayerCount
-                : server.rcon.maxPlayerCount;
+                : server.rcon.maxPlayerCount);
             const currentPlayerCount = players.length;
             const longestIDLength = Math.max(
                 ...players.map((p) => p.id.length)
             );
             const playerList = online
                 ? players
-                      .map((p) => {
-                          const player = this.cachedPlayers.get(p.id) || {
-                              name: p.name,
-                              id: p.id,
-                          };
+                    .map((p) => {
+                        const player = this.cachedPlayers.get(p.id) || {
+                            name: p.name,
+                            id: p.id,
+                        };
 
-                          return `${p.id.padEnd(longestIDLength + 1, " ")}- ${
-                              player.name
-                          }`;
-                      })
-                      .join("\n") || "No players online"
+                        return `${p.id.padEnd(longestIDLength + 1, " ")}- ${player.name
+                            }`;
+                    })
+                    .join("\n") || "No players online"
                 : "Server offline";
             const passwordProtected = serverInfo
                 ? serverInfo.Tags.IsPasswordProtected === "true"
@@ -327,14 +323,13 @@ export default class Watchdog {
                 }
                 embed
                     .setTitle(
-                        `${passwordProtected ? ":lock: " : ""}\`${
-                            serverInfo
-                                ? serverInfo.Tags.ServerName
-                                : configServer.rcon.status.fallbackValues
-                                      .serverName ||
-                                  name ||
-                                  baseEmbed?.title ||
-                                  "Unknown"
+                        `${passwordProtected ? ":lock: " : ""}\`${serverInfo
+                            ? serverInfo.Tags.ServerName
+                            : configServer.rcon.status.fallbackValues
+                                .serverName ||
+                            name ||
+                            baseEmbed?.title ||
+                            "Unknown"
                         }\``
                     )
                     .setColor(
@@ -342,8 +337,8 @@ export default class Watchdog {
                             ? currentPlayerCount >= maxPlayerCount
                                 ? 15158332
                                 : currentPlayerCount * 2 >= maxPlayerCount
-                                ? 16426522
-                                : 4437377
+                                    ? 16426522
+                                    : 4437377
                             : 0
                     )
                     .addField(
@@ -356,11 +351,10 @@ export default class Watchdog {
 
                 let description = "";
                 if (!configServer.rcon.status.hideIPPort) {
-                    description += `Connect: ${
-                        adress === "Unknown"
-                            ? "Unknown"
-                            : `steam://connect/${adress}`
-                    }`;
+                    description += `Connect: ${adress === "Unknown"
+                        ? "Unknown"
+                        : `steam://connect/${adress}`
+                        }`;
                     embed.addField("Address:Port", `\`${adress}\``, true);
                 }
 
@@ -375,15 +369,21 @@ export default class Watchdog {
 
                 embed.setDescription(description);
 
+                let attachment: Buffer
+                if (`\`\`\`${playerList}\`\`\``.length > 1024) {
+                    attachment = Buffer.from(
+                        playerList
+                    )
+                }
+
                 embed
                     .addField(
                         "Location",
                         typeof country === "string"
-                            ? `:${
-                                  country === "Unknown"
-                                      ? "united_nations"
-                                      : `flag_${country.toLowerCase()}`
-                              }: ${country}`
+                            ? `:${country === "Unknown"
+                                ? "united_nations"
+                                : `flag_${country.toLowerCase()}`
+                            }: ${country}`
                             : ":united_nations: Unknown",
                         true
                     )
@@ -391,8 +391,8 @@ export default class Watchdog {
                         "Gamemode",
                         !gamemode
                             ? baseEmbed?.fields?.find(
-                                  (f) => f.name === "Gamemode"
-                              ).value || "Unknown"
+                                (f) => f.name === "Gamemode"
+                            ).value || "Unknown"
                             : `${gamemode || "Unknown"}`,
                         true
                     )
@@ -400,34 +400,39 @@ export default class Watchdog {
                         "Current Map",
                         !currentMap
                             ? baseEmbed?.fields?.find(
-                                  (f) => f.name === "Current Map"
-                              ).value || "Unknown"
+                                (f) => f.name === "Current Map"
+                            ).value || "Unknown"
                             : `${currentMap || "Unknown"}`,
                         true
                     )
                     .addField(
-                        `Players${
-                            configServer.rcon.status.showPlayerList
-                                ? ` ${currentPlayerCount}/${maxPlayerCount}`
-                                : ""
+                        `Players${configServer.rcon.status.showPlayerList
+                            ? ` ${currentPlayerCount}/${maxPlayerCount}`
+                            : ""
                         }`,
                         !configServer.rcon.status.showPlayerList
                             ? `${currentPlayerCount}/${maxPlayerCount}`
                             : `\`\`\`${playerList}\`\`\``.length > 1024
-                            ? `[paste.gg](${await hastebin(playerList)})`
-                            : `\`\`\`${playerList}\`\`\``,
+                                ? "See attached text file"
+                                : `\`\`\`${playerList}\`\`\``,
                         !configServer.rcon.status.showPlayerList ? true : false
                     )
-                    .setFooter(`Mordhau RCON`);
+                    .setFooter(`Mordhau RCON`)
 
-                return embed;
+                return { embed, attachment };
             }
 
             if (sendMessage) {
-                const embed = await generateStatusMessage();
+                const { embed, attachment } = await generateStatusMessage();
 
                 const m = await this.client.createMessage(channelID, {
                     embed: embed.getEmbed(),
+                    ...(attachment && {
+                        file: {
+                            file: attachment,
+                            name: "Output.txt"
+                        }
+                    })
                 });
 
                 server.rcon.statusMessageID = m.id;
@@ -450,26 +455,28 @@ export default class Watchdog {
                             field.inline
                         );
                     }
-                    const embed = await generateStatusMessage(messageEmbed);
+                    const { embed, attachment } = await generateStatusMessage(messageEmbed);
 
-                    await this.client.editMessage(
-                        channelID,
-                        server.rcon.statusMessageID,
-                        {
-                            embed: embed.getEmbed(),
-                        }
-                    );
+                    // Force new message, cant upload for edit message
+                    if (attachment) {
+                        await this.refreshStatuses();
+                    } else {
+                        await this.client.editMessage(
+                            channelID,
+                            server.rcon.statusMessageID,
+                            {
+                                embed: embed.getEmbed(),
+                            }
+                        );
+                    }
                 } catch (error) {
                     this.statusMessageErrorCount++;
 
                     logger.error(
                         "Server Status",
-                        `Error occurred while updating ${
-                            server.name
-                        } status (Error: ${
-                            error.message || error
-                        }, Message error count: ${
-                            this.statusMessageErrorCount
+                        `Error occurred while updating ${server.name
+                        } status (Error: ${error.message || error
+                        }, Message error count: ${this.statusMessageErrorCount
                         })`
                     );
 
@@ -490,8 +497,7 @@ export default class Watchdog {
         } catch (error) {
             logger.error(
                 "Server Status",
-                `Error occurred while updating ${server.name} status (Error: ${
-                    error.message || error
+                `Error occurred while updating ${server.name} status (Error: ${error.message || error
                 }, Message error count: ${this.statusMessageErrorCount})`
             );
         }
@@ -728,11 +734,10 @@ export default class Watchdog {
                         data: {
                             result: server.rcon.options.ignoreGlobalPunishments
                                 ? "Ignores global punishments"
-                                : `Not ${
-                                      !server.rcon.connected
-                                          ? "connected"
-                                          : "authenticated"
-                                  } to server`,
+                                : `Not ${!server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                                } to server`,
                             failed: true,
                         },
                     });
@@ -781,8 +786,7 @@ export default class Watchdog {
                 // }
 
                 let result = await server.rcon.send(
-                    `ban ${player.id} ${duration || 0} ${
-                        reason || "None given"
+                    `ban ${player.id} ${duration || 0} ${reason || "None given"
                     }`
                 );
                 result = result.split("\n")[0].trim();
@@ -815,7 +819,7 @@ export default class Watchdog {
             if (
                 this.servers.size &&
                 this.servers.size !==
-                    servers.filter((server) => server.data.failed).length
+                servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.banHandler.execute(
                     punishmentServer || "Global",
@@ -860,11 +864,10 @@ export default class Watchdog {
                         data: {
                             result: server.rcon.options.ignoreGlobalPunishments
                                 ? "Ignores global punishments"
-                                : `Not ${
-                                      !server.rcon.connected
-                                          ? "connected"
-                                          : "authenticated"
-                                  } to server`,
+                                : `Not ${!server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                                } to server`,
                             failed: true,
                         },
                     });
@@ -943,7 +946,7 @@ export default class Watchdog {
             if (
                 this.servers.size &&
                 this.servers.size !==
-                    servers.filter((server) => server.data.failed).length
+                servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.muteHandler.execute(
                     punishmentServer || "Global",
@@ -987,11 +990,10 @@ export default class Watchdog {
                         data: {
                             result: server.rcon.options.ignoreGlobalPunishments
                                 ? "Ignores global punishments"
-                                : `Not ${
-                                      !server.rcon.connected
-                                          ? "connected"
-                                          : "authenticated"
-                                  } to server`,
+                                : `Not ${!server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                                } to server`,
                             failed: true,
                         },
                     });
@@ -1046,7 +1048,7 @@ export default class Watchdog {
             if (
                 this.servers.size &&
                 this.servers.size !==
-                    servers.filter((server) => server.data.failed).length
+                servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.unbanHandler.execute(
                     punishmentServer || "Global",
@@ -1090,11 +1092,10 @@ export default class Watchdog {
                         data: {
                             result: server.rcon.options.ignoreGlobalPunishments
                                 ? "Ignores global punishments"
-                                : `Not ${
-                                      !server.rcon.connected
-                                          ? "connected"
-                                          : "authenticated"
-                                  } to server`,
+                                : `Not ${!server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                                } to server`,
                             failed: true,
                         },
                     });
@@ -1147,7 +1148,7 @@ export default class Watchdog {
             if (
                 this.servers.size &&
                 this.servers.size !==
-                    servers.filter((server) => server.data.failed).length
+                servers.filter((server) => server.data.failed).length
             ) {
                 await this.logHandler.unmuteHandler.execute(
                     punishmentServer || "Global",
@@ -1184,11 +1185,10 @@ export default class Watchdog {
                         data: {
                             result: server.rcon.admins.has(player.id)
                                 ? "Already an admin"
-                                : `Not ${
-                                      !server.rcon.connected
-                                          ? "connected"
-                                          : "authenticated"
-                                  } to server`,
+                                : `Not ${!server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                                } to server`,
                             failed: true,
                         },
                     });
@@ -1276,11 +1276,10 @@ export default class Watchdog {
                         data: {
                             result: !server.rcon.admins.has(player.id)
                                 ? "Not an admin"
-                                : `Not ${
-                                      !server.rcon.connected
-                                          ? "connected"
-                                          : "authenticated"
-                                  } to server`,
+                                : `Not ${!server.rcon.connected
+                                    ? "connected"
+                                    : "authenticated"
+                                } to server`,
                             failed: true,
                         },
                     });
@@ -1452,8 +1451,7 @@ export default class Watchdog {
             .on("commandError", (command, error, ctx) => {
                 logger.error(
                     "Bot",
-                    `Error occurred while running command (Command: ${
-                        command.commandName
+                    `Error occurred while running command (Command: ${command.commandName
                     }, Error: ${error.message || error})`
                 );
             })
@@ -1554,8 +1552,7 @@ export default class Watchdog {
                 if (!fetchedChannel) {
                     logger.warn(
                         "Bot",
-                        `${
-                            channel[0].toUpperCase() + channel.substr(1)
+                        `${channel[0].toUpperCase() + channel.substr(1)
                         } log channel doesn't exist`
                     );
 
@@ -1571,10 +1568,8 @@ export default class Watchdog {
                 if (webhook && webhook.token) {
                     logger.info(
                         "Bot",
-                        `${
-                            channel[0].toUpperCase() + channel.substr(1)
-                        } log channel found (Channel: ${
-                            fetchedChannel.name
+                        `${channel[0].toUpperCase() + channel.substr(1)
+                        } log channel found (Channel: ${fetchedChannel.name
                         }, ID: ${fetchedChannel.id})`
                     );
 
@@ -1582,15 +1577,15 @@ export default class Watchdog {
                         .get(server.name)
                         .rcon.webhooks.set(
                             channel as
-                                | "chat"
-                                | "punishments"
-                                | "activity"
-                                | "wanted"
-                                | "permanent"
-                                | "automod"
-                                | "killstreak"
-                                | "adminCalls"
-                                | "warns",
+                            | "chat"
+                            | "punishments"
+                            | "activity"
+                            | "wanted"
+                            | "permanent"
+                            | "automod"
+                            | "killstreak"
+                            | "adminCalls"
+                            | "warns",
                             {
                                 id: webhook.id,
                                 token: webhook.token,
@@ -1601,18 +1596,15 @@ export default class Watchdog {
                 } else {
                     logger.debug(
                         "Bot",
-                        `${
-                            channel[0].toUpperCase() + channel.substr(1)
-                        } log channel webhook not found (Channel: ${
-                            fetchedChannel.name
+                        `${channel[0].toUpperCase() + channel.substr(1)
+                        } log channel webhook not found (Channel: ${fetchedChannel.name
                         }, ID: ${fetchedChannel.id})`
                     );
 
                     const newWebhook = await fetchedChannel.createWebhook(
                         {
-                            name: `${
-                                channel[0].toUpperCase() + channel.substr(1)
-                            } logger`,
+                            name: `${channel[0].toUpperCase() + channel.substr(1)
+                                } logger`,
                             avatar: this.client.user.avatarURL,
                         },
                         "Automatic webhook creation"
@@ -1621,10 +1613,8 @@ export default class Watchdog {
                     if (newWebhook?.id) {
                         logger.info(
                             "Bot",
-                            `${
-                                channel[0].toUpperCase() + channel.substr(1)
-                            } log channel webhook was created (Channel: ${
-                                fetchedChannel.name
+                            `${channel[0].toUpperCase() + channel.substr(1)
+                            } log channel webhook was created (Channel: ${fetchedChannel.name
                             }, ID: ${fetchedChannel.id})`
                         );
 
@@ -1632,15 +1622,15 @@ export default class Watchdog {
                             .get(server.name)
                             .rcon.webhooks.set(
                                 channel as
-                                    | "chat"
-                                    | "punishments"
-                                    | "activity"
-                                    | "wanted"
-                                    | "permanent"
-                                    | "automod"
-                                    | "killstreak"
-                                    | "adminCalls"
-                                    | "warns",
+                                | "chat"
+                                | "punishments"
+                                | "activity"
+                                | "wanted"
+                                | "permanent"
+                                | "automod"
+                                | "killstreak"
+                                | "adminCalls"
+                                | "warns",
                                 {
                                     id: newWebhook.id,
                                     token: newWebhook.token,
@@ -1649,8 +1639,7 @@ export default class Watchdog {
                     } else {
                         logger.error(
                             "Bot",
-                            `${
-                                channel[0].toUpperCase() + channel.substr(1)
+                            `${channel[0].toUpperCase() + channel.substr(1)
                             } log channel webhook creation failed, check error:\n${webhook}`
                         );
                     }
@@ -1695,8 +1684,7 @@ export default class Watchdog {
                     } catch (err) {
                         logger.error(
                             "Bot",
-                            `Error occurred while loading discord command (${
-                                err.message || err
+                            `Error occurred while loading discord command (${err.message || err
                             })`
                         );
                     }
@@ -1754,8 +1742,7 @@ export default class Watchdog {
                     } catch (err) {
                         logger.error(
                             "Bot",
-                            `Error occurred while loading RCON command (Error: ${
-                                err.message || err
+                            `Error occurred while loading RCON command (Error: ${err.message || err
                             }, Command: ${fileStats.name})`
                         );
                     }
@@ -1804,8 +1791,7 @@ export default class Watchdog {
                     } catch (err) {
                         logger.error(
                             "Bot",
-                            `Error occurred while loading discord command (${
-                                err.message || err
+                            `Error occurred while loading discord command (${err.message || err
                             })`
                         );
                     }
