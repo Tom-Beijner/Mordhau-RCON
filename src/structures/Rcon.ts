@@ -580,9 +580,9 @@ export default class Rcon {
                         (role) => role.Ids
                     ),
                 },
-                [
+                attachment ? [
                     { attachment: attachment, name: "Output.txt" }
-                ]
+                ] : []
             );
         }
         if (unauthorizedRemovedAdmins?.length) {
@@ -676,9 +676,9 @@ export default class Rcon {
                         (role) => role.Ids
                     ),
                 },
-                [
+                attachment ? [
                     { attachment: attachment, name: "Output.txt" }
-                ]
+                ] : []
             );
         }
 
