@@ -55,7 +55,7 @@
                 "mongoose": "^5.13.5",
                 "mongoose-bignumber": "^1.2.0",
                 "node-fetch": "^2.6.1",
-                "playfab-sdk": "^2.71.210802",
+                "playfab-sdk": "2.135.230901",
                 "pluralize": "^8.0.0",
                 "pm2": "^5.1.1",
                 "remove-markdown": "^0.3.0",

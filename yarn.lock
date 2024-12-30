@@ -4920,7 +4920,7 @@ __metadata:
     mongoose: ^5.13.5
     mongoose-bignumber: ^1.2.0
     node-fetch: ^2.6.1
-    playfab-sdk: ^2.71.210802
+    playfab-sdk: 2.135.230901
     pluralize: ^8.0.0
     pm2: ^5.1.1
     remove-markdown: ^0.3.0
@@ -5727,10 +5727,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playfab-sdk@npm:^2.71.210802":
-  version: 2.71.210802
-  resolution: "playfab-sdk@npm:2.71.210802"
-  checksum: 422dd9a6565efbb0411fe0da67c0563b1c348df74dbabc1138a51e2735415cb93141d81e8ca68bbbebce8ffa68a6893bbe520c5a3428e66c4371aafb0180ea0c
+"playfab-sdk@npm:2.135.230901":
+  version: 2.135.230901
+  resolution: "playfab-sdk@npm:2.135.230901"
+  checksum: 5da9a4073363b285e6202adf17df9280dd3ae45fe00c8940f2ca795c4663dbcf9241e33babf11879e0cdc09faf71951d6d82958a5416e6f28994f8c7d6d9b1a3
   languageName: node
   linkType: hard
 
