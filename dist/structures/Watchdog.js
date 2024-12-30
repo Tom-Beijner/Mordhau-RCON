@@ -713,13 +713,10 @@ class Watchdog {
                 const { embed, attachment } = await generateStatusMessage();
                 const m = await this.client.createMessage(channelID, {
                     embed: embed.getEmbed(),
-                    ...(attachment && {
-                        file: {
-                            file: attachment,
-                            name: "Output.txt"
-                        }
-                    })
-                });
+                }, (attachment && {
+                    file: attachment,
+                    name: "Output.txt"
+                }));
                 server.rcon.statusMessageID = m.id;
             }
             else {
