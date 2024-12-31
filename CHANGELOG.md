@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.31.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.30.3...v1.31.0) (2024-12-31)
+
+
+### Features
+
+* use chunks instead of attachment for status embed ([cb5c091](https://github.com/Tom-Beijner/Mordhau-RCON/commit/cb5c0916b6da26c267b02717522d74a3c5acb8ba))
+
 ### [1.30.3](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.30.2...v1.30.3) (2024-12-30)
 
 

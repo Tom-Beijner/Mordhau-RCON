@@ -683,10 +683,7 @@ class Watchdog {
                 }
                 description += `\n\nLast Update: <t:${Math.floor(date.getTime() / 1000)}:R>\nNext Update: <t:${Math.ceil(date_fns_1.addMinutes(date, configServer.rcon.status.updateInterval).getTime() / 1000)}:R>`;
                 embed.setDescription(description);
-                let attachment;
-                if (`\`\`\`${playerList}\`\`\``.length > 1024) {
-                    attachment = Buffer.from(playerList);
-                }
+                const playerListChunks = playerList.match(/.{1,1012}(?:\n|$)/gs) || [];
                 embed
                     .addField("Location", typeof country === "string"
                     ? `:${country === "Unknown"
@@ -699,24 +696,22 @@ class Watchdog {
                     .addField("Current Map", !currentMap
                     ? ((_b = baseEmbed === null || baseEmbed === void 0 ? void 0 : baseEmbed.fields) === null || _b === void 0 ? void 0 : _b.find((f) => f.name === "Current Map").value) || "Unknown"
                     : `${currentMap || "Unknown"}`, true)
-                    .addField(`Players${configServer.rcon.status.showPlayerList
-                    ? ` ${currentPlayerCount}/${maxPlayerCount}`
-                    : ""}`, !configServer.rcon.status.showPlayerList
-                    ? `${currentPlayerCount}/${maxPlayerCount}`
-                    : `\`\`\`${playerList}\`\`\``.length > 1024
-                        ? "See attached text file"
-                        : `\`\`\`${playerList}\`\`\``, !configServer.rcon.status.showPlayerList ? true : false)
                     .setFooter(`Mordhau RCON`);
-                return { embed, attachment };
+                if (!configServer.rcon.status.showPlayerList) {
+                    embed.addField(`Players ${currentPlayerCount}/${maxPlayerCount}`, `${currentPlayerCount}/${maxPlayerCount}`, true);
+                }
+                else {
+                    for (let i = 0; i < playerListChunks.length; i++) {
+                        embed.addField(`Players ${currentPlayerCount}/${maxPlayerCount} (Chunks: ${i + 1}/${playerListChunks.length})`, `\`\`\`${playerListChunks[i]}\`\`\``, false);
+                    }
+                }
+                return embed;
             }
             if (sendMessage) {
-                const { embed, attachment } = await generateStatusMessage();
+                const embed = await generateStatusMessage();
                 const m = await this.client.createMessage(channelID, {
                     embed: embed.getEmbed(),
-                }, (attachment && {
-                    file: attachment,
-                    name: "Output.txt"
-                }));
+                });
                 server.rcon.statusMessageID = m.id;
             }
             else {
@@ -730,15 +725,10 @@ class Watchdog {
                         const field = messageEmbed.fields[i];
                         baseEmbed.addField(field.name, field.value, field.inline);
                     }
-                    const { embed, attachment } = await generateStatusMessage(messageEmbed);
-                    if (attachment) {
-                        await this.refreshStatuses();
-                    }
-                    else {
-                        await this.client.editMessage(channelID, server.rcon.statusMessageID, {
-                            embed: embed.getEmbed(),
-                        });
-                    }
+                    const embed = await generateStatusMessage(messageEmbed);
+                    await this.client.editMessage(channelID, server.rcon.statusMessageID, {
+                        embed: embed.getEmbed(),
+                    });
                 }
                 catch (error) {
                     this.statusMessageErrorCount++;
