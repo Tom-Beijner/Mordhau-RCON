@@ -369,12 +369,8 @@ export default class Watchdog {
 
                 embed.setDescription(description);
 
-                let attachment: Buffer
-                if (`\`\`\`${playerList}\`\`\``.length > 1024) {
-                    attachment = Buffer.from(
-                        playerList
-                    )
-                }
+                const playerListChunks =
+                    playerList.match(/.{1,1012}(?:\n|$)/gs) || [];
 
                 embed
                     .addField(
@@ -405,34 +401,33 @@ export default class Watchdog {
                             : `${currentMap || "Unknown"}`,
                         true
                     )
-                    .addField(
-                        `Players${configServer.rcon.status.showPlayerList
-                            ? ` ${currentPlayerCount}/${maxPlayerCount}`
-                            : ""
-                        }`,
-                        !configServer.rcon.status.showPlayerList
-                            ? `${currentPlayerCount}/${maxPlayerCount}`
-                            : `\`\`\`${playerList}\`\`\``.length > 1024
-                                ? "See attached text file"
-                                : `\`\`\`${playerList}\`\`\``,
-                        !configServer.rcon.status.showPlayerList ? true : false
-                    )
                     .setFooter(`Mordhau RCON`)
 
-                return { embed, attachment };
+                if (!configServer.rcon.status.showPlayerList) {
+                    embed.addField(
+                        `Players ${currentPlayerCount}/${maxPlayerCount}`,
+                        `${currentPlayerCount}/${maxPlayerCount}`,
+                        true
+                    )
+                } else {
+                    for (let i = 0; i < playerListChunks.length; i++) {
+                        embed.addField(
+                            `Players ${currentPlayerCount}/${maxPlayerCount} (Chunks: ${i + 1}/${playerListChunks.length})`,
+                            `\`\`\`${playerListChunks[i]}\`\`\``,
+                            false
+                        )
+                    }
+                }
+
+                return embed
             }
 
             if (sendMessage) {
-                const { embed, attachment } = await generateStatusMessage();
+                const embed = await generateStatusMessage();
 
                 const m = await this.client.createMessage(channelID, {
                     embed: embed.getEmbed(),
-                },
-                    (attachment && {
-                        file: attachment,
-                        name: "Output.txt"
-                    })
-                );
+                });
 
                 server.rcon.statusMessageID = m.id;
             } else {
@@ -454,20 +449,15 @@ export default class Watchdog {
                             field.inline
                         );
                     }
-                    const { embed, attachment } = await generateStatusMessage(messageEmbed);
+                    const embed = await generateStatusMessage(messageEmbed);
 
-                    // Force new message, cant upload for edit message
-                    if (attachment) {
-                        await this.refreshStatuses();
-                    } else {
-                        await this.client.editMessage(
-                            channelID,
-                            server.rcon.statusMessageID,
-                            {
-                                embed: embed.getEmbed(),
-                            }
-                        );
-                    }
+                    await this.client.editMessage(
+                        channelID,
+                        server.rcon.statusMessageID,
+                        {
+                            embed: embed.getEmbed(),
+                        }
+                    );
                 } catch (error) {
                     this.statusMessageErrorCount++;
 
