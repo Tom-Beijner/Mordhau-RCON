@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { addMinutes, formatDistanceToNow } from 'date-fns';
 import fetch from 'node-fetch';
 import pluralize from 'pluralize';
-import { CommandContext, CommandOptionType, SlashCreator } from 'slash-create';
+import { CommandContext, CommandOptionType, Message, SlashCreator } from 'slash-create';
 
 import { LookupPlayer } from '../../../services/PlayFab';
 import config, { Role } from '../../../structures/Config';
@@ -245,11 +245,17 @@ export default class History extends SlashCommand {
                     pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
             }
 
-            let attachment: Buffer
             if (pastOffenses.length > 1024) {
-                attachment = Buffer.from(
+                const attachment = Buffer.from(
                     pastOffenses
                 )
+                await ctx.send({
+                    content: `${payload.playername} (${playerHistory.ids.playFabID}) history file`,
+                    file: {
+                        file: attachment,
+                        name: `${playerHistory.ids.playFabID}-history.txt`
+                    }
+                }) as Message
                 pastOffenses = "See attached text file";
             }
             let message = "";
@@ -402,12 +408,6 @@ export default class History extends SlashCommand {
                         },
                     },
                 ],
-                ...(pastOffenses.length > 1024 && {
-                    file: {
-                        file: attachment,
-                        name: "Output.txt"
-                    }
-                })
             });
         } catch (error) {
             await ctx.send({
