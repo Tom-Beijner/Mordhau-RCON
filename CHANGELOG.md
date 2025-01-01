@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.31.1](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.31.0...v1.31.1) (2025-01-01)
+
+
+### Bug Fixes
+
+* potential fix for attachment not sending for the history report ([a95e5f0](https://github.com/Tom-Beijner/Mordhau-RCON/commit/a95e5f04dee42d24e221c16b995ed7cb6c37ba6a))
+
 ## [1.31.0](https://github.com/Tom-Beijner/Mordhau-RCON/compare/v1.30.3...v1.31.0) (2024-12-31)
 
 

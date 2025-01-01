@@ -152,9 +152,15 @@ class History extends SlashCommand_1.default {
                 if (pastOffenses.length < 1025)
                     pastOffenses = `\`\`\`${pastOffenses}\`\`\``;
             }
-            let attachment;
             if (pastOffenses.length > 1024) {
-                attachment = Buffer.from(pastOffenses);
+                const attachment = Buffer.from(pastOffenses);
+                await ctx.send({
+                    content: `${payload.playername} (${playerHistory.ids.playFabID}) history file`,
+                    file: {
+                        file: attachment,
+                        name: `${playerHistory.ids.playFabID}-history.txt`
+                    }
+                });
                 pastOffenses = "See attached text file";
             }
             let message = "";
@@ -210,12 +216,6 @@ class History extends SlashCommand_1.default {
                         },
                     },
                 ],
-                ...(pastOffenses.length > 1024 && {
-                    file: {
-                        file: attachment,
-                        name: "Output.txt"
-                    }
-                })
             });
         }
         catch (error) {
